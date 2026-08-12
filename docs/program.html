@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kinetic Surrogates &mdash; Research Program</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-inner">
+      <a class="brand" href="./index.html">kinetics</a>
+      <nav>
+        <a href="./intro.html">Introduction</a>
+        <a href="./program.html">Research program</a>
+        <a href="./applications.html">Applications</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./implementations.html">Implementations</a>
+        <a href="./index.html#bibliography">Bibliography</a>
+        <a href="https://github.com/microprediction/kinetics">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="pagenav"><a href="./index.html">&larr; Home</a></p>
+    <h1>Research program</h1>
+    <p class="subtitle">The questions this repository exists to answer, roughly in order of
+    attack.</p>
+
+    <p class="lead">
+      The organizing question is narrow and, we think, fertile:
+    </p>
+    <blockquote>
+      Which expensive &ldquo;remove one component and recompute&rdquo; calculations in
+      computational kinetics and statistical mechanics are currently performed explicitly,
+      even though one full-system solve already contains all the leave-one-out answers
+      through a Schur-complement downdate?
+    </blockquote>
+
+    <div class="question-card">
+      <h3>Q1. The deletion-ensemble audit <span class="status">survey</span></h3>
+      <p>
+        Catalogue remove-one-and-recompute workflows across computational statistical
+        mechanics: vacancy and defect formation energies, Hessian-based stability analyses,
+        elastic and resistor network response, spin-glass cavity iterations, Gaussian-field
+        conditioning. For each: is the recomputation a fresh solve today, and does the
+        rank-one (or leave-$k$-out) downdate apply exactly, approximately, or not at all?
+        The deliverable is a table with speedup estimates &mdash; $n$ solves collapsed to
+        one solve plus downdates &mdash; and the failure modes (nonlinearity, relaxation
+        after deletion, non-quadratic energy landscapes).
+      </p>
+    </div>
+
+    <div class="question-card">
+      <h3>Q2. Thurstone races as kinetic surrogates <span class="status">core</span></h3>
+      <p>
+        Kinetic Monte Carlo is an exponential race; real first-event data often is not.
+        Train the fast ability transform on first-event observations from a ground-truth
+        simulator (synthetic KMC first, then non-exponential waiting-time models) and
+        measure: does a Thurstone race with a fitted base density predict <em>counterfactual
+        races</em> &mdash; channels blocked, fields merged, temperature shifted &mdash;
+        better than the Harville/exponential surrogate? The IIA violations of real kinetics
+        are precisely what the Thurstone model can represent and Harville cannot.
+      </p>
+    </div>
+
+    <div class="question-card">
+      <h3>Q3. Inference from extremal observations only <span class="status">theory</span></h3>
+      <p>
+        In many settings the simulation reveals only the winner &mdash; the pathway taken,
+        the bond that broke &mdash; and perhaps the winning time. What is identifiable about
+        the latent field from winner-only data? How much does observing the winning margin
+        (photo finish vs blowout) add? This is the order-statistics inverse problem
+        underlying the ability transform, now with censoring appropriate to physics rather
+        than to betting markets.
+      </p>
+    </div>
+
+    <div class="question-card">
+      <h3>Q4. Leave-$k$-out: the compressed defect ensemble <span class="status">extension</span></h3>
+      <p>
+        The identity $G^{(S)} = G_{\bar S,\bar S} - G_{\bar S,S} G_{S,S}^{-1} G_{S,\bar S}$
+        prices every small deletion cluster at a $k \times k$ inversion. Defect pairs and
+        triples &mdash; interactions between vacancies, cooperative rearrangements &mdash;
+        are the physically interesting objects. How far does the compressed representation
+        reach before conditioning or fill-in erodes the advantage, and can the ensemble of
+        all $\binom{n}{2}$ pair deletions be screened lazily (compute the cheap scalar first,
+        expand only promising pairs)?
+      </p>
+    </div>
+
+    <div class="question-card">
+      <h3>Q5. Dynamic fields and streaming maintenance <span class="status">extension</span></h3>
+      <p>
+        Propensities drift: temperature ramps, ageing glasses, evolving stress fields. The
+        <code>thurstone</code> package already tracks time-varying abilities with a Kalman
+        layer. The open question is joint maintenance &mdash; keeping the global field (or
+        global inverse) current under both parameter drift and structural events (channels
+        appearing and disappearing), so the leave-one-out ensemble stays a downdate away at
+        all times. This mirrors the streaming covariance problem solved for portfolios in
+        <a href="https://github.com/microprediction/allocation"><code>allocation</code></a>.
+      </p>
+    </div>
+
+    <div class="question-card">
+      <h3>Q6. Where the two identities meet <span class="status">speculative</span></h3>
+      <p>
+        The multiplicative cavity (divide out a survival function) and the rank-one cavity
+        (subtract a mediated interaction) are the independent-competitor and
+        Gaussian-coupled faces of the same deletion question. Correlated races &mdash;
+        competitors whose performances share a Gaussian copula &mdash; need both at once:
+        the field product for the extremal structure and the Schur downdate for the
+        coupling. A fast ability transform for <em>correlated</em> fields would subsume both
+        and is, as far as we know, open. <strong>First evidence that this is the right
+        target:</strong> in the
+        <a href="https://github.com/microprediction/kinetics/tree/main/experiments/exp01_narrow_escape">narrow-escape
+        experiment</a>, real diffusive kinetics violates IIA through geometry (walkers
+        turned away from a blocked window are absorbed nearby), and no independent race
+        &mdash; exponential or Thurstone &mdash; captures it.
+      </p>
+    </div>
+
+    <h2>Method of work</h2>
+    <p>
+      Each question gets a numbered experiment directory with a runnable script, synthetic
+      ground truth, and a short write-up; results that survive get promoted to the
+      <a href="./papers.html">papers page</a>. The
+      <a href="https://github.com/microprediction/kinetics/tree/main/experiments">first
+      experiments</a> verify the two identities and their advertised complexities, so that
+      later claims stand on checked ground.
+    </p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/kinetics">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

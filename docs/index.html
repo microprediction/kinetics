@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kinetic Surrogates</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-inner">
+      <a class="brand" href="./index.html">kinetics</a>
+      <nav>
+        <a href="./intro.html">Introduction</a>
+        <a href="./program.html">Research program</a>
+        <a href="./applications.html">Applications</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./implementations.html">Implementations</a>
+        <a href="#bibliography">Bibliography</a>
+        <a href="https://github.com/microprediction/kinetics">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Kinetic Surrogates</h1>
+    <p class="subtitle">Fast ability transforms for systems in which thousands of latent
+    stochastic processes compete to produce the first, fastest, weakest, or otherwise
+    extremal event.</p>
+
+    <p class="lead">
+      A chemical system chooses one reaction pathway out of thousands. A stressed material
+      fails at one bond out of millions. A glass relaxes through whichever local
+      rearrangement happens first. In each case an expensive physical process is, abstractly,
+      a <strong>race</strong>: many latent processes compete, and we observe the winner
+      &mdash; sometimes only the winner. This project asks whether the machinery built for
+      inferring the relative abilities of racehorses from betting odds &mdash; the
+      <a href="https://github.com/microprediction/thurstone">fast ability transform</a> &mdash;
+      can turn expensive kinetic simulations into cheap, transferable surrogate models.
+    </p>
+
+    <p>
+      The connecting mathematics is a pair of <em>leave-one-out identities</em>. Both say the
+      same thing: <strong>one global computation is a compressed representation of the entire
+      family of single-deletion systems.</strong> Compute the field once, and every
+      &ldquo;what if competitor $i$ were absent?&rdquo; question is answered by a cheap
+      downdate rather than a fresh solve. In racing this is the trick that makes the ability
+      transform $O(N)$; in statistical mechanics it is the cavity method&apos;s central
+      identity, read as an algorithm.
+    </p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 760 230" role="img"
+           aria-label="Pipeline from expensive simulation through first-event observations and the fast ability transform to a cheap kinetic surrogate">
+        <defs>
+          <marker id="arrow" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
+            <path d="M0,0 L6.5,3 L0,6 Z" fill="#c2410c"/>
+          </marker>
+        </defs>
+
+        <!-- stage 1: expensive simulation -->
+        <rect x="8" y="24" width="170" height="96" rx="12" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="93" y="56" text-anchor="middle" font-size="14" font-weight="600" fill="#2a1a12">Expensive physics</text>
+        <text x="93" y="79" text-anchor="middle" font-size="12" fill="#5a5a5a">KMC &middot; MD &middot; fracture</text>
+        <text x="93" y="98" text-anchor="middle" font-size="11" fill="#9a9a9a">thousands of channels</text>
+
+        <!-- stage 2: first-event observations -->
+        <rect x="216" y="24" width="170" height="96" rx="12" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="301" y="56" text-anchor="middle" font-size="14" font-weight="600" fill="#2a1a12">First events</text>
+        <text x="301" y="79" text-anchor="middle" font-size="12" fill="#5a5a5a">which channel won,</text>
+        <text x="301" y="98" text-anchor="middle" font-size="12" fill="#5a5a5a">and how often</text>
+
+        <!-- stage 3: the transform (highlighted) -->
+        <rect x="424" y="37" width="150" height="70" rx="23" fill="#c2410c"/>
+        <text x="499" y="66" text-anchor="middle" font-size="13.5" font-weight="600" fill="#ffffff">fast ability</text>
+        <text x="499" y="84" text-anchor="middle" font-size="13.5" font-weight="600" fill="#ffffff">transform</text>
+
+        <!-- stage 4: surrogate -->
+        <rect x="582" y="24" width="170" height="96" rx="12" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="667" y="56" text-anchor="middle" font-size="14" font-weight="600" fill="#2a1a12">Kinetic surrogate</text>
+        <text x="667" y="79" text-anchor="middle" font-size="12" fill="#5a5a5a">latent propensities &mu;</text>
+        <text x="667" y="98" text-anchor="middle" font-size="11" fill="#9a9a9a">cheap &middot; transferable</text>
+
+        <!-- connectors -->
+        <line x1="182" y1="72" x2="210" y2="72" stroke="#c2410c" stroke-width="2" marker-end="url(#arrow)"/>
+        <line x1="390" y1="72" x2="418" y2="72" stroke="#c2410c" stroke-width="2" marker-end="url(#arrow)"/>
+        <line x1="578" y1="72" x2="576" y2="72" stroke="#c2410c" stroke-width="2" marker-end="url(#arrow)"/>
+
+        <!-- lower annotation: the leave-one-out engine -->
+        <line x1="120" y1="172" x2="640" y2="172" stroke="#e2e2e2" stroke-width="2"/>
+        <circle cx="180" cy="172" r="5" fill="#c2410c"/>
+        <circle cx="380" cy="172" r="5" fill="#c2410c"/>
+        <circle cx="580" cy="172" r="5" fill="#c2410c"/>
+        <text x="180" y="196" text-anchor="middle" font-size="11.5" fill="#2a1a12">one global solve</text>
+        <text x="380" y="196" text-anchor="middle" font-size="11.5" fill="#c2410c">all leave-one-out systems</text>
+        <text x="580" y="196" text-anchor="middle" font-size="11.5" fill="#2a1a12">every scalar in O(1)</text>
+        <text x="380" y="214" text-anchor="middle" font-size="10.5" fill="#9a9a9a">the cavity identity, read as an algorithm</text>
+      </svg>
+      <p class="caption">
+        The loop this project explores: expensive simulation &rarr; first-event observations
+        &rarr; latent kinetic propensities &rarr; cheap surrogate. The engine underneath is a
+        leave-one-out identity that answers all $N$ deletion questions from one global pass.
+      </p>
+    </div>
+
+    <h2>The two identities</h2>
+    <p>
+      <strong>Multiplicative (races).</strong> If the survival function of the whole field is
+      the product $S_{\text{field}} = \prod_j S_j$, then the field faced by competitor $i$ is
+      recovered by division: $S_{-i} = S_{\text{field}} / S_i$. One pass over the field prices
+      every competitor &mdash; this is what makes the ability transform of
+      <a href="https://epubs.siam.org/doi/abs/10.1137/19M1276261">Cotton (2021)</a> $O(N)$
+      instead of $O(N^2)$.
+    </p>
+    <p>
+      <strong>Rank-one (quadratic systems).</strong> If $G = A^{-1}$ is the inverse (Green
+      function, susceptibility, resolvent) of a coupled system, the inverse with site $i$
+      deleted is a Schur-complement downdate:
+    </p>
+    <div class="equation-card">
+      $G^{(i)}_{jk} = G_{jk} - \dfrac{G_{ji}\,G_{ik}}{G_{ii}}, \qquad j,k \neq i$
+    </div>
+    <p>
+      One $O(n^3)$ factorization contains all $n$ cavity systems; the subtracted rank-one term
+      is exactly the interaction between the remaining degrees of freedom that was
+      <em>mediated through</em> $i$. Statistical mechanics knows this identity intimately
+      &mdash; it is the cavity Green function &mdash; but typically uses it site by site, not
+      as a way to harvest the whole deletion ensemble from a single solve. The
+      <a href="./intro.html">introduction</a> develops both identities and their
+      correspondence; the <a href="./program.html">research program</a> lists the questions
+      they open.
+    </p>
+
+    <h2>Status</h2>
+    <p>
+      This is an exploratory research repository. The
+      <a href="https://github.com/microprediction/kinetics/tree/main/experiments">experiments
+      directory</a> contains, so far: numpy verifications of both identities with timings;
+      a <strong>real first-passage simulation</strong> (Brownian narrow escape) showing
+      that diffusive kinetics violates IIA geometrically in a way neither the exponential
+      nor the independent Thurstone surrogate captures &mdash; pointing at correlated
+      races (Q6 of the <a href="./program.html">program</a>); and a <strong>disordered
+      elastic network</strong> whose entire single-defect ensemble (784 sites, ~870&times;
+      speedup) and 4,000 pair-defect interactions were computed from one inverse in under
+      50&nbsp;ms. The <a href="./applications.html">applications page</a> ranks the
+      domains to try next.
+    </p>
+
+    <h2>Further reading</h2>
+    <ul>
+      <li>
+        <a href="./intro.html">Introduction</a> &mdash; the race model, the two leave-one-out
+        identities, and the dictionary between racing and kinetics.
+      </li>
+      <li>
+        Cotton, P. (2021). &ldquo;Inferring Relative Ability from Winning Probability in
+        Multientrant Contests.&rdquo; <a href="https://epubs.siam.org/doi/abs/10.1137/19M1276261"><em>SIAM
+        Journal on Financial Mathematics</em> 12(1), 295&ndash;317</a> &mdash; the fast
+        ability transform.
+      </li>
+      <li>
+        The <a href="https://github.com/microprediction/thurstone"><code>thurstone</code></a>
+        package &mdash; the maintained implementation
+        (<a href="https://thurstone.microprediction.org/">docs and interactive demos</a>).
+      </li>
+      <li>
+        M&eacute;zard, M., Parisi, G., and Virasoro, M. A. (1987). <em>Spin Glass Theory and
+        Beyond</em> &mdash; the cavity method, whose central identity is the rank-one
+        downdate above.
+      </li>
+    </ul>
+
+    <h2>Cite</h2>
+    <blockquote>
+      Cotton, P. (2021). &ldquo;Inferring Relative Ability from Winning Probability in
+      Multientrant Contests.&rdquo; <em>SIAM Journal on Financial Mathematics</em> 12(1),
+      295&ndash;317.
+    </blockquote>
+    <pre style="background:#f3f3f7;padding:12px 14px;border-radius:6px;overflow-x:auto;font-size:0.85em;font-family:'SFMono-Regular',Menlo,Consolas,monospace;">@article{cotton2021inferring,
+  author  = {Cotton, Peter},
+  title   = {Inferring Relative Ability from Winning Probability
+             in Multientrant Contests},
+  journal = {SIAM Journal on Financial Mathematics},
+  volume  = {12},
+  number  = {1},
+  pages   = {295--317},
+  year    = {2021}
+}</pre>
+
+    <div class="bib">
+      <h2 id="bibliography">Bibliography</h2>
+      <p>Works underpinning, or adjacent to, the use of fast ability transforms in kinetic
+      surrogate modelling. The list will grow as the program develops; see the
+      <a href="./papers.html">papers page</a> for this project&apos;s own write-ups.</p>
+
+      <h3>The core</h3>
+      <ul>
+        <li>
+          Cotton, P. (2021). &ldquo;Inferring Relative Ability from Winning Probability in
+          Multientrant Contests.&rdquo; <a href="https://epubs.siam.org/doi/abs/10.1137/19M1276261"><em>SIAM
+          Journal on Financial Mathematics</em> 12(1)</a>. <em>The lattice-based fast ability
+          transform: winner-of-many built once, every entrant priced against its leave-one-out
+          field in $O(N)$ total.</em>
+        </li>
+        <li>
+          The <a href="https://github.com/microprediction/thurstone"><code>thurstone</code></a>
+          package. <em>Maintained implementation of the forward (abilities &rarr; win
+          probabilities) and inverse (probabilities &rarr; abilities) transforms, with
+          dead-heat handling and dynamic tracking.</em>
+        </li>
+      </ul>
+
+      <h3>Choice models and races</h3>
+      <ul>
+        <li>
+          Thurstone, L. L. (1927). &ldquo;A Law of Comparative Judgment.&rdquo;
+          <em>Psychological Review</em> 34(4), 273&ndash;286. <em>Performance = ability +
+          noise; the best performance wins.</em>
+        </li>
+        <li>
+          Luce, R. D. (1959). <em>Individual Choice Behavior</em>. Wiley. <em>The IIA choice
+          axiom &mdash; equivalent to exponential races, and exactly the assumption kinetic
+          Monte Carlo makes.</em>
+        </li>
+        <li>
+          Harville, D. A. (1973). &ldquo;Assigning Probabilities to the Outcomes of
+          Multi-Entry Competitions.&rdquo; <em>JASA</em> 68(342), 312&ndash;316. <em>The
+          listwise exponential-race formula; fast but inherits IIA.</em>
+        </li>
+      </ul>
+
+      <h3>The statistical-mechanics side</h3>
+      <ul>
+        <li>
+          M&eacute;zard, M., Parisi, G., and Virasoro, M. A. (1987). <em>Spin Glass Theory
+          and Beyond</em>. World Scientific. <em>The cavity method: leave one site out,
+          relate $G^{(i)}$ to $G$.</em>
+        </li>
+        <li>
+          M&eacute;zard, M., and Montanari, A. (2009). <em>Information, Physics, and
+          Computation</em>. OUP. <em>Cavity/message-passing as algorithms.</em>
+        </li>
+        <li>
+          Erd&odblac;s, L., and Yau, H.-T. (2017). <em>A Dynamical Approach to Random Matrix
+          Theory</em>. AMS. <em>Schur-complement (self-consistent resolvent) identities
+          underpinning local laws &mdash; the rigorous face of the same downdate.</em>
+        </li>
+        <li>
+          Voter, A. F. (2007). &ldquo;Introduction to the Kinetic Monte Carlo Method.&rdquo;
+          In <em>Radiation Effects in Solids</em>, Springer. <em>The exponential-race engine
+          of computational kinetics: channel $i$ fires first with probability
+          $k_i / \sum_j k_j$.</em>
+        </li>
+      </ul>
+
+      <h3>Numerical linear algebra of deletion</h3>
+      <ul>
+        <li>
+          Sherman, J., and Morrison, W. J. (1950). &ldquo;Adjustment of an Inverse Matrix
+          Corresponding to a Change in One Element of a Given Matrix.&rdquo; <em>Annals of
+          Mathematical Statistics</em> 21(1). <em>The rank-one update; deletion is its
+          downdate twin.</em>
+        </li>
+        <li>
+          Hager, W. W. (1989). &ldquo;Updating the Inverse of a Matrix.&rdquo; <em>SIAM
+          Review</em> 31(2), 221&ndash;239. <em>Survey of update/downdate identities,
+          including the block (leave-$k$-out) form.</em>
+        </li>
+        <li>
+          The hat-matrix leave-one-out identity of regression,
+          $\hat y^{(-i)}_i = y_i - e_i/(1-h_{ii})$ &mdash; the scalar special case that
+          statistics has exploited for fifty years, and the template for what
+          &ldquo;every scalar in $O(1)$&rdquo; means here.
+        </li>
+      </ul>
+
+      <h3>Related work by the same author</h3>
+      <ul>
+        <li>
+          Cotton, P. (2024). <a href="https://arxiv.org/abs/2411.05807"><em>Schur
+          Complementary Allocation: A Unification of Hierarchical Risk Parity and Minimum
+          Variance Portfolios</em></a>. arXiv:2411.05807. <em>The same Schur-complement
+          object, put to work in portfolio construction &mdash; see
+          <a href="https://schur.microprediction.org">schur.microprediction.org</a>.</em>
+        </li>
+      </ul>
+
+      <p class="muted" style="font-size:0.9rem; margin-top:16px;">
+        Working on a related paper, or know of a field where remove-one-and-recompute is done
+        the slow way? Open an issue on
+        <a href="https://github.com/microprediction/kinetics">the kinetics repo</a> and
+        we&apos;ll add it.
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/kinetics">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

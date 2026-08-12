@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kinetic Surrogates &mdash; Applications</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-inner">
+      <a class="brand" href="./index.html">kinetics</a>
+      <nav>
+        <a href="./intro.html">Introduction</a>
+        <a href="./program.html">Research program</a>
+        <a href="./applications.html">Applications</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./implementations.html">Implementations</a>
+        <a href="./index.html#bibliography">Bibliography</a>
+        <a href="https://github.com/microprediction/kinetics">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="pagenav"><a href="./index.html">&larr; Home</a></p>
+    <h1>Applications</h1>
+    <p class="subtitle">Candidate domains, ranked by how cleanly they fit the race
+    abstraction: many latent competitors, an expensive process, an extremal observation.</p>
+
+    <p class="lead">
+      The selection criterion discovered along the way: find problems with thousands of
+      latent competitors where an expensive process reveals a winner. Each domain below is
+      scored informally on three axes &mdash; is the first-event structure exact, is the
+      leave-one-out question physically meaningful, and is ground-truth simulation available
+      to validate a surrogate against.
+    </p>
+
+    <h2>Chemical kinetics and kinetic Monte Carlo</h2>
+    <p>
+      The cleanest fit. A KMC step <em>is</em> a race among escape channels, with the
+      exponential assumption baked in; catalysis and surface-reaction networks routinely
+      involve thousands of channels whose rates are themselves expensive (DFT-computed)
+      quantities. The surrogate question: infer latent propensities from observed
+      first-event frequencies and predict the effect of blocking pathways (poisoning a
+      catalytic site) or adding them &mdash; without recomputing the rate table. IIA
+      violations from correlated barriers are exactly what a non-exponential Thurstone race
+      can capture. Ground truth is cheap to generate synthetically, making this the first
+      testbed.
+    </p>
+
+    <h2>Fracture and weakest-link failure</h2>
+    <p>
+      A stressed material fails at the weakest of millions of bonds &mdash; an argmin
+      observation over a latent strength field. Weibull statistics is the classical
+      IIA-style shortcut; real materials show correlated disorder and stress redistribution
+      that break it. The leave-one-out question is native here: &ldquo;what if this bond
+      (or fiber, in fiber-bundle models) were absent or reinforced?&rdquo; And the elastic
+      response side is quadratic, so the rank-one cavity applies literally to the stiffness
+      matrix: one factorization yields every single-bond-removal compliance change.
+    </p>
+
+    <h2>Glasses and rare-event dynamics</h2>
+    <p>
+      A supercooled liquid relaxes through whichever local rearrangement happens first
+      &mdash; a race among soft spots. The cavity method is already the theoretical language
+      of this field, which cuts both ways: the identity is known, but the computational
+      framing (one solve, all cavities) may still pay in Hessian-based analyses of
+      inherent structures, where mode-by-mode or site-by-site deletion studies are common.
+    </p>
+
+    <h2>Nucleation and first-passage percolation</h2>
+    <p>
+      Nucleation sites compete to form the critical nucleus first; first-passage percolation
+      races paths through random media. Both produce winner-plus-time data of exactly the
+      form Q3 of the <a href="./program.html">program</a> studies, and both have
+      well-understood limiting regimes (extreme-value theory) to check surrogates against.
+    </p>
+
+    <h2>Resistor, elastic, and flow networks</h2>
+    <p>
+      Not a race but a pure rank-one-cavity playground: the graph Laplacian&apos;s
+      pseudo-inverse contains every single-edge and single-node removal response. Effective
+      resistances, current redistributions after a line failure, and contingency screening
+      in power grids are all leave-one-out scalars &mdash; $O(1)$ each after one solve. The
+      $N-1$ (and $N-2$) contingency analyses of power engineering are the leave-$k$-out
+      identity by another name; the audit in Q1 will establish how much of current practice
+      already exploits it.
+    </p>
+
+    <h2>Defects and vacancies in solids</h2>
+    <p>
+      Vacancy formation energies and defect interactions are classic
+      remove-one-and-recompute calculations. Within a harmonic model, the leave-$k$-out
+      identity prices every defect pair at a $2\times 2$ inversion &mdash; the compressed
+      defect ensemble of Q4. The open question is how far the harmonic downdate tracks the
+      relaxed (anharmonic) answer, and whether it works as a screening layer for full
+      calculations.
+    </p>
+
+    <h2>Beyond physics</h2>
+    <p>
+      The same abstraction &mdash; thousands of latent competitors, an expensive process, a
+      winner &mdash; recurs in commerce (auctions, product search, one item chosen from
+      thousands), reliability (first component to fail), and model selection (first
+      hypothesis to validate). These are deliberately out of scope here but kept in view:
+      the point of naming the repository after the computational object&apos;s physical
+      home, rather than any single application, is that results should transfer.
+    </p>
+
+    <div class="next-steps">
+      <p>
+        First testbed: synthetic KMC in
+        <a href="https://github.com/microprediction/kinetics/tree/main/experiments">experiments</a>,
+        per Q2 of the <a href="./program.html">research program</a>.
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/kinetics">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

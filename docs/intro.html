@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kinetic Surrogates &mdash; Introduction</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-inner">
+      <a class="brand" href="./index.html">kinetics</a>
+      <nav>
+        <a href="./intro.html">Introduction</a>
+        <a href="./program.html">Research program</a>
+        <a href="./applications.html">Applications</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./implementations.html">Implementations</a>
+        <a href="./index.html#bibliography">Bibliography</a>
+        <a href="https://github.com/microprediction/kinetics">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="pagenav"><a href="./index.html">&larr; Home</a></p>
+    <h1>An introduction</h1>
+    <p class="subtitle">Races, cavities, and the observation that one global solve contains
+    every leave-one-out answer.</p>
+
+    <p class="lead">
+      Kinetics, at the resolution a simulator sees it, is a race. A system sits in a state
+      with $N$ available escape channels &mdash; reactions, hops, bond ruptures, local
+      rearrangements &mdash; and whichever channel fires first determines the next state.
+      Kinetic Monte Carlo runs this race with exponential clocks; molecular dynamics runs it
+      with the true (expensive) physics. Either way, the data the simulation produces is
+      <em>race data</em>: which channel won, and occasionally by how much. This page sets out
+      the model we use for such races, the two leave-one-out identities that make it fast,
+      and why those identities are the cavity method of statistical mechanics wearing
+      algorithmic clothes.
+    </p>
+
+    <h2>The race model</h2>
+    <p>
+      Give each competitor $i$ a latent propensity $\mu_i$ and a performance
+      $X_i = \mu_i + \epsilon_i$, with the $\epsilon_i$ independent draws from a base density.
+      The lowest performance wins (read $X_i$ as a first-passage time, an activation barrier
+      crossed, or simply &ldquo;performance&rdquo; with sign flipped). The probability that
+      $i$ wins is
+    </p>
+    <div class="equation-card">
+      $p_i = \displaystyle\int f_i(x) \prod_{j \neq i} S_j(x)\, dx$
+    </div>
+    <p>
+      where $f_i$ is the density of $X_i$ and $S_j = 1 - F_j$ the survival function of
+      $X_j$. This is Thurstone&apos;s 1927 model of comparative judgment, and it is also
+      exactly the structure of a first-event problem in kinetics. Two special cases anchor
+      the landscape:
+    </p>
+    <ul>
+      <li>
+        <strong>Exponential clocks.</strong> If $X_i \sim \text{Exp}(k_i)$ then
+        $p_i = k_i / \sum_j k_j$ &mdash; the Luce/Harville formula, and precisely the
+        transition rule of kinetic Monte Carlo. Exponential races have the IIA property:
+        deleting a competitor rescales everyone else&apos;s odds proportionally.
+      </li>
+      <li>
+        <strong>Gaussian (or arbitrary) noise.</strong> Real kinetics is rarely memoryless.
+        Correlated barriers, dynamical caging, and non-exponential waiting times all break
+        IIA: removing one channel does <em>not</em> rescale the others proportionally. The
+        Thurstone race with a general base density is the tractable model that captures
+        this.
+      </li>
+    </ul>
+    <p>
+      The <strong>inverse problem</strong> is the one that matters for surrogates: given
+      observed winning frequencies $p_i$ (from expensive simulation), recover the latent
+      propensities $\mu_i$. With $\mu$ in hand, the model answers questions the raw
+      frequencies cannot: what happens to the race if a channel is blocked, if the field
+      shrinks or grows, if two systems&apos; channels are pooled. That inversion is the
+      <em>fast ability transform</em>, implemented in
+      <a href="https://github.com/microprediction/thurstone"><code>thurstone</code></a>.
+    </p>
+
+    <h2>Identity one: the multiplicative cavity</h2>
+    <p>
+      Computing all $N$ win probabilities looks like $N$ integrals, each against a product of
+      $N-1$ survival functions: $O(N^2)$ work on a lattice. The trick is to build the field
+      once. The survival function of the minimum of the whole field is a single product,
+    </p>
+    <div class="equation-card">
+      $S_{\text{field}}(x) = \prod_{j} S_j(x)$
+    </div>
+    <p>
+      and the field <em>faced by</em> competitor $i$ &mdash; everyone except $i$ &mdash; is
+      recovered by dividing $i$ back out:
+    </p>
+    <div class="equation-card">
+      $S_{-i}(x) = \dfrac{S_{\text{field}}(x)}{S_i(x)}$
+    </div>
+    <p>
+      One pass builds $S_{\text{field}}$; then every one of the $N$ leave-one-out fields
+      costs a pointwise division. Total cost $O(N)$ per lattice sweep, and this is what makes
+      the ability transform practical for fields of thousands
+      (<a href="https://epubs.siam.org/doi/abs/10.1137/19M1276261">Cotton 2021</a>; see
+      <code>rest_min_cdf</code> in the
+      <a href="https://github.com/microprediction/thurstone">thurstone source</a>).
+    </p>
+
+    <h2>Identity two: the rank-one cavity</h2>
+    <p>
+      Now the quadratic analogue. Suppose the system is Gaussian &mdash; a harmonic
+      approximation around equilibrium, an elastic network, a Gaussian field &mdash; with
+      energy $H(x) = \tfrac12 x^\top A x$ and inverse $G = A^{-1}$ (the covariance,
+      susceptibility, or Green function). Deleting site $i$ means inverting the principal
+      submatrix $A_{-i,-i}$. Naively that is $n$ separate $O(n^3)$ inversions. But the full
+      inverse already contains every answer:
+    </p>
+    <div class="equation-card">
+      $\left(A^{-1}_{-i,-i}\right)_{jk} \;=\; G^{(i)}_{jk} \;=\; G_{jk} -
+      \dfrac{G_{ji}\,G_{ik}}{G_{ii}}, \qquad j,k \neq i$
+    </div>
+    <p>
+      One factorization, then each deletion is a rank-one downdate: $O(n^2)$ for the whole
+      cavity matrix, and $O(1)$ for any single entry. The subtracted term
+      $G_{ji}G_{ik}/G_{ii}$ has a clean physical reading &mdash; it is the part of the
+      interaction between $j$ and $k$ that is <em>mediated through</em> $i$. Removing $i$
+      removes exactly the mediated component.
+    </p>
+    <p>
+      Statistical mechanics knows this identity as the <strong>cavity Green function</strong>:
+      it is the engine of the cavity method for spin glasses and of the Schur-complement
+      arguments behind local laws in random matrix theory. Statistics knows its scalar
+      shadow as the regression leave-one-out identity
+      $\hat y^{(-i)}_i = y_i - e_i/(1 - h_{ii})$. What appears underexploited is the
+      <em>computational</em> framing: statistical mechanics typically reasons
+      &ldquo;choose a site, construct its cavity system, derive a local quantity,&rdquo;
+      whereas the algorithmic reading is
+    </p>
+    <blockquote>
+      invert once &mdash; and obtain <em>every</em> single-site cavity system essentially
+      for free.
+    </blockquote>
+    <p>
+      For scalar observables the economics get better still: many leave-one-out quantities
+      collapse to formulas in $G_{ii}$ and a few inner products, so you often do not even pay
+      $O(n^2)$ per deletion. And the identity iterates: for a subset $S$ of deletions,
+    </p>
+    <div class="equation-card">
+      $G^{(S)} = G_{\bar S, \bar S} - G_{\bar S, S}\, G_{S,S}^{-1}\, G_{S, \bar S}$
+    </div>
+    <p>
+      so leave-$k$-out costs only a $k \times k$ inversion. For $k = 1, 2, 3$ &mdash; single
+      defects, defect pairs, small clusters &mdash; that is extremely cheap. <strong>One
+      global inverse is a compressed representation of an enormous family of defect and
+      cavity systems.</strong>
+    </p>
+
+    <h2>The dictionary</h2>
+    <div class="table-wrap">
+      <table class="impl">
+        <thead>
+          <tr><th>Racing</th><th>Kinetics / statistical mechanics</th><th>Shared object</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Competitor $i$</td>
+            <td class="mode">Escape channel, reaction pathway, weak bond, soft mode</td>
+            <td class="mode">A latent process that may fire first</td>
+          </tr>
+          <tr>
+            <td>Ability $\mu_i$</td>
+            <td class="mode">Log-rate, negative activation barrier, defect propensity</td>
+            <td class="mode">Latent scale with meaningful gaps</td>
+          </tr>
+          <tr>
+            <td>Race outcome</td>
+            <td class="mode">First event: which channel fired</td>
+            <td class="mode">Extremal (argmin) observation</td>
+          </tr>
+          <tr>
+            <td>Betting odds</td>
+            <td class="mode">Empirical channel frequencies from simulation</td>
+            <td class="mode">Win probabilities $p_i$</td>
+          </tr>
+          <tr>
+            <td>Scratching a horse</td>
+            <td class="mode">Blocking a channel, pinning a site, removing a defect</td>
+            <td class="mode">Leave-one-out downdate</td>
+          </tr>
+          <tr>
+            <td>Ability transform</td>
+            <td class="mode">Kinetic surrogate: frequencies $\to$ propensities $\to$ predictions</td>
+            <td class="mode">Inverse problem over the race model</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Why this might matter</h2>
+    <p>
+      Kinetic Monte Carlo is already a race &mdash; but an <em>exponential</em> one, with
+      rates supplied a priori. The proposal here runs the other way and drops the
+      exponential crutch: observe races run by the true expensive physics, invert them
+      through a Thurstone-style model with a realistic noise density, and obtain latent
+      propensities that (a) transfer to fields the simulation never ran &mdash; channels
+      added, blocked, or re-pooled &mdash; and (b) come with the entire leave-one-out
+      ensemble attached, at the price of one global computation. Where the quadratic
+      structure is available too, the rank-one cavity answers &ldquo;what if each site were
+      absent?&rdquo; for all sites at once &mdash; every single-defect susceptibility from
+      one solve.
+    </p>
+
+    <div class="next-steps">
+      <p>
+        The <a href="./program.html">research program</a> turns this into concrete
+        questions; the <a href="./applications.html">applications page</a> ranks candidate
+        domains; and the
+        <a href="https://github.com/microprediction/kinetics/tree/main/experiments">experiments</a>
+        verify both identities numerically, with timings.
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/kinetics">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

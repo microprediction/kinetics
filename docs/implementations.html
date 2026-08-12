@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kinetic Surrogates &mdash; Implementations</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-inner">
+      <a class="brand" href="./index.html">kinetics</a>
+      <nav>
+        <a href="./intro.html">Introduction</a>
+        <a href="./program.html">Research program</a>
+        <a href="./applications.html">Applications</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./implementations.html">Implementations</a>
+        <a href="./index.html#bibliography">Bibliography</a>
+        <a href="https://github.com/microprediction/kinetics">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="pagenav"><a href="./index.html">&larr; Home</a></p>
+    <h1>Implementations</h1>
+    <p class="subtitle">Where the working code lives.</p>
+
+    <div class="table-wrap">
+      <table class="impl">
+        <thead>
+          <tr><th>Library</th><th>Role</th><th>Install</th><th>Links</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>thurstone</td>
+            <td class="mode">The fast ability transform: forward (abilities &rarr; win
+              probabilities) and inverse (probabilities &rarr; abilities), arbitrary base
+              densities, dead-heat handling, dynamic tracking.</td>
+            <td><code>pip install thurstone</code></td>
+            <td>
+              <a href="https://github.com/microprediction/thurstone">GitHub</a> &middot;
+              <a href="https://thurstone.microprediction.org/">docs &amp; demos</a>
+            </td>
+          </tr>
+          <tr>
+            <td>kinetics</td>
+            <td class="mode">This repository: identity-verification experiments, synthetic
+              KMC testbeds, and the watermark-races study &mdash; exploratory code that
+              graduates elsewhere when stable.</td>
+            <td><code>git clone</code></td>
+            <td>
+              <a href="https://github.com/microprediction/kinetics">GitHub</a> &middot;
+              <a href="https://github.com/microprediction/kinetics/tree/main/experiments">experiments</a> &middot;
+              <a href="https://github.com/microprediction/kinetics/tree/main/watermark_races">watermark_races</a>
+            </td>
+          </tr>
+          <tr>
+            <td>precise</td>
+            <td class="mode">Online covariance estimation and Schur-complement machinery
+              &mdash; relevant to the rank-one cavity side and to streaming maintenance
+              (Q5).</td>
+            <td><code>pip install precise</code></td>
+            <td><a href="https://github.com/microprediction/precise">GitHub</a></td>
+          </tr>
+          <tr>
+            <td>schur</td>
+            <td class="mode">Sibling research site: the same Schur-complement object in
+              portfolio construction and spatial pseudo-likelihoods.</td>
+            <td>&mdash;</td>
+            <td>
+              <a href="https://github.com/microprediction/schur">GitHub</a> &middot;
+              <a href="https://schur.microprediction.org">site</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Running the experiments</h2>
+    <p>
+      The identity checks in
+      <a href="https://github.com/microprediction/kinetics/tree/main/experiments"><code>experiments/</code></a>
+      need only numpy:
+    </p>
+    <pre style="background:#f3f3f7;padding:12px 14px;border-radius:6px;overflow-x:auto;font-size:0.85em;font-family:'SFMono-Regular',Menlo,Consolas,monospace;">python experiments/cavity_downdate_demo.py   # rank-one cavity: one inverse, all deletions
+python experiments/race_field_demo.py        # multiplicative cavity: one field, all races</pre>
+    <p>
+      The watermark study in
+      <a href="https://github.com/microprediction/kinetics/tree/main/watermark_races"><code>watermark_races/</code></a>
+      additionally needs PyTorch and Hugging Face Transformers; see its README.
+    </p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/kinetics">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
