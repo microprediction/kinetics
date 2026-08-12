@@ -1,0 +1,19 @@
+block_size,model,mean_tv,max_tv
+1,Harville (trajectory p),0.036891,0.044357
+2,Harville (trajectory p),0.052354,0.067769
+3,Harville (trajectory p),0.070516,0.084437
+1,empirical M (first transitions),0.023014,0.024583
+2,empirical M (first transitions),0.020674,0.025791
+3,empirical M (first transitions),0.020806,0.023964
+1,empirical M (all pairs),0.024004,0.028285
+2,empirical M (all pairs),0.025774,0.032017
+3,empirical M (all pairs),0.029788,0.040161
+1,hybrid: trajectory p + geometric M,0.022059,0.025779
+2,hybrid: trajectory p + geometric M,0.020069,0.025289
+3,hybrid: trajectory p + geometric M,0.018422,0.022865
+1,pure geometry (p_geo + M_geo),0.032167,0.036086
+2,pure geometry (p_geo + M_geo),0.029849,0.035351
+3,pure geometry (p_geo + M_geo),0.027598,0.032857
+,p_geo_vs_p_hat,0.012267
+,M_geo_vs_M_emp,0.269845
+,M_start_sensitivity,0.037360
