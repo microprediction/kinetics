@@ -2,6 +2,18 @@
 
 Status: outline. Sections graduate to LaTeX once the corresponding experiment exists.
 
+**2026-08-12 restructure** (see [review-notes-2026-08-12.md](review-notes-2026-08-12.md)):
+this umbrella outline now feeds THREE separate papers rather than one —
+(1) *Softmax from Fast Mixing: Green–Kubo Corrections for Counterfactual Races*
+(flagship: killed resolvent, homogenized softmax, Green–Kubo non-IIA correction);
+(2) *The Runner-Up Principle for Counterfactual Races* (nonidentifiability polytope,
+data hierarchy, substitution resolvent, ranked narrow escape);
+(3) *Harmonic Cavity Screening for Relaxed Defects* (true vacancies via Woodbury,
+vector elasticity, anharmonic benchmark, screening metrics).
+Key corrections adopted: proportional hazards ⟹ Luce (exponentiality not necessary);
+scratch (marginal) ≠ pin/condition (Schur) — see docs/semantics.html; correlated
+Thurstone (exp06) is the principal computational baseline, not the flagship.
+
 ## 1. Introduction
 
 - Kinetics as a race: KMC step = exponential race among escape channels; MD/fracture/glass

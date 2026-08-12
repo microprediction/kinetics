@@ -16,6 +16,7 @@
       <a class="brand" href="./index.html">kinetics</a>
       <nav>
         <a href="./intro.html">Introduction</a>
+        <a href="./semantics.html">Deletion semantics</a>
         <a href="./program.html">Research program</a>
         <a href="./applications.html">Applications</a>
         <a href="./papers.html">Papers</a>
@@ -41,6 +42,13 @@
       even though one full-system solve already contains all the leave-one-out answers
       through a Schur-complement downdate?
     </blockquote>
+    <p>
+      With one standing caveat: &ldquo;remove&rdquo; means different things &mdash;
+      scratching a competitor (a marginal), pinning a coordinate (a conditional), deleting
+      a bond (a Woodbury update), forming a vacancy (a block update plus relaxation). The
+      <a href="./semantics.html">semantics of deletion</a> page fixes the vocabulary;
+      each question below names its intervention.
+    </p>
 
     <div class="question-card">
       <h3>Q1. The deletion-ensemble audit <span class="status">survey</span></h3>
@@ -64,20 +72,36 @@
         simulator (synthetic KMC first, then non-exponential waiting-time models) and
         measure: does a Thurstone race with a fitted base density predict <em>counterfactual
         races</em> &mdash; channels blocked, fields merged, temperature shifted &mdash;
-        better than the Harville/exponential surrogate? The IIA violations of real kinetics
-        are precisely what the Thurstone model can represent and Harville cannot.
+        better than the Harville/exponential surrogate? Two corrections learned along the
+        way: the right null model is common-clock <em>proportional hazards</em> (any common
+        time change of exponential clocks is still Luce &mdash; exponentiality is
+        sufficient, not necessary), and experiments 1&ndash;5 showed that <em>independent</em>
+        races of any noise law fail on deletion counterfactuals, whose information is
+        correlational (Q6) and, more fundamentally, not present in winner-only data at all
+        (Q3).
       </p>
     </div>
 
     <div class="question-card">
-      <h3>Q3. Inference from extremal observations only <span class="status">theory</span></h3>
+      <h3>Q3. The runner-up principle <span class="status">theorem in hand</span></h3>
       <p>
-        In many settings the simulation reveals only the winner &mdash; the pathway taken,
-        the bond that broke &mdash; and perhaps the winning time. What is identifiable about
-        the latent field from winner-only data? How much does observing the winning margin
-        (photo finish vs blowout) add? This is the order-statistics inverse problem
-        underlying the ability transform, now with censoring appropriate to physics rather
-        than to betting markets.
+        Winner-only data does <em>not</em> identify deletion counterfactuals &mdash; and
+        the failure is exact, not statistical. After scratching $i$,
+        $q_j^{(-i)} = p_j + p_i M_{ij}$ where $M_{ij} = P(\pi_2 = j \mid \pi_1 = i)$ is
+        <em>completely unconstrained</em> by the winner probabilities $p$: any
+        row-stochastic redistribution is consistent. This is the finite-choice face of
+        classical competing-risks nonidentifiability, and it reframes experiment 1: no
+        model &mdash; independent or otherwise &mdash; can learn substitution structure
+        from an $N$-vector. The data hierarchy: winner-only (bounds only) &rarr; +winning
+        time &rarr; <strong>+runner-up identity</strong> (identifies every singleton
+        scratch) &rarr; top-$(k{+}1)$ ranking ($k$-deletions) &rarr; observed blocked-set
+        interventions. The runner-up is worth more than the winning margin. The
+        independent inversion is then honestly described as a <em>canonical completion</em>
+        of $p$ into a ranking model, validated only by held-out interventions &mdash;
+        which is exactly how experiment 3 earned its correlations (geometry supplied the
+        structure; a held-out intervention calibrated it). Next experiment: <em>ranked
+        narrow escape</em> &mdash; record window <em>encounter sequences</em> of a
+        reflected trajectory, so one trajectory answers every blocked-set counterfactual.
       </p>
     </div>
 
@@ -133,7 +157,42 @@
         and the exp03 counterfactual reproduced with <em>no Monte Carlo anywhere</em>
         (TV 0.017 vs 0.082 for IIA). Remaining open: kinked (Markov) kernels at large
         $N$ want sequential/Vecchia-style conditioning rather than global factors
-        &mdash; the same Schur machinery from the other end.
+        &mdash; the same Schur machinery from the other end. One caution from the
+        <a href="./semantics.html">semantics page</a>: this composition conditions on
+        latent <em>factors</em> and scratches <em>competitors</em>; it is not a claim
+        that scratching itself invokes a Schur complement. And one immediate export:
+        the correlated re-race step of <em>Thurstone portfolios</em> (long-only weights
+        as winning probabilities, currently priced by sampling) can use this transform
+        directly &mdash; equity risk models already arrive in $VV^\top + D$ form, and
+        the deletion ensemble prices every single-name exclusion from one pass.
+      </p>
+    </div>
+
+    <div class="question-card">
+      <h3>Q7. Softmax as homogenized kinetics <span class="status">flagship</span></h3>
+      <p>
+        The deepest reframing: model the race as channels firing at intensities
+        $\lambda_i(Y_t)$ driven by a <em>fast hidden Markov state</em> $Y$ with generator
+        $\mathcal{L}/\varepsilon$. Conditional on $Y$ it is ordinary KMC; marginally the
+        waiting times are dependent and non-exponential; the win probability solves a
+        killed-resolvent equation $u_i^A = (\Lambda_A - \mathcal{L}/\varepsilon)^{-1}
+        \lambda_i$. Homogenizing: at leading order $p_i^A = \bar\lambda_i / \bar\Lambda_A
+        + O(\varepsilon)$ &mdash; <strong>softmax is the homogenized choice law of fast
+        hidden kinetics</strong> &mdash; and the first correction is a
+        <strong>Green&ndash;Kubo</strong> term built from integrated rate
+        autocovariances $K_{jk} = \int_0^\infty \mathrm{Cov}_\pi(\lambda_j(Y_0),
+        \lambda_k(Y_t))\,dt$. The same $(\bar\lambda, K)$ answers <em>every</em>
+        blocked-set counterfactual by restricting sums to the survivors &mdash; the true
+        statistical analogue of &ldquo;one global computation encodes all
+        deletions&rdquo;; common-mode fluctuations cancel exactly; low-rank environmental
+        loadings give $K = B\Gamma B^\top$, a compressed correlated race with physical
+        provenance. Prove it first for finite-state chains, then reversible diffusions;
+        narrow escape (where the disk&apos;s boundary operator diagonalizes in Fourier
+        modes) is the analytic testbed. Target paper: <em>Softmax from Fast Mixing:
+        Green&ndash;Kubo Corrections for Counterfactual Races</em>. The unifying object
+        across Q6/Q7 and the quadratic side is then a <em>transfer resolvent</em> &mdash;
+        $(\Lambda_A - \varepsilon^{-1}\mathcal{L})^{-1}$, $(I - M_{BB})^{-1}$, $A^{-1}$
+        &mdash; whose response to suppression is Schur/Woodbury theory.
       </p>
     </div>
 

@@ -21,7 +21,19 @@ then a downdate.
 **Point.** "One global inverse is a compressed representation of an enormous family of
 defect systems" is not just an identity: the entire single-defect ensemble and a large
 sample of the pair-defect ensemble of a physical model were computed in under 50 ms
-after one solve. This is program Q1/Q4 in miniature; the open question is how far the
-harmonic downdate tracks relaxed (anharmonic) defect calculations.
+after one solve. This is program Q1/Q4 in miniature.
+
+**Semantics caveat (added after review).** What this experiment computes is **pinning**
+(clamping a degree of freedom — a principal submatrix of the Hessian, i.e., a
+conditional). A physical *vacancy* is a different intervention: all incident bonds are
+removed (a small-rank Woodbury update, H′ = H − Σ k·vvᵀ) and the neighborhood then
+*relaxes*, generally anharmonically. See the site's
+[semantics of deletion](https://kinetics.microprediction.org/semantics.html). The
+rank-one/Woodbury identities themselves are classical (fracture codes already use
+SMW + sparse Cholesky downdates); the publishable question is whether the cheap
+harmonic cavity can *screen* expensive relaxed nonlinear defect calculations — top-K
+recall and saved relaxation calls against a fully minimized benchmark, with vector
+(2D/3D) elasticity rather than a scalar Laplacian. That is the target of the planned
+*Harmonic Cavity Screening for Relaxed Defects* paper.
 
 Run: `python run_glass_cavity.py` (~10 s, numpy/matplotlib only).

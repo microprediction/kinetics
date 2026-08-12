@@ -13,11 +13,16 @@ proportionally — see `figures/redistribution.png`). But the independent Gaussi
 Thurstone race does **not** capture this either: both surrogates converge to essentially
 the same error floor (Harville 0.081, Thurstone 0.085 at R = 30,000; `results.csv`).
 
-**Interpretation.** The IIA violation in diffusive kinetics is *geometric* — it lives in
-the correlation structure of the race (walkers rejected by one window are absorbed
-nearby), not in the ability gaps that an independent race can bend. This is direct
-motivation for program question Q6: a fast ability transform for **correlated** fields,
-combining the multiplicative cavity (extremal structure) with the Schur/rank-one cavity
-(coupling).
+**Interpretation (sharpened after review).** The deeper reading is an identifiability
+fact, not a modeling gap: full-menu winner frequencies are an N-vector and *cannot*
+contain the N×N substitution structure — after scratching i, the redistribution
+q_j^(−i) = p_j + p_i·M_ij involves a runner-up kernel M that winner-only data leaves
+completely unconstrained (program Q3, the runner-up principle). So the result here is
+that **winner-only observation of this physics does not reveal its geometric
+substitution structure**; no model could have recovered it from p alone. Experiment 3
+supplies the structure from geometry and calibrates it on a held-out *intervention* —
+exactly the extra data the identifiability hierarchy demands. A stronger follow-up is
+*ranked narrow escape*: record the sequence of window encounters of a reflected
+trajectory, so one trajectory answers every blocked-set counterfactual.
 
 Run: `python run_narrow_escape.py` (~40 s, numpy/scipy/matplotlib only).

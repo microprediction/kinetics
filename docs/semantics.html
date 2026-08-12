@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kinetic Surrogates &mdash; Semantics of Deletion</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-inner">
+      <a class="brand" href="./index.html">kinetics</a>
+      <nav>
+        <a href="./intro.html">Introduction</a>
+        <a href="./semantics.html">Deletion semantics</a>
+        <a href="./program.html">Research program</a>
+        <a href="./applications.html">Applications</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./implementations.html">Implementations</a>
+        <a href="https://github.com/microprediction/kinetics">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="pagenav"><a href="./index.html">&larr; Home</a></p>
+    <h1>The semantics of deletion</h1>
+    <p class="subtitle">&ldquo;Remove component $i$&rdquo; means different things in
+    different fields &mdash; and the two cavity identities answer <em>different</em>
+    removal questions.</p>
+
+    <p class="lead">
+      The algebraic similarity between the multiplicative cavity (divide out a survival
+      function) and the rank-one Schur cavity (subtract a mediated interaction) is what
+      started this project. But similarity of formulas can obscure the physical
+      question: the interventions they price are not the same. This page fixes the
+      vocabulary used across the site.
+    </p>
+
+    <h2>Marginal vs conditional</h2>
+    <p>Let the latent performances be jointly Gaussian, $X \sim N(\mu, \Sigma)$.</p>
+    <div class="table-wrap">
+      <table class="impl">
+        <thead>
+          <tr><th>Intervention</th><th>Surviving distribution</th><th>Which cavity</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Scratch competitor $i$</td>
+            <td class="mode">the <strong>marginal</strong>: $X_{-i} \sim N(\mu_{-i},\,
+              \Sigma_{-i,-i})$ &mdash; the covariance is simply the submatrix</td>
+            <td class="mode">multiplicative (races)</td>
+          </tr>
+          <tr>
+            <td>Pin / condition $X_i = c$</td>
+            <td class="mode">the <strong>conditional</strong>:
+              $\Sigma_{-i,-i} - \Sigma_{-i,i}\,\Sigma_{ii}^{-1}\,\Sigma_{i,-i}$</td>
+            <td class="mode">Schur / rank-one</td>
+          </tr>
+          <tr>
+            <td>Delete a coordinate of the precision $A = \Sigma^{-1}$</td>
+            <td class="mode">$\left(A_{-i,-i}\right)^{-1}$ &mdash; equal to the
+              conditional covariance above</td>
+            <td class="mode">Schur / rank-one</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      <strong>Scratching uses a marginal; Schur uses a conditional.</strong> A
+      correlated race does not automatically invoke a Schur complement when a
+      competitor is scratched &mdash; the field simply loses a coordinate, correlations
+      among survivors unchanged. The Schur complement enters when the intervention
+      <em>pins, conditions, or re-equilibrates</em> the field. The
+      <a href="https://github.com/microprediction/kinetics/tree/main/experiments/exp06_fast_correlated_transform">fast
+      correlated transform</a> combines the identities in the legitimate way:
+      conditioning on latent <em>factors</em> (Schur side), then scratching within the
+      conditionally independent race (multiplicative side).
+    </p>
+
+    <h2>The zoo of removals</h2>
+    <ul>
+      <li><strong>Scratch a candidate</strong> &mdash; a competitor leaves the race;
+        survivors' joint law is the marginal. (Experiments 1, 3, 6.)</li>
+      <li><strong>Suppress a hazard</strong> &mdash; a transition channel's intensity is
+        removed from the total; the background dynamics continue unchanged. (The
+        blocked-window counterfactual, read kinetically.)</li>
+      <li><strong>Pin a coordinate</strong> &mdash; a degree of freedom is clamped;
+        the rest re-equilibrate around the constraint. This is what
+        <a href="https://github.com/microprediction/kinetics/tree/main/experiments/exp02_glass_cavity">experiment
+        2</a> computes (its source says &ldquo;pinning&rdquo; deliberately).</li>
+      <li><strong>Remove bonds</strong> &mdash; a physical spring/edge disappears:
+        $H' = H - k\,vv^\top$, a Woodbury update, not a principal submatrix.</li>
+      <li><strong>Remove a material site (vacancy)</strong> &mdash; all incident bonds
+        vanish (small-rank block update) and the neighborhood <em>relaxes</em>,
+        generally anharmonically.</li>
+      <li><strong>Recompute the background</strong> &mdash; the intervention changes
+        the environment that generates the rates (temperature, stress); nothing above
+        applies directly. (Experiments 4&ndash;5 showed this axis is orthogonal.)</li>
+    </ul>
+    <p>
+      Each row of this list is a different physical question with a different cheap
+      identity (submatrix, Schur complement, Woodbury, block downdate) or none at all.
+      Claims on this site name the intervention explicitly.
+    </p>
+
+    <div class="next-steps">
+      <p>
+        Back to the <a href="./intro.html">introduction</a>, or on to the
+        <a href="./program.html">research program</a>, where the flagship question is
+        now the shared-state race whose homogenized limit is softmax.
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/kinetics">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

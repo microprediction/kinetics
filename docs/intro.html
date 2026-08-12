@@ -16,6 +16,7 @@
       <a class="brand" href="./index.html">kinetics</a>
       <nav>
         <a href="./intro.html">Introduction</a>
+        <a href="./semantics.html">Deletion semantics</a>
         <a href="./program.html">Research program</a>
         <a href="./applications.html">Applications</a>
         <a href="./papers.html">Papers</a>
@@ -63,17 +64,24 @@
     </p>
     <ul>
       <li>
-        <strong>Exponential clocks.</strong> If $X_i \sim \text{Exp}(k_i)$ then
-        $p_i = k_i / \sum_j k_j$ &mdash; the Luce/Harville formula, and precisely the
-        transition rule of kinetic Monte Carlo. Exponential races have the IIA property:
-        deleting a competitor rescales everyone else&apos;s odds proportionally.
+        <strong>Proportional hazards &rArr; Luce.</strong> If $X_i \sim \text{Exp}(k_i)$
+        then $p_i = k_i / \sum_j k_j$ &mdash; the Luce/Harville formula, and precisely
+        the transition rule of kinetic Monte Carlo. But exponentiality is sufficient,
+        <em>not necessary</em>: with cumulative hazards $H_i(t) = a_i H_0(t)$ for
+        <em>any</em> common baseline $H_0$, the win probability is exactly
+        $a_i / \sum_j a_j$. An arbitrary common time change of exponential clocks still
+        gives Luce, and deleting a competitor still rescales the others proportionally
+        (IIA).
       </li>
       <li>
-        <strong>Gaussian (or arbitrary) noise.</strong> Real kinetics is rarely memoryless.
-        Correlated barriers, dynamical caging, and non-exponential waiting times all break
-        IIA: removing one channel does <em>not</em> rescale the others proportionally. The
-        Thurstone race with a general base density is the tractable model that captures
-        this.
+        <strong>What actually breaks IIA.</strong> Not non-exponentiality per se, but
+        <em>differential</em> structure: channels with different hazard shapes, history
+        dependence, statistical dependence, or different loadings on a shared
+        environment. A common perturbation of all hazards cancels exactly at first
+        order. The Thurstone race with a general base density is one tractable model of
+        differential shape; correlated races model shared-environment loadings
+        (<a href="./semantics.html">deletion semantics</a> explains which removal
+        question each answers).
       </li>
     </ul>
     <p>

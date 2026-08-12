@@ -34,8 +34,16 @@ independent surrogates fail. The optimum is broad (ℓ ∈ [0.8, 3.2] all beat i
 races by ≥ 7×), consistent with the long-ranged (algebraic) correlations of harmonic
 measure in a disk.
 
-**Status of Q6.** Promoted from speculative to *first positive result*. Open: a fast
-(non-Monte-Carlo) transform for correlated fields — the multiplicative cavity no longer
-factorizes, which is precisely where the rank-one/Gaussian cavity should re-enter.
+**Status of Q6.** Promoted from speculative to *first positive result*. The fast
+(non-Monte-Carlo) transform was subsequently built in
+[exp06](../exp06_fast_correlated_transform).
+
+**Framing note (added after review).** This experiment is consistent with the
+winner-only nonidentifiability theorem (program Q3): the correlation structure was not
+*learned* from the winner frequencies — it cannot be — but **supplied** by geometry
+(window positions) up to one scalar ℓ, which was calibrated on a held-out
+*intervention*. Interventional (blocked-set) data is exactly what the identifiability
+hierarchy says is needed. The success here measures the value of a good structural
+prior plus one intervention, not extraction of substitution structure from p.
 
 Run: `python run_correlated_race.py` (~3 min, numpy/scipy/matplotlib only).
