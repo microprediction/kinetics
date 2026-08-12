@@ -56,8 +56,16 @@ Status: outline. Sections graduate to LaTeX once the corresponding experiment ex
   under global parameter shifts. Deletion and transfer are orthogonal failure axes;
   transfer stresses the ability-scaling law (prefactors, effective barriers), not the
   copula. [Q6 × Q2]
-- 5.6 Winner-only identifiability; value of the winning margin. [Q3, open]
-- 5.7 Watermark races: context-conditioned race likelihood vs green-count detection
+- 5.6 exp06 fast transform for correlated fields: Σ ≈ VVᵀ + D (iterated factor
+  analysis), multiplicative cavity applied conditionally at GH/Sobol nodes — the two
+  identities compose. Exact given the model (2.8e-4 vs 8M MC); error tracks factor
+  residual (7.5e-4 at k=8, kinked kernel); deletion ensemble from one pass (1e-16);
+  exp03 counterfactual reproduced with no MC (TV 0.017 vs 0.082 IIA). Traps: naive
+  eigen-truncation invents correlation; geodesic SE kernels not PSD on the circle.
+  Open: Markov kernels at large N want Vecchia-style sequential conditioning.
+  Relation to thurstone: multiray with the ray coordinate integrated out. [Q6]
+- 5.7 Winner-only identifiability; value of the winning margin. [Q3, open]
+- 5.8 Watermark races: context-conditioned race likelihood vs green-count detection
   (watermark_races/, queued — an "extremal observation" inference problem with fully
   known ground truth; doubles as a stress test of the truncated-field fast transform
   at vocabulary scale). [Q2/Q3 adjacent]

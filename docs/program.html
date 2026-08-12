@@ -124,10 +124,16 @@
         3</a> a geometry-informed correlated race, with corr$(i,j) = e^{-d_{ij}/\ell}$ and
         $\ell$ calibrated on a held-out intervention, cuts the counterfactual error
         <strong>~9&times;</strong> (TV 0.009 vs 0.081), to the simulation noise floor.
-        What remains open is the <em>fast transform</em> for correlated fields: experiment
-        3 prices the race by Monte Carlo; the multiplicative cavity no longer factorizes
-        under correlation, which is precisely where the Gaussian/Schur cavity should
-        re-enter.
+        The <em>fast transform</em> for correlated fields now exists
+        (<a href="https://github.com/microprediction/kinetics/tree/main/experiments/exp06_fast_correlated_transform">experiment
+        6</a>): fit $\Sigma \approx VV^\top + D$ by factor analysis; conditionally on the
+        factors the competitors are independent, so the multiplicative cavity applies at
+        every quadrature node &mdash; the two identities literally compose. Exact given
+        the factor model, the deletion ensemble intact (1e-16 agreement from one pass),
+        and the exp03 counterfactual reproduced with <em>no Monte Carlo anywhere</em>
+        (TV 0.017 vs 0.082 for IIA). Remaining open: kinked (Markov) kernels at large
+        $N$ want sequential/Vecchia-style conditioning rather than global factors
+        &mdash; the same Schur machinery from the other end.
       </p>
     </div>
 
