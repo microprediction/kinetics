@@ -36,13 +36,26 @@ Status: outline. Sections graduate to LaTeX once the corresponding experiment ex
 
 - 5.1 Identity verification and timings (experiments/cavity_downdate_demo.py,
   experiments/race_field_demo.py).
-- 5.2 Synthetic KMC: Thurstone surrogate vs Harville surrogate on counterfactual races
-  (channels blocked/merged) under non-exponential waiting times. [Q2]
-- 5.3 Winner-only identifiability; value of the winning margin. [Q3]
-- 5.4 Watermark races: context-conditioned race likelihood vs green-count detection
-  (watermark_races/ — an "extremal observation" inference problem with fully known ground
-  truth; doubles as a stress test of the truncated-field fast transform at vocabulary
-  scale). [Q2/Q3 adjacent]
+- 5.2 exp01 Brownian narrow escape (real first-passage physics): blocking windows
+  redistributes flux to geometric neighbors; TV(truth, IIA) = 0.082, and neither
+  Harville nor independent Thurstone captures it — the IIA violation is correlational,
+  not marginal. [Q2 → motivates Q6]
+- 5.3 exp02 disordered elastic network: full single-defect ensemble from one inverse
+  (~870×, 9 ms/784 sites); 4k pair interactions from 2×2 downdates in 35 ms;
+  exponential screening recovered. [Q1/Q4]
+- 5.4 exp03 correlated race (geometry-informed corr(i,j) = exp(−d_ij/ℓ), ℓ calibrated
+  on a held-out intervention): first working correlated-race surrogate; ~9× error
+  reduction (TV 0.009 vs 0.081) on the narrow-escape counterfactual, at the simulation
+  noise floor. Fitting caveat: correlation-aware step required (effective pairwise
+  noise variance 2(1−ρ)σ²). [Q6 — first positive result]
+- 5.5 exp04 Kramers escape, temperature transfer kT 1.0 → {0.7, 0.55}: both
+  Arrhenius-scaled surrogates beat no-transfer; noise-law difference (Gumbel vs
+  Gaussian) second-order at moderate steps. [Q2, chemistry]
+- 5.6 Winner-only identifiability; value of the winning margin. [Q3, open]
+- 5.7 Watermark races: context-conditioned race likelihood vs green-count detection
+  (watermark_races/, queued — an "extremal observation" inference problem with fully
+  known ground truth; doubles as a stress test of the truncated-field fast transform
+  at vocabulary scale). [Q2/Q3 adjacent]
 
 ## 6. Discussion
 

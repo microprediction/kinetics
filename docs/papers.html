@@ -57,13 +57,25 @@
         numerical evidence on synthetic kinetic Monte Carlo.</em>
       </li>
       <li>
-        <em>First-Passage Surrogates and the Limits of Independent Races</em> &mdash;
-        experiment complete, note in preparation. Code and figures in
-        <a href="https://github.com/microprediction/kinetics/tree/main/experiments/exp01_narrow_escape">exp01_narrow_escape</a>.
+        <em>Correlated Races for First-Passage Kinetics</em> &mdash; experiments
+        complete, note in preparation. Code and figures in
+        <a href="https://github.com/microprediction/kinetics/tree/main/experiments/exp01_narrow_escape">exp01</a>
+        and
+        <a href="https://github.com/microprediction/kinetics/tree/main/experiments/exp03_correlated_race">exp03</a>.
         <em>Brownian narrow-escape simulation: blocking absorbing windows redistributes
-        flux to geometric neighbors (TV 0.08 from proportional), an IIA violation that
-        neither the Harville nor the independent Thurstone surrogate captures &mdash;
-        direct evidence that correlated races (Q6) are the missing object.</em>
+        flux to geometric neighbors (TV 0.08 from proportional), an IIA violation no
+        independent race captures &mdash; but a geometry-informed correlated race, with
+        correlation length calibrated on a held-out intervention, predicts the
+        redistribution to the simulation noise floor (TV 0.009, a ~9&times; error
+        reduction).</em>
+      </li>
+      <li>
+        <em>Temperature Transfer of Kinetic Surrogates</em> &mdash; experiment complete.
+        Code and figures in
+        <a href="https://github.com/microprediction/kinetics/tree/main/experiments/exp04_kramers_transfer">exp04_kramers_transfer</a>.
+        <em>Langevin barrier-crossing with 12 disordered channels: Arrhenius rescaling
+        halves the transfer error at kT 1.0&rarr;0.7 and &rarr;0.55; the noise law
+        (Gumbel vs Gaussian) is second-order; the residual is correlational.</em>
       </li>
       <li>
         <em>The Compressed Defect Ensemble of a Disordered Elastic Network</em> &mdash;

@@ -137,17 +137,29 @@
 
     <h2>Status</h2>
     <p>
-      This is an exploratory research repository. The
-      <a href="https://github.com/microprediction/kinetics/tree/main/experiments">experiments
-      directory</a> contains, so far: numpy verifications of both identities with timings;
-      a <strong>real first-passage simulation</strong> (Brownian narrow escape) showing
-      that diffusive kinetics violates IIA geometrically in a way neither the exponential
-      nor the independent Thurstone surrogate captures &mdash; pointing at correlated
-      races (Q6 of the <a href="./program.html">program</a>); and a <strong>disordered
-      elastic network</strong> whose entire single-defect ensemble (784 sites, ~870&times;
-      speedup) and 4,000 pair-defect interactions were computed from one inverse in under
-      50&nbsp;ms. The <a href="./applications.html">applications page</a> ranks the
-      domains to try next.
+      This is an exploratory research repository with four experiments run so far
+      (<a href="https://github.com/microprediction/kinetics/tree/main/experiments">experiments
+      directory</a>), all against real simulated physics:
+    </p>
+    <ul>
+      <li><strong>Narrow escape</strong> (Brownian first passage): diffusive kinetics
+        violates IIA geometrically &mdash; blocked flux is inherited by neighboring
+        windows &mdash; and <em>no independent race</em>, exponential or Thurstone,
+        captures it.</li>
+      <li><strong>Correlated race</strong>: a geometry-informed correlation
+        corr$(i,j)=e^{-d_{ij}/\ell}$, with $\ell$ calibrated on a held-out intervention,
+        cuts the counterfactual error <strong>~9&times;</strong> (TV 0.009 vs 0.081) &mdash;
+        the first positive result for Q6 of the <a href="./program.html">program</a>.</li>
+      <li><strong>Disordered elastic network</strong>: the entire single-defect ensemble
+        (784 sites, ~870&times; speedup) and 4,000 pair-defect interactions from one
+        inverse in under 50&nbsp;ms.</li>
+      <li><strong>Kramers temperature transfer</strong>: Arrhenius rescaling halves the
+        transfer error at kT $1.0 \to 0.7$ and $\to 0.55$; the noise law is second-order,
+        and the residual is again correlational.</li>
+    </ul>
+    <p>
+      The <a href="./applications.html">applications page</a> ranks the domains to try
+      next.
     </p>
 
     <h2>Further reading</h2>
