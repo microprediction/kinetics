@@ -20,10 +20,11 @@ noise: abilities rescale by kT₁/kT₂, Gaussian race re-priced). Baseline: no 
 **Interpretation.** Arrhenius rescaling is what matters: both surrogates cut the
 transfer error roughly in half, at both extrapolation depths. The noise law (Gumbel-like
 vs Gaussian) is second-order — indistinguishable even at the deep step. The residual
-error (0.034 at kT = 0.55, ~4× the sampling noise) is the part *neither* independent
-race captures: angular mixing lets a particle engaged with one channel cross at a
-neighbor, correlating adjacent channels — the same correlational physics as experiments
-1 and 3. A natural follow-up is the geometry-informed correlated race of experiment 3
-applied to this transfer problem.
+error (0.034 at kT = 0.55, ~4× the sampling noise) was initially attributed to
+channel-mixing correlation, but **experiment 5 tested that and found it false**: a
+geometry-informed correlated race leaves the transfer error unchanged. The remaining
+suspects are the transfer law itself — temperature-dependent Kramers prefactors, and
+effective barrier heights that shift with kT as the particle samples the smoothed
+angular barrier profile.
 
 Run: `python run_kramers_transfer.py` (~90 s, numpy/scipy/matplotlib only).

@@ -50,7 +50,12 @@ Status: outline. Sections graduate to LaTeX once the corresponding experiment ex
   noise variance 2(1−ρ)σ²). [Q6 — first positive result]
 - 5.5 exp04 Kramers escape, temperature transfer kT 1.0 → {0.7, 0.55}: both
   Arrhenius-scaled surrogates beat no-transfer; noise-law difference (Gumbel vs
-  Gaussian) second-order at moderate steps. [Q2, chemistry]
+  Gaussian) second-order at both depths. [Q2, chemistry]
+- 5.5b exp05 correlated race × transfer: informative negative — TV flat in ℓ;
+  correlation moves win probs under structural (deletion) counterfactuals but cancels
+  under global parameter shifts. Deletion and transfer are orthogonal failure axes;
+  transfer stresses the ability-scaling law (prefactors, effective barriers), not the
+  copula. [Q6 × Q2]
 - 5.6 Winner-only identifiability; value of the winning margin. [Q3, open]
 - 5.7 Watermark races: context-conditioned race likelihood vs green-count detection
   (watermark_races/, queued — an "extremal observation" inference problem with fully
