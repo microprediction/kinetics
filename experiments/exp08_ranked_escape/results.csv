@@ -1,0 +1,13 @@
+block_size,model,mean_tv,max_tv
+1,Harville (winner only),0.038072,0.052327
+2,Harville (winner only),0.056962,0.073564
+3,Harville (winner only),0.069003,0.095724
+1,indep. Thurstone (winner only),0.038010,0.052757
+2,indep. Thurstone (winner only),0.056193,0.072510
+3,indep. Thurstone (winner only),0.067697,0.096607
+1,Markov M (winner+runner-up),0.015424,0.018750
+2,Markov M (winner+runner-up),0.015426,0.019313
+3,Markov M (winner+runner-up),0.015950,0.019472
+1,top-4 prefixes,0.015424,0.018750
+2,top-4 prefixes,0.015368,0.018667
+3,top-4 prefixes,0.015681,0.019417
