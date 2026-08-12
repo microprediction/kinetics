@@ -173,7 +173,7 @@
     </div>
 
     <div class="question-card">
-      <h3>Q7. Softmax as homogenized kinetics <span class="status">theorem verified</span></h3>
+      <h3>Q7. Softmax as homogenized kinetics <span class="status">verified: chains + continuum</span></h3>
       <p>
         The deepest reframing: model the race as channels firing at intensities
         $\lambda_i(Y_t)$ driven by a <em>fast hidden Markov state</em> $Y$ with generator
@@ -190,9 +190,15 @@
         statistical analogue of &ldquo;one global computation encodes all
         deletions&rdquo;; common-mode fluctuations cancel exactly; low-rank environmental
         loadings give $K = B\Gamma B^\top$, a compressed correlated race with physical
-        provenance. <strong>Verified exactly on finite-state chains</strong> in <a href="https://github.com/microprediction/kinetics/tree/main/experiments/exp07_green_kubo">experiment 7</a>: convergence slopes 0.99/1.99 (theory 1/2), one $(\bar\lambda, K)$ pair corrects all 41 tested blocked subsets, rank-$r$ loadings give rank-$r$ $K$ exactly, and common-mode fluctuation gives Luce exactly at every $\varepsilon$ (it is a common time change) &mdash; stronger than the theorem. Next: reversible diffusions;
-        narrow escape (where the disk&apos;s boundary operator diagonalizes in Fourier
-        modes) is the analytic testbed. Target paper: <em>Softmax from Fast Mixing:
+        provenance. <strong>Verified exactly on finite-state chains</strong> in <a href="https://github.com/microprediction/kinetics/tree/main/experiments/exp07_green_kubo">experiment 7</a>: convergence slopes 0.99/1.99 (theory 1/2), one $(\bar\lambda, K)$ pair corrects all 41 tested blocked subsets, rank-$r$ loadings give rank-$r$ $K$ exactly, and common-mode fluctuation gives Luce exactly at every $\varepsilon$ (it is a common time change) &mdash; stronger than the theorem. And verified on <strong>continuous physics</strong> in
+        <a href="https://github.com/microprediction/kinetics/tree/main/experiments/exp09_gk_narrow_escape">experiment
+        9</a>: reflected Brownian motion in the disk with Robin reaction windows &mdash;
+        theorem slopes 0.93/1.93 on the discretized generator, and the real Brownian
+        simulation agrees with the discretized model at the Monte-Carlo noise floor
+        (after two systematics that the three-layer design caught: band quantization
+        and window-overlap semantics). Next: the Fourier analytics of the disk&apos;s
+        boundary operator, and predicting exp08&apos;s substitution kernel from the
+        Green&ndash;Kubo side. Target paper: <em>Softmax from Fast Mixing:
         Green&ndash;Kubo Corrections for Counterfactual Races</em>. The unifying object
         across Q6/Q7 and the quadratic side is then a <em>transfer resolvent</em> &mdash;
         $(\Lambda_A - \varepsilon^{-1}\mathcal{L})^{-1}$, $(I - M_{BB})^{-1}$, $A^{-1}$

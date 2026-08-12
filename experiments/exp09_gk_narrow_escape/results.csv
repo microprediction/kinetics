@@ -1,0 +1,15 @@
+kappa,layer,max_abs_err
+2.0,exact_vs_softmax,1.559e-03
+2.0,exact_vs_gk,4.990e-05
+5.0,exact_vs_softmax,3.724e-03
+5.0,exact_vs_gk,2.975e-04
+10.0,exact_vs_softmax,6.938e-03
+10.0,exact_vs_gk,1.105e-03
+20.0,exact_vs_softmax,1.221e-02
+20.0,exact_vs_gk,3.876e-03
+40.0,exact_vs_softmax,1.971e-02
+40.0,exact_vs_gk,1.246e-02
+,softmax_slope,0.929
+,gk_slope,1.926
+5.0,sim_vs_exact,2.221e-03
+20.0,sim_vs_exact,1.572e-03
