@@ -1,0 +1,8 @@
+part,quantity,value
+1,softmax_slope,0.9846
+2,gk_slope,1.9847
+3,max_softmax_err,2.763e-03
+3,max_gk_err,3.990e-04
+4,common_mode_gk_coeff,2.637e-16
+5,K_rank,2
+6,gillespie_err,1.944e-03
