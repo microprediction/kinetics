@@ -116,7 +116,7 @@
     </div>
 
     <div class="question-card">
-      <h3>Q4. Leave-$k$-out: the compressed defect ensemble <span class="status">extension</span></h3>
+      <h3>Q4. Leave-$k$-out: the compressed defect ensemble <span class="status">screening validated</span></h3>
       <p>
         The identity $G^{(S)} = G_{\bar S,\bar S} - G_{\bar S,S} G_{S,S}^{-1} G_{S,\bar S}$
         prices every small deletion cluster at a $k \times k$ inversion. Defect pairs and
@@ -124,7 +124,14 @@
         are the physically interesting objects. How far does the compressed representation
         reach before conditioning or fill-in erodes the advantage, and can the ensemble of
         all $\binom{n}{2}$ pair deletions be screened lazily (compute the cheap scalar first,
-        expand only promising pairs)?
+        expand only promising pairs)? <strong>First screening validation</strong> in
+        <a href="https://github.com/microprediction/kinetics/tree/main/experiments/exp11_vacancy_screening">experiment
+        11</a>: on a pre-stressed vector elastic network with true vacancy semantics
+        (Woodbury bond removal, not pinning) and fully relaxed anharmonic ground truth,
+        the one-inverse harmonic estimate ranks all ~360 vacancies in 9&nbsp;ms and
+        recovers the true top-20 perfectly through moderate frustration, degrading
+        gracefully (recall 0.85/0.70) as anharmonicity grows &mdash; at 7.9&times;
+        less compute. The breakdown curve is the deliverable.
       </p>
     </div>
 
