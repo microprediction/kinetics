@@ -34,12 +34,16 @@ solves, total. Evaluated against 24k reflecting-trajectory encounter sequences
 3. **Two kernels, not one** (a Paper 2 point): the stationary encounter chain differs
    from the first-transition kernel by up to 0.21, and the counterfactual wants the
    latter — using all consecutive pairs *degrades* multi-block prediction.
-4. **Where geometry and data disagree** (|M_geo − M_emp| up to 0.27) is entirely on
-   **adjacent-window entries** (non-adjacent: 0.037, exactly the start-sensitivity
-   bound). Adjacent transitions depend on the encounter-position profile *within* the
-   window, which the π-weighted ring start cannot represent. This is the identified
-   next-order refinement: solve for the encounter position profile (harmonic measure
-   on the window) rather than assuming uniformity.
+4. **Correction after further diagnosis.** An earlier version of this README
+   attributed a 0.27 geometry-vs-data disagreement to the encounter-position profile.
+   That 0.27 was geometry vs the *stationary-chain* kernel — i.e., mostly finding 3.
+   Against the correct (first-transition) kernel, geometry is within **0.070**; and
+   computing the entry profile *exactly* (a two-leg hitting problem, no assumption)
+   moves M by only 0.015 and prediction not at all — a **null result** for the
+   profile refinement. The remaining residual is concentrated on adjacent entries
+   and is statistically marginal (max z = 4.0 across 240 entries, none above; the
+   plausible mechanism is ring-entry vs boundary-contact blur of ~one cell depth).
+   Geometry, done right, agrees with the data essentially to measurement precision.
 
 Tests: `tests/test_green_function_M.py` (disjointness, generator invariants, splits
 sum to one and order by window size, symmetric-window 50/50).

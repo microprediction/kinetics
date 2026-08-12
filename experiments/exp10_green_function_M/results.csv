@@ -8,12 +8,16 @@ block_size,model,mean_tv,max_tv
 1,empirical M (all pairs),0.024004,0.028285
 2,empirical M (all pairs),0.025774,0.032017
 3,empirical M (all pairs),0.029788,0.040161
-1,hybrid: trajectory p + geometric M,0.022059,0.025779
-2,hybrid: trajectory p + geometric M,0.020069,0.025289
-3,hybrid: trajectory p + geometric M,0.018422,0.022865
-1,pure geometry (p_geo + M_geo),0.032167,0.036086
-2,pure geometry (p_geo + M_geo),0.029849,0.035351
-3,pure geometry (p_geo + M_geo),0.027598,0.032857
+1,hybrid: traj. p + M_geo (ring start),0.022059,0.025779
+2,hybrid: traj. p + M_geo (ring start),0.020069,0.025289
+3,hybrid: traj. p + M_geo (ring start),0.018422,0.022865
+1,hybrid: traj. p + M_geo (entry profile),0.022115,0.025813
+2,hybrid: traj. p + M_geo (entry profile),0.020111,0.025323
+3,hybrid: traj. p + M_geo (entry profile),0.018486,0.022638
+1,pure geometry (p_geo + M_prof),0.032178,0.036083
+2,pure geometry (p_geo + M_prof),0.029938,0.035375
+3,pure geometry (p_geo + M_prof),0.027708,0.033331
 ,p_geo_vs_p_hat,0.012267
-,M_geo_vs_M_emp,0.269845
-,M_start_sensitivity,0.037360
+,M_geo_vs_M_first,0.069616
+,M_prof_vs_M_first,0.064905
+,ring_vs_profile,0.014640

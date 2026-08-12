@@ -155,22 +155,28 @@ def main():
     assert abs(p_geo.sum() - 1.0) < 1e-8
     p_geo /= p_geo.sum()
 
-    M_geo = np.zeros((N_W, N_W))
-    M_geo_band = np.zeros((N_W, N_W))
+    # exact ENTRY PROFILE: probability of first arriving at window i via cell e
+    # (start = center). No start-profile assumption: the first-transition kernel
+    # is a two-leg hitting problem, computed exactly on the grid.
+    cell_groups = [np.array([c]) for ring in rings for c in ring]
+    owner = np.concatenate([[i] * len(ring) for i, ring in enumerate(rings)])
+    phi = hitting_splits(Lg, center_start, cell_groups)
+    assert abs(phi.sum() - 1.0) < 1e-8
+
+    M_geo = np.zeros((N_W, N_W))          # uniform-ring start (the naive choice)
+    M_prof = np.zeros((N_W, N_W))         # exact entry-profile start
     for i in range(N_W):
         others = [rings[j] for j in range(N_W) if j != i]
-        start = np.zeros(n); start[rings[i]] = pi[rings[i]]       # boundary-ring start
+        start = np.zeros(n); start[rings[i]] = pi[rings[i]]
         row = hitting_splits(Lg, start, others)
-        assert abs(row.sum() - 1.0) < 1e-8
         M_geo[i, np.arange(N_W) != i] = row / row.sum()
-        # start-sensitivity: whole radial band behind the window (depth 0.12)
-        band = np.concatenate([rings[i] - k * NTH for k in range(int(0.12 * NR))])
-        start2 = np.zeros(n); start2[band] = pi[band]
-        row2 = hitting_splits(Lg, start2, others)
-        M_geo_band[i, np.arange(N_W) != i] = row2 / row2.sum()
-    sens = np.abs(M_geo - M_geo_band).max()
+        prof = np.zeros(n)
+        prof[np.concatenate(cell_groups)[owner == i]] = phi[owner == i]
+        row2 = hitting_splits(Lg, prof, others)
+        M_prof[i, np.arange(N_W) != i] = row2 / row2.sum()
+    sens = np.abs(M_geo - M_prof).max()
     print(f"geometric p and M from sparse solves: {time.perf_counter()-t0:.0f}s; "
-          f"start-distribution sensitivity of M: {sens:.3f}")
+          f"uniform-ring vs exact-entry-profile M: max diff {sens:.3f}")
 
     # ---- trajectory data ----------------------------------------------------------
     print("reflecting simulation (encounter sequences):")
@@ -200,9 +206,11 @@ def main():
     # is not the first-transition kernel. Counterfactuals want the latter.
 
     e_p = np.abs(p_geo - p_hat).max()
-    e_M = np.abs(M_geo - M_emp).max()
-    print(f"|p_geo - p_hat|_max = {e_p:.4f} (train noise ~{np.sqrt(p_hat.max()/12000):.3f})"
-          f";  |M_geo - M_emp|_max = {e_M:.4f}")
+    e_M = np.abs(M_geo - M_first).max()
+    e_Mp = np.abs(M_prof - M_first).max()
+    print(f"|p_geo - p_hat|_max = {e_p:.4f} (train noise ~{np.sqrt(p_hat.max()/12000):.3f})")
+    print(f"|M_geo - M_first|_max  = {e_M:.4f}   (uniform ring start)")
+    print(f"|M_prof - M_first|_max = {e_Mp:.4f}   (exact entry profile)")
 
     # ---- blocked-set evaluation ----------------------------------------------------
     def resolvent(p, M, B, keep):
@@ -214,8 +222,9 @@ def main():
         "Harville (trajectory p)": lambda B, keep: p_hat[keep] / p_hat[keep].sum(),
         "empirical M (first transitions)": lambda B, keep: resolvent(p_hat, M_first, B, keep),
         "empirical M (all pairs)": lambda B, keep: resolvent(p_hat, M_emp, B, keep),
-        "hybrid: trajectory p + geometric M": lambda B, keep: resolvent(p_hat, M_geo, B, keep),
-        "pure geometry (p_geo + M_geo)": lambda B, keep: resolvent(p_geo, M_geo, B, keep),
+        "hybrid: traj. p + M_geo (ring start)": lambda B, keep: resolvent(p_hat, M_geo, B, keep),
+        "hybrid: traj. p + M_geo (entry profile)": lambda B, keep: resolvent(p_hat, M_prof, B, keep),
+        "pure geometry (p_geo + M_prof)": lambda B, keep: resolvent(p_geo, M_prof, B, keep),
     }
     results = {name: {s: [] for s in (1, 2, 3)} for name in models}
     brng = np.random.default_rng(1)
@@ -234,29 +243,33 @@ def main():
         print(f"{name:>36} {means[0]:>9.4f} {means[1]:>9.4f} {means[2]:>9.4f}")
         for s, m in zip((1, 2, 3), means):
             rows.append(f"{s},{name},{m:.6f},{max(results[name][s]):.6f}")
-    rows += [f",p_geo_vs_p_hat,{e_p:.6f}", f",M_geo_vs_M_emp,{e_M:.6f}",
-             f",M_start_sensitivity,{sens:.6f}"]
+    rows += [f",p_geo_vs_p_hat,{e_p:.6f}", f",M_geo_vs_M_first,{e_M:.6f}",
+             f",M_prof_vs_M_first,{e_Mp:.6f}", f",ring_vs_profile,{sens:.6f}"]
     (HERE / "results.csv").write_text("\n".join(rows) + "\n")
 
     # ---- figures ----------------------------------------------------------------------
     fig_dir = HERE / "figures"; fig_dir.mkdir(exist_ok=True)
     fig, ax = plt.subplots(figsize=(5.2, 4.6))
     off = ~np.eye(N_W, dtype=bool)
-    ax.plot(M_emp[off], M_geo[off], ".", ms=5, color="#c2410c", alpha=0.6)
-    lim = max(M_emp.max(), M_geo.max())
+    ax.plot(M_first[off], M_geo[off], ".", ms=5, color="#9a9a9a", alpha=0.6,
+            label="uniform ring start")
+    ax.plot(M_first[off], M_prof[off], ".", ms=5, color="#c2410c", alpha=0.7,
+            label="exact entry profile")
+    ax.legend(fontsize=8.5)
+    lim = max(M_first.max(), M_geo.max(), M_prof.max())
     ax.plot([0, lim], [0, lim], ":", color="#9a9a9a")
-    ax.set_xlabel("empirical M (12k trajectories)")
+    ax.set_xlabel("empirical M, first transitions (12k trajectories)")
     ax.set_ylabel("geometric M (Green-function solves)")
     ax.set_title("The substitution kernel, predicted from geometry", fontsize=10)
     ax.grid(True, alpha=0.25)
     fig.tight_layout(); fig.savefig(fig_dir / "M_scatter.png", dpi=150)
 
     fig2, ax2 = plt.subplots(figsize=(8, 4.2))
-    xs = np.arange(3); wd = 0.16
-    colors = ["#9a9a9a", "#2a1a12", "#6b5d52", "#c2410c", "#e8a87c"]
+    xs = np.arange(3); wd = 0.14
+    colors = ["#9a9a9a", "#2a1a12", "#6b5d52", "#8a6a52", "#c2410c", "#e8a87c"]
     for j, (name, c) in enumerate(zip(models, colors)):
         means = [np.mean(results[name][s]) for s in (1, 2, 3)]
-        ax2.bar(xs + (j - 2.0) * wd, means, wd, label=name, color=c)
+        ax2.bar(xs + (j - 2.5) * wd, means, wd, label=name, color=c)
     ax2.set_xticks(xs, ["singletons", "pairs", "triples"])
     ax2.set_ylabel("mean TV vs held-out sequences")
     ax2.set_title("Counterfactuals from geometry alone", fontsize=10)
