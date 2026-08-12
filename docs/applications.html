@@ -89,8 +89,14 @@
       resistances, current redistributions after a line failure, and contingency screening
       in power grids are all leave-one-out scalars &mdash; $O(1)$ each after one solve. The
       $N-1$ (and $N-2$) contingency analyses of power engineering are the leave-$k$-out
-      identity by another name; the audit in Q1 will establish how much of current practice
-      already exploits it.
+      identity by another name &mdash; and
+      <a href="https://github.com/microprediction/kinetics/tree/main/experiments/exp12_grid_contingency">experiment
+      12</a> runs the audit on real IEEE test systems: the industry&apos;s MLODF screen
+      <em>is</em> the identity (verified to 2e-15; 17,205 double outages from one
+      inverse in 0.2&nbsp;s), and against full AC power-flow truth the standard
+      DC-plus-base-Q screen recalls 95% of the worst outages at 22&times; less compute
+      &mdash; while the na&iuml;ve reactive-blind variant catches only 20%, a measured
+      practitioner trap.
     </p>
 
     <h2>Defects and vacancies in solids</h2>

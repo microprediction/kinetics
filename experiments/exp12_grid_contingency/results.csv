@@ -1,0 +1,14 @@
+case,quantity,value
+case30,mlodf_exactness,2.193e-15
+case30,dc_ac_base_corr,0.9541
+case30,dc_ms_all_pairs,13
+case30,islanding_pairs,143
+case30,ac_nonconverged,0
+case30,recall_baseQ,0.950
+case30,recall_p_only,0.200
+case30,spearman,0.6010
+case30,ac_over_dc_time,22.3
+case118,n2_pairs,17205
+case118,seconds,0.15
+case118,islanding,1703
+case118,exactness,3.15e-14
