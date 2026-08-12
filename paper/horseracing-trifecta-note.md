@@ -1,58 +1,56 @@
 # Correlated races and trifecta prediction
 
-How the correlated race (thurstone PR #14, developed at kinetics.microprediction.org)
-helps horseracing prediction: implied and actual similarity between horses, factored
-into trifecta prediction in both real and risk-neutral measures.
+A note for people who already know the thurstone machinery and the exotic-pricing
+literature. What the correlated race (thurstone PR #14, developed and stress-tested at
+kinetics.microprediction.org) actually buys you.
 
-**Similarity, implied and actual.** Two horses are similar when their performances
-co-move — same sire line, same running style, the same vulnerability to a fast early
-pace or a rain-softened track. In the correlated race this is not a metaphor but a
-parameter: each horse carries a vector of factor loadings, and similarity is the
-alignment of those vectors. The crucial point, made precise by the runner-up principle,
-is that win odds alone can never reveal it — an N-vector of win probabilities contains
-no information about how probability redistributes when the field changes. But racing
-supplies exactly the richer data the theory demands: exacta and trifecta pools are, in
-effect, the market quoting its runner-up kernel, and historical finishing orders are
-nature quoting hers. Fitting the loadings to exotic prices recovers *implied*
-similarity — which horses the market believes are running the same race within the race
-— while fitting them to observed top-k orderings recovers *actual* similarity. The gap
-between the two fits is a map of structural mispricing: pairs the market treats as
-independent that in fact share an engine, and vice versa.
+**Implied versus realized similarity.** You cannot get substitution structure out of
+the win pool. Not "it's hard" — it's unidentified: write the scratch counterfactual as
+q_j = p_j + p_i·M_ij and the win vector tells you nothing whatsoever about M. Harville
+just *assumes* M is proportional, and every position-discount patch assumes some other
+M; none of them learned it, because there was nothing to learn it from. But the exacta
+and trifecta boards are the market quoting M directly. So: give each horse a small
+loading vector — pace posture, surface/distance aptitude, sire line, or just fit the
+thing freely — and calibrate the correlated race two ways. Fit to the exotic board and
+you have implied correlation, same object as implied correlation in index options
+against single-name vols. Fit to the charts and you have realized correlation. The
+spread between those two surfaces is the trade. Two need-the-lead types the board
+prices as independent are a short in every combination where both run on; the market
+knowing something the charts don't shows up as the opposite wedge. None of this is
+visible from win odds, by theorem.
 
-**Trifecta prediction in both measures.** The industry-standard route to exotics is
-Harville's formula — win probabilities chained by proportional renormalization — which
-is IIA in sequence and systematically mishandles precisely the correlated cases: if the
-favorite and second favorite are closers waiting on the same pace collapse, the trifecta
-combinations where both run well (or both fail) are mispriced by any independence-based
-chain. The correlated race prices the full ordering directly: conditional on the latent
-factors the horses are independent, so P(i→j→k) is an ordinary order-statistics
-computation at each quadrature node, integrated over factor scenarios — each node is
-literally a "race shape" (pace scenario, track bias) under which the field is re-priced.
-Calibrated to market prices this gives a *risk-neutral* exotic pricer that is
-arbitrage-consistent across pools, so win-pool odds plus fitted correlations imply fair
-trifecta prices to compare against the actual trifecta pool; calibrated to historical
-results it gives *real-measure* probabilities. The wedge between the two measures — the
-favorite–longshot bias and its lesser-known exotic cousins — then resolves horse-pair by
-horse-pair rather than as one aggregate curve, and value sits exactly where the two
-similarity structures disagree. As a practical bonus, the one-pass deletion ensemble
-re-prices the entire card for every possible late scratching simultaneously, and
-correctly: a scratch is a marginal, and the model treats it as one.
+**Trifectas in both measures, without per-position patches.** The Henery/Stern/Benter
+fixes shade Harville's second- and third-slot probabilities by position — the same
+shade for every horse, whoever's involved. That repairs the average and leaves the
+combinations wrong, and combinations are what a trifecta is. The correlated race fixes
+it structurally: each quadrature node is a race shape — meltdown, crawl, golden rail —
+conditional on which the field is independent and everything is the ordinary thurstone
+order-statistics calculation; integrate over shapes and you've priced the ordering with
+the correlations in, not painted on. And because a Gumbel base at zero loadings *is*
+Harville exactly, the fitted loadings tell you where the chain breaks and for which
+pairs, not just how much on average. Calibrate jointly to win + exacta + tri and you
+get one internally consistent risk-neutral surface — cross-pool relative value net of
+takeout falls out mechanically. Calibrate to results and you have the P-measure; the
+Q-minus-P wedge then resolves pair-by-pair instead of as one favorite–longshot curve.
+And late scratches finally get the right semantics: a scratch is a marginal, not a
+renormalization — renormalizing is only correct under IIA, which is precisely the
+assumption we just dropped — and the deletion ensemble reprices every singleton-scratch
+card from one field pass.
 
-**How this generalizes the thurstone library.** The package's engine has always been
-the fast ability transform: build the field's survival product once, divide each runner
-back out, and price all N in O(N) — but only for *independent* fields. The new
-`FactorRace` keeps that engine intact and wraps it in a latent-factor conditioning:
-performance = ability + loadings·factors + idiosyncratic noise, where conditional on
-the factors the field is independent again, so the same field-product identity runs
-unchanged at each Gauss–Hermite or Sobol node. The generalization is strict and nests
-the classical models exactly: zero loadings recover the package's `Race`; a Gumbel-min
-base recovers Luce/Harville (softmax) in closed form, so nonzero loadings on a Gumbel
-base give a *correlated softmax race* — a non-IIA generalization of the very model
-Harville assumed; and any thurstone base density (skew-normal, heavy-tailed) carries
-over untouched, because only the factors need to be Gaussian. Around the forward map
-sit the pieces a practitioner needs: `factor_model` to compress any target correlation
-matrix into loadings, `solve_abilities` to invert market prices into abilities *under*
-correlation rather than pretending independence and correcting afterwards, and
-`deletion_ensemble` for the scratch counterfactuals — all deterministic, all smooth,
-all validated against Monte Carlo and against real first-passage physics before a
-single horse was involved.
+**What actually changed in thurstone.** Nothing happened to the engine — it's still
+the field survival product with the divide-one-out trick, O(N) a pass. `FactorRace`
+just runs it conditionally: performance = ability + loadings·f + your usual base noise,
+f standard Gaussian in k dimensions, Gauss–Hermite nodes for small k and Sobol past 4.
+Only the factors have to be Gaussian; the base densities you already use — skew-normal,
+heavy-tailed, whatever — compose with the correlation untouched. The nesting is exact
+both ways: zero loadings reproduce `Race.state_prices`, and the new `Density.gumbel_min`
+reproduces Luce in closed form, so correlated-Gumbel is a strict superset of the model
+the exotics literature has been patching for forty years. `solve_abilities` inverts
+prices to abilities *under* the correlation rather than inverting independent and
+adjusting after — damped fixed point, with the step set by the smallest effective
+pairwise noise, because a naive step diverges silently (that one cost us a result
+before we caught it). One more trap worth knowing: `factor_model` is iterated factor
+analysis, not eigen-truncation, because truncation invents off-diagonal correlation out
+of thin air. Forward, inverse, and the all-scratches ensemble are deterministic and
+smooth in the abilities, which is what a calibration loop in production wants and Monte
+Carlo pricing never gives you.
