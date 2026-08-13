@@ -2,9 +2,15 @@
 
 The algorithm paper's honesty sections, run before the claims were written.
 
-**Anchor.** The generic-base factor forward implemented here (normal or Gumbel-min
-idiosyncratic noise) reproduces softmax *to machine precision* (5.6e-17) with a
-Gumbel base and zero loadings — the exact Luce nesting.
+**Anchor.** The generic-base factor forward (normal or standardized Gumbel-min
+idiosyncratic noise) reproduces softmax *to machine precision* (2.8e-17) with a
+Gumbel base and zero loadings — the exact Luce nesting (common-scale condition).
+
+**Standardization note (referee catch, fixed).** The first version of Part B
+confounded noise *family* with noise *variance* (raw Gumbel carries π²/6 the
+variance; the skew-normal truth had variance 0.427 and nonzero mean). All noise
+families are now standardized to mean 0, variance 1 before scaling by √D. The
+ordering survived standardization and sharpened.
 
 **Part A — full-covariance boundary** (N=50, dense correlation matrices with
 eigenvalue decay λ_m ∝ m^−γ, truth = 8×10⁶-draw MC, GHK at the *exact* Σ as the
@@ -30,11 +36,14 @@ Blocks whose deleted share sits at the MC noise floor are uninformative (all
 models tie, as they must). On informative blocks, TV as a fraction of redistributed
 mass:
 
-| model | favorite removed (42.5% share) | mid blocks (2–10%) |
+| model | deleted mass > 10% | deleted mass 2–10% |
 |---|---|---|
-| plain logit (IIA) | 20.8% | 30.8% |
-| factor mixed logit | 14.6% | 25.4% |
-| **factor probit** | **7.0%** | **13.6%** |
+| plain logit (IIA) | 15.9% | 25.7% |
+| factor mixed logit | 7.7% | 17.1% |
+| **factor probit** | **2.8%** | **7.8%** |
+
+(Mass-stratified reporting is now computed in the committed script itself;
+blocks at the MC noise floor are reported as uninformative.)
 
 Factor structure carries the first half of the correction; matching the
 idiosyncratic noise *family* carries a further factor of two (caveat: the truth's
