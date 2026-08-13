@@ -49,7 +49,7 @@ precedent by the same author.
 Alternatives.* Venue candidates: Journal of Choice Modelling, Transportation
 Research B, Journal of Econometrics, Marketing Science.
 
-Required evidence (exp13, the make-or-break benchmark):
+Required evidence (exp13 — RUN, 2026-08-12; see experiments/exp13_ghk_benchmark):
 - vs GHK: accuracy/time frontier at N ∈ {10, 100, 1000, 5000}, factor ranks 1–5;
   derivative smoothness comparison (finite-difference noise of GHK vs our exact
   smoothness) — the estimation-relevant metric;
