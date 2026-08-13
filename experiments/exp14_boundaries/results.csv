@@ -1,5 +1,5 @@
 part,quantity,value
-anchor,gumbel_softmax,5.551e-17
+anchor,gumbel_softmax,2.776e-17
 A,gamma0.5_k1,3.768e-03
 A,gamma0.5_k2,2.846e-03
 A,gamma0.5_k3,2.470e-03
@@ -21,9 +21,15 @@ A,gamma3.0_k5,4.956e-03
 A,gamma3.0_k8,1.187e-03
 A,gamma3.0_ghk1e3,2.211e-02
 A,gamma3.0_ghk1e4,4.136e-03
-B,plain logit (IIA)_singles,0.01313
-B,plain logit (IIA)_pairs,0.00220
-B,factor mixed logit_singles,0.00965
-B,factor mixed logit_pairs,0.00213
-B,factor probit_singles,0.00521
-B,factor probit_pairs,0.00161
+B,plain logit (IIA)_massfrac_big,0.159
+B,plain logit (IIA)_massfrac_mid,0.257
+B,plain logit (IIA)_singles,0.00969
+B,plain logit (IIA)_pairs,0.00246
+B,factor mixed logit_massfrac_big,0.077
+B,factor mixed logit_massfrac_mid,0.171
+B,factor mixed logit_singles,0.00521
+B,factor mixed logit_pairs,0.00225
+B,factor probit_massfrac_big,0.028
+B,factor probit_massfrac_mid,0.078
+B,factor probit_singles,0.00258
+B,factor probit_pairs,0.00159

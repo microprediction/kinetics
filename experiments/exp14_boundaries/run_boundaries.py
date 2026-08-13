@@ -65,11 +65,16 @@ def _normal(z):
 
 
 def _gumbel_min(z):
-    """Standard min-Gumbel: F = 1 - exp(-e^z); mean -gamma_E, handled by caller."""
-    ez = np.exp(np.minimum(z, 30.0))
-    S = np.maximum(np.exp(-ez), 1e-300)
-    f = ez * S
-    fp = f * (1.0 - ez)
+    """STANDARDIZED min-Gumbel (mean 0, variance 1): e = (g + gamma_E) sqrt(6)/pi
+    with g standard min-Gumbel. Standardization matters: without it the Gumbel
+    candidate carries pi^2/6 times the idiosyncratic variance of the normal
+    candidate, confounding noise FAMILY with noise SCALE (referee catch)."""
+    c = np.pi / np.sqrt(6.0)
+    u = np.minimum(z * c - 0.5772156649015329, 30.0)
+    eu = np.exp(u)
+    S = np.maximum(np.exp(-eu), 1e-300)
+    f = c * eu * S
+    fp = c * c * eu * S * (1.0 - eu)
     return S, f, fp
 
 
@@ -86,7 +91,7 @@ def factor_shares_base(mu, V, D, F, W, base="normal", keep=None, points=1501):
     n = len(mu)
     fn = BASES[base]
     M_all = mu[None, :] + F @ V.T
-    span = 26.0 if base == "gumbel" else 8.0           # gumbel-min long left tail
+    span = 22.0 if base == "gumbel" else 8.0           # std gumbel-min left tail
     x = np.linspace(M_all.min() - span * sd.max(), M_all.max() + 8.0 * sd.max(), points)
     dx = x[1] - x[0]
     p = np.zeros(n)
@@ -141,7 +146,7 @@ def main():
     mu = rng.normal(0, 0.8, 12)
     F1, W1 = hermite_nodes(1)
     p, _ = factor_shares_base(mu, np.zeros((12, 1)), np.ones(12), F1, W1, base="gumbel")
-    soft = np.exp(-mu); soft /= soft.sum()
+    soft = np.exp(-mu * np.pi / np.sqrt(6.0)); soft /= soft.sum()   # unit-variance Gumbel scale
     e_anchor = np.abs(p - soft).max()
     print(f"anchor: gumbel base, V=0 vs exact softmax: {e_anchor:.2e}")
     rows.append(f"anchor,gumbel_softmax,{e_anchor:.3e}")
@@ -222,6 +227,7 @@ def main():
             d1 = r.standard_normal((m, len(idx)))
             delta = A_SKEW / np.sqrt(1 + A_SKEW**2)
             e = delta * d0 + np.sqrt(1 - delta**2) * d1              # skew-normal(a=3)
+            e = (e - delta * np.sqrt(2 / np.pi)) / np.sqrt(1 - 2 * delta**2 / np.pi)
             U = mu_true[idx][None, :] + f @ V_true[idx].T + sd_true[idx][None, :] * e
             counts += np.bincount(np.argmin(U, axis=1), minlength=len(idx))
             done += m
@@ -253,30 +259,43 @@ def main():
         return q
 
     names = ["plain logit (IIA)", "factor mixed logit", "factor probit"]
-    results = {nm: {1: [], 2: []} for nm in names}
+    per_block = []                                     # (name, size, mass, tv)
     brng = np.random.default_rng(2)
     for size in (1, 2):
         for t in range(12):
             B = np.sort(brng.choice(N, size=size, replace=False))
             keep = np.setdiff1d(all_idx, B)
             q_true = truth_mc(keep, 2_000_000, 100 + 10 * size + t)
+            mass = float(p_menu[B].sum())
             for nm in names:
                 q = predict(nm, keep)
-                results[nm][size].append(0.5 * float(np.abs(q - q_true).sum()))
-    print(f"  mean TV vs fresh MC deletion truths (12 blocks/size):")
-    print(f"{'model':>22} {'singles':>9} {'pairs':>9}")
+                per_block.append((nm, size, mass,
+                                  0.5 * float(np.abs(q - q_true).sum())))
+    # mass-stratified reporting: blocks whose deleted mass is at the MC noise
+    # floor are uninformative; report large / mid strata and raw means
+    print(f"  deletion blocks, stratified by deleted share mass:")
+    print(f"{'model':>22} {'mass>10%':>10} {'2-10%':>8} {'raw singles':>12} {'raw pairs':>10}")
     for nm in names:
-        m1, m2 = np.mean(results[nm][1]), np.mean(results[nm][2])
-        print(f"{nm:>22} {m1:>9.4f} {m2:>9.4f}")
-        rows += [f"B,{nm}_singles,{m1:.5f}", f"B,{nm}_pairs,{m2:.5f}"]
+        big = [tv / m for n_, s_, m, tv in per_block if n_ == nm and m > 0.10]
+        mid = [tv / m for n_, s_, m, tv in per_block if n_ == nm and 0.02 < m <= 0.10]
+        s1 = np.mean([tv for n_, s_, m, tv in per_block if n_ == nm and s_ == 1])
+        s2 = np.mean([tv for n_, s_, m, tv in per_block if n_ == nm and s_ == 2])
+        big_s = f"{np.mean(big):.3f}" if big else "--"
+        mid_s = f"{np.mean(mid):.3f}" if mid else "--"
+        print(f"{nm:>22} {big_s:>10} {mid_s:>8} {s1:>12.4f} {s2:>10.4f}")
+        rows += [f"B,{nm}_massfrac_big,{big_s}", f"B,{nm}_massfrac_mid,{mid_s}",
+                 f"B,{nm}_singles,{s1:.5f}", f"B,{nm}_pairs,{s2:.5f}"]
 
     fig2, ax2 = plt.subplots(figsize=(6.2, 4.0))
     xs = np.arange(2); wd = 0.24
     for j, (nm, c) in enumerate(zip(names, ("#9a9a9a", "#e8a87c", "#c2410c"))):
-        ax2.bar(xs + (j - 1) * wd, [np.mean(results[nm][s]) for s in (1, 2)],
-                wd, label=nm, color=c)
-    ax2.set_xticks(xs, ["singleton deletions", "pair deletions"])
-    ax2.set_ylabel("mean TV vs MC deletion truth")
+        vals = []
+        for lo, hi in ((0.10, 10.0), (0.02, 0.10)):
+            sel = [tv / m for n_, s_, m, tv in per_block if n_ == nm and lo < m <= hi]
+            vals.append(np.mean(sel) if sel else 0.0)
+        ax2.bar(xs + (j - 1) * wd, vals, wd, label=nm, color=c)
+    ax2.set_xticks(xs, ["deleted mass > 10%", "deleted mass 2–10%"])
+    ax2.set_ylabel("TV / deleted mass (misallocated fraction)")
     ax2.set_title("Substitution fidelity under misspecification\n"
                   "(t(5) factors, skew-normal idiosyncratic truth)", fontsize=10)
     ax2.legend(fontsize=8.5)
