@@ -29,8 +29,8 @@ claims attach to the shipped library.
 **The matched-accuracy comparison (the honest headline).** GHK's error scales as
 R^(−1/2). Extrapolating its cost by the *measured* power law (α ≈ 2.0 over the tested
 range — a lower bound; the asymptotic per-share cost is cubic), GHK at N=5000 and
-R=1000 would take ≥ ~15 minutes and deliver ~7e-3 accuracy; matching the lattice's
-9e-4 requires R ≈ 55,000, i.e. **≥ 13 hours against 22 seconds** — three orders of
+R=1000 would take ≥ ~13 minutes and deliver ~7e-3 accuracy; matching the lattice's
+9e-4 requires R ≈ 55,000, i.e. **≥ 12 hours against 22 seconds** — three orders of
 magnitude, using extrapolation assumptions that favor GHK. (The earlier in-script
 extrapolation used a naive N³ constant; corrected here from the empirical fit.)
 
