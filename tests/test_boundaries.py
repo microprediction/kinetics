@@ -14,10 +14,11 @@ RNG = np.random.default_rng(5)
 
 
 def test_gumbel_base_zero_loadings_is_exact_softmax():
+    # standardized (unit-variance) Gumbel base: Luce with inverse scale pi/sqrt(6)
     mu = RNG.normal(0, 0.9, 15)
     F, W = hermite_nodes(1)
     p, _ = bd.factor_shares_base(mu, np.zeros((15, 1)), np.ones(15), F, W, base="gumbel")
-    soft = np.exp(-mu); soft /= soft.sum()
+    soft = np.exp(-mu * np.pi / np.sqrt(6.0)); soft /= soft.sum()
     assert np.abs(p - soft).max() < 1e-12
 
 
