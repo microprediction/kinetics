@@ -42,26 +42,27 @@ lattice is smooth *and* accurate. The correct claim is "GHK trades noise for bia
 the lattice needs no trade."
 
 **Share inversion (probit BLP step), N=1000, k=2.** Target shares from 5×10⁶ MC
-draws (no inverse crime). Forward-match 7.4e-5 — *below* the target's own noise —
-and utility recovery to 0.014 on identified alternatives. Time: 63 minutes, which is
-honest and unoptimized: 800 damped Picard iterations at one 4.3 s forward each.
-BLP-style fixed points are routinely accelerated 10–50× (Anderson/SQUAREM, warm
-starts, coarse-to-fine node schedules); the forward map — deterministic and smooth,
-hence Newton-friendly — is the contribution, the iteration schedule is standard
-engineering headroom.
+draws (no inverse crime). **59 seconds**; forward-match 6.3e-9 — four orders of
+magnitude below the target's own noise — and utility recovery to 0.014 on
+identified alternatives. The inverter is the original fast-ability-transform
+design generalized: coordinate-Newton against a frozen field with analytic
+own-ability slopes from the same lattice pass, the independent-inverse warm start
+of the allocation package, and a tail-aware tolerance (an earlier unaccelerated
+Picard loop took 63 minutes; the redesign is 64×). Further headroom recorded: the
+original algorithm's interpolation trick generalizes (per-node ability→probability
+curves are cross-correlations, computable at all offsets at once).
 
 **Assortment ensemble, N=200**: every single-removal share vector from one
 conditional field pass, 3.8× faster than recomputation, identical to 5.6e-17.
 
 **Verdict for the paper.** All four pillars hold on measured evidence: (1) flat-error
 deterministic shares where GHK degrades and then becomes infeasible; (2) smooth and
-*unbiased* derivatives; (3) validated share inversion at N=1000; (4) the one-pass
-assortment ensemble. Weakest point to fix before submission: inversion wall-time
-(acceleration), and a full-covariance (non-factor) boundary study where GHK retains
-the advantage of arbitrary Σ.
+*unbiased* derivatives; (3) share inversion at N=1000 in under a minute, matching
+targets to below their own noise; (4) the one-pass assortment ensemble. Remaining
+before submission: the full-covariance (non-factor) boundary study where GHK
+retains the advantage of arbitrary Σ, and the mixed-logit substitution comparison.
 
 Tests: `tests/test_ghk_benchmark.py` (closed-form anchor for all three methods, MC
 agreement, CRN determinism, normalization, inversion roundtrip).
 
-Run: `python run_ghk_benchmark.py` (~75 min, dominated by the unaccelerated
-inversion; numpy/scipy/matplotlib only).
+Run: `python run_ghk_benchmark.py` (~15 min; numpy/scipy/matplotlib only).

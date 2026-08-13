@@ -177,29 +177,79 @@ def win_probabilities_factor(mu: np.ndarray, V: np.ndarray, D: np.ndarray,
 
 def abilities_from_probabilities_factor(p: np.ndarray, V: np.ndarray,
                                         D: np.ndarray, F: np.ndarray,
-                                        W: np.ndarray, n_iter: int = 800,
-                                        tol: float = 1e-4) -> np.ndarray:
-    """Inverse transform under the factor model (damped fixed point).
+                                        W: np.ndarray, n_iter: int = 50,
+                                        tol: float = 1e-6) -> np.ndarray:
+    """Inverse transform under the factor model, by coordinate-wise Newton.
 
-    Step scaled by the smallest effective pairwise noise, as strong correlation
-    makes win probabilities hyper-sensitive to ability gaps.
+    Design synthesis (credit where due): the coordinate-Newton-against-a-frozen-
+    field structure is the ORIGINAL fast-ability-transform inversion (winning /
+    thurstone); the independent-inverse warm start and the observation that the
+    choice-space Jacobian is intrinsically well-conditioned are from the
+    allocation package (allocation/_thurstone/calibrate.py and
+    experiments/preconditioner.py). This version adds: k-factor quadrature,
+    analytic per-coordinate slopes dp_i/dmu_i = sum_w W_w int (z f(z)/sd_i)
+    rest_i dx computed in the same chunked lattice pass as p_hat, and a
+    tail-aware tolerance (convergence is not held hostage by runners whose
+    target probability is unidentifiably small). Typical cost: ~10 forward-pass
+    equivalents, versus hundreds for the damped Picard iteration it replaces.
     """
     p = np.asarray(p, dtype=float)
     if np.any(p <= 0):
         raise ValueError("all target probabilities must be positive")
     p = p / p.sum()
-    C_hat = V @ V.T + np.diag(D)
-    rho_max = np.max(C_hat - np.diag(np.diag(C_hat)))
-    step = 0.5 * np.sqrt(max(2.0 * (1.0 - rho_max), 1e-4))
     logp = np.log(p)
-    mu = -(logp - logp.mean()) / 2.0
+    V = np.atleast_2d(np.asarray(V, dtype=float))
+    D = np.asarray(D, dtype=float)
+    sd = np.sqrt(D)
+    N = len(p)
+    # tail-aware convergence: runners below the floor are matched best-effort
+    floor = max(1e-9, 1e-4 / N)
+    ident = p > floor
+    # warm start: exact INDEPENDENT inversion (allocation's design), using each
+    # runner's total sd, via this same Newton with a single zero factor node
+    if F.shape[1] >= 1 and np.any(V != 0.0):
+        sd_tot = np.sqrt(D + np.sum(V**2, axis=1))
+        mu = abilities_from_probabilities_factor(
+            p, np.zeros((N, 1)), sd_tot**2, np.zeros((1, 1)), np.ones(1),
+            n_iter=n_iter, tol=tol)
+    else:
+        mu = (logp - logp.mean()) / 2.0
+    step_cap = 1.0 * np.sqrt(D + np.sum(V**2, axis=1))
+    prev_res = np.inf
+    damp = 1.0
     for _ in range(n_iter):
-        model = np.maximum(win_probabilities_factor(mu, V, D, F, W), _PFLOOR)
-        resid = np.clip(np.log(model) - logp, -4.0, 4.0)
-        mu = mu + step * resid
-        mu -= mu.mean()
-        if np.abs(resid).max() < tol:
+        M_all = mu[None, :] + F @ V.T
+        lo = M_all.min() - 8.0 * sd.max()
+        hi = M_all.max() + 8.0 * sd.max()
+        x = np.linspace(lo, hi, 1501)
+        dx = x[1] - x[0]
+        phat = np.zeros(N)
+        slope = np.zeros(N)
+        chunk = max(1, int(5e6 / (N * len(x))))
+        for a in range(0, len(F), chunk):
+            M = M_all[a:a + chunk]
+            Wc = W[a:a + chunk]
+            z = (x[None, None, :] - M[:, :, None]) / sd[None, :, None]
+            S = np.maximum(1.0 - ndtr(z), _TINY)
+            f = np.exp(-0.5 * z**2) / (sd[None, :, None] * np.sqrt(2.0 * np.pi))
+            logS = np.log(S)
+            logSfield = logS.sum(axis=1)
+            rest = np.exp(np.clip(logSfield[:, None, :] - logS, -745.0, 0.0))
+            phat += Wc @ (np.sum(f * rest, axis=2) * dx)
+            slope += Wc @ (np.sum(z * f / sd[None, :, None] * rest, axis=2) * dx)
+        phat = np.maximum(phat / phat.sum(), _PFLOOR)
+        resid = np.log(phat) - logp
+        res = np.abs(resid[ident]).max() if np.any(ident) else np.abs(resid).max()
+        if res < tol:
             break
+        if res > prev_res * 1.2:
+            damp = max(0.25, damp * 0.5)     # simple safeguard
+        prev_res = res
+        dlogp = slope / phat                  # negative for min-wins
+        dlogp = np.minimum(dlogp, -1e-3 / (sd + 1e-9))
+        delta = np.clip(damp * resid / dlogp, -step_cap, step_cap)
+        mu = mu - delta                      # Newton: mu <- mu - resid / dlogp
+        mu -= mu.mean()
     return mu
 
 
