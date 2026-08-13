@@ -21,6 +21,10 @@ A,gamma3.0_k5,4.956e-03
 A,gamma3.0_k8,1.187e-03
 A,gamma3.0_ghk1e3,2.211e-02
 A,gamma3.0_ghk1e4,4.136e-03
+B,calib_residual_mixedlogit,4.933e-11
+B,calib_residual_probit,1.073e-09
+B,n_blocks_big,1
+B,n_blocks_mid,4
 B,plain logit (IIA)_massfrac_big,0.159
 B,plain logit (IIA)_massfrac_mid,0.257
 B,plain logit (IIA)_singles,0.00969

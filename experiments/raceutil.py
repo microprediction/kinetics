@@ -264,3 +264,40 @@ def qmc_nodes(k: int, m: int = 13, seed: int = 0):
 
     F = norm.ppf(qmc.Sobol(k, scramble=True, seed=seed).random_base2(m))
     return F, np.full(len(F), 1.0 / len(F))
+
+
+def jacobian_vector_product(mu, V, D, F, W, h, points=3001):
+    """(J h)_i for J = d p / d mu of the (unnormalized) min-wins factor race,
+    in O(Q N L): one field pass per node, with the direction entering only
+    through the scalar field A(x) = sum_j h_j * hazard_j(x).
+
+    Formula due to the referee of the factor-probit paper; verified against
+    central finite differences to ~1e-8 (see tests). Enables Krylov solves of
+    the reduced system on the mean-zero subspace instead of forming J densely
+    (which costs O(Q N^2 L)).
+    """
+    from scipy.special import log_ndtr
+
+    mu = np.asarray(mu, dtype=float)
+    h = np.asarray(h, dtype=float)
+    sd = np.sqrt(np.asarray(D, dtype=float))
+    N = len(mu)
+    M_all = mu[None, :] + F @ V.T
+    x = np.linspace(M_all.min() - 8 * sd.max(), M_all.max() + 8 * sd.max(), points)
+    dx = x[1] - x[0]
+    out = np.zeros(N)
+    chunk = max(1, int(4e6 / (N * points)))
+    for a0 in range(0, len(F), chunk):
+        M = M_all[a0:a0 + chunk]
+        Wc = W[a0:a0 + chunk]
+        for c in range(M.shape[0]):
+            z = (x[None, :] - M[c][:, None]) / sd[:, None]
+            logS = log_ndtr(-z)
+            g = np.exp(-0.5 * z**2) / (sd[:, None] * np.sqrt(2 * np.pi))
+            dg = z * g / sd[:, None]
+            haz = np.exp(np.log(np.maximum(g, _TINY)) - logS)
+            R = np.exp(np.clip(logS.sum(0)[None, :] - logS, -745.0, 0.0))
+            A = (h[:, None] * haz).sum(0)
+            integ = R * (h[:, None] * dg + g * (A[None, :] - h[:, None] * haz))
+            out += Wc[c] * (integ.sum(1) * dx)
+    return out

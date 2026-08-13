@@ -202,7 +202,7 @@ def main():
     ax.axhline(np.nan, color="#9a9a9a", ls=":", label="GHK R=10⁴ (per γ, dotted)")
     ax.set_xlabel("factor rank k")
     ax.set_ylabel("max abs share error")
-    ax.set_title("Full-covariance boundary: factor floor vs GHK", fontsize=10)
+    ax.set_title("Rank-k fitted-factor approximation vs GHK", fontsize=10)
     ax.grid(True, which="both", alpha=0.25)
     ax.legend(fontsize=8)
     fig.tight_layout(); fig.savefig(fig_dir / "full_sigma.png", dpi=150)
@@ -243,8 +243,14 @@ def main():
     t0 = time.perf_counter()
     mu_ml = calibrate_base(p_menu, V_true, D_assumed, F2, W2, base="gumbel")
     mu_pr = calibrate_base(p_menu, V_true, D_assumed, F2, W2, base="normal")
-    print(f"  calibrations done in {time.perf_counter()-t0:.0f}s "
-          f"(both match menu shares by construction)")
+    r_ml, _ = factor_shares_base(mu_ml, V_true, D_assumed, F2, W2, base="gumbel")
+    r_pr, _ = factor_shares_base(mu_pr, V_true, D_assumed, F2, W2, base="normal")
+    res_ml = float(np.abs(r_ml - p_menu).max())
+    res_pr = float(np.abs(r_pr - p_menu).max())
+    print(f"  calibrations done in {time.perf_counter()-t0:.0f}s; menu-share match: "
+          f"mixed logit {res_ml:.1e}, probit {res_pr:.1e}")
+    rows += [f"B,calib_residual_mixedlogit,{res_ml:.3e}",
+             f"B,calib_residual_probit,{res_pr:.3e}"]
 
     def predict(name, keep):
         if name == "plain logit (IIA)":
@@ -275,6 +281,11 @@ def main():
     # floor are uninformative; report large / mid strata and raw means
     print(f"  deletion blocks, stratified by deleted share mass:")
     print(f"{'model':>22} {'mass>10%':>10} {'2-10%':>8} {'raw singles':>12} {'raw pairs':>10}")
+    n_big = len({(s_, m) for _, s_, m, _ in per_block if m > 0.10})
+    n_mid = len({(s_, m) for _, s_, m, _ in per_block if 0.02 < m <= 0.10})
+    print(f"  strata sizes: {n_big} blocks with mass>10%, {n_mid} with 2-10% "
+          f"(of 24 total; small strata -> single-design caveat)")
+    rows += [f"B,n_blocks_big,{n_big}", f"B,n_blocks_mid,{n_mid}"]
     for nm in names:
         big = [tv / m for n_, s_, m, tv in per_block if n_ == nm and m > 0.10]
         mid = [tv / m for n_, s_, m, tv in per_block if n_ == nm and 0.02 < m <= 0.10]

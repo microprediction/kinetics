@@ -42,8 +42,10 @@ mass:
 | factor mixed logit | 7.7% | 17.1% |
 | **factor probit** | **2.8%** | **7.8%** |
 
-(Mass-stratified reporting is now computed in the committed script itself;
-blocks at the MC noise floor are reported as uninformative.)
+(Mass-stratified reporting is computed in the committed script itself; blocks
+at the MC noise floor are reported as uninformative. Strata are small — 1 block
+with mass>10%, 4 with 2–10%, of 24 total — and calibration residuals on menu
+shares are 4.9e-11 / 1.1e-9, both printed by the script.)
 
 Factor structure carries the first half of the correction; matching the
 idiosyncratic noise *family* carries a further factor of two (caveat: the truth's

@@ -71,3 +71,19 @@ log_ndtr(−z) (hazards were exploding to 1e150).
 - exp14 addendum: multi-seed/multi-design replication; D_min/D_max, μ-span, L, Q
   sweeps; several scrambles at k>4; timing of rank-8 vs GHK R=1e4.
 - Multi-seed replication of the substitution study across skew/tail designs.
+
+---
+
+## Second review (minor revisions) — executed 2026-08-13
+
+- Prop 1 restated in max-wins form with proof; reflection caveat for asymmetric laws; "factors need not be Gaussian" contradiction fixed.
+- Lattice interval now indexed over retained nodes f_q.
+- Quadrature statement corrected per experiment: exp13 uses GH order 15/11/9 (k=2/3/4); exp14 uses order 15 for all k≤4, pruned to Q=145/1317/10929 (reviewer's counts reproduced exactly).
+- Prop 3: nonsingularity hypothesis added, proof added, convex social-surplus remark (G(μ)=E max, p=∇G) as motivation.
+- NEW Prop 4: reviewer's O(QNL) Jacobian–vector product — verified vs central FD to 7.7e-9, implemented in raceutil.jacobian_vector_product with regression test.
+- Repo consistency: exp16 created and committed (mean/TV metrics, direct utility-MC baseline at matched wall time, inversion replication ×3, recovery-vs-share figure, replication over 10 problems/size at common spread with twin references). Footnote now "experiments 13–16".
+- Direct-MC baseline (the "especially important" item): at matched wall time direct simulation is within 1.3–3× of lattice max error at the 1e-3 level; abstract and benchmark section reframed accordingly — case rests on error decay, reproducibility, derivatives, inversion.
+- Substitution: reviewer's precise increment reading adopted (8.2 vs 4.9 high-mass; 8.6 vs 9.3 mid-mass, family slightly larger); strata counts disclosed (1 and 4 of 24 blocks); calibration residuals 4.9e-11 / 1.1e-9 printed by script and quoted.
+- Wording sweep: plain multinomial logit, roughness statistic, discrepancy-between-approximations caption, "rank-k fitted-factor approximation vs GHK" figure title, RQMC phrasing, hardware metadata (Apple M4, 16 GB, Python 3.12.9, NumPy 2.4.6, SciPy 1.18.0; single-realization timings disclosed).
+
+Still queued (declared in paper): QMC-GHK, seed bands, minimax tilting, derivative-truth figure, D_min/D_max and L,Q resolution sweeps, skewness/tail replication for substitution, commit pin at submission.

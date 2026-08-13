@@ -149,3 +149,20 @@ def test_factor_inverse_roundtrip():
     mu_fit = abilities_from_probabilities_factor(target, V, D, F, W)
     back = win_probabilities_factor(mu_fit, V, D, F, W)
     assert np.abs(back - target).max() < 2e-3
+
+
+def test_jacobian_vector_product_matches_finite_differences():
+    """Referee-derived O(QNL) JVP formula (paper Prop. 4)."""
+    from raceutil import jacobian_vector_product
+    n = 10
+    mu = RNG.normal(0, 0.6, n)
+    V = RNG.normal(0, 0.4, (n, 2))
+    D = RNG.uniform(0.6, 1.2, n)
+    F, W = hermite_nodes(2)
+    h = RNG.normal(0, 1, n); h -= h.mean()
+    eps = 1e-5
+    fd = (win_probabilities_factor(mu + eps * h, V, D, F, W)
+          - win_probabilities_factor(mu - eps * h, V, D, F, W)) / (2 * eps)
+    an = jacobian_vector_product(mu, V, D, F, W, h)
+    assert np.abs(an - fd).max() < 1e-6
+    assert abs(an.sum()) < 1e-12          # translation invariance: J^T 1 = 0 row sums
