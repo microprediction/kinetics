@@ -1,0 +1,29 @@
+part,quantity,value
+anchor,gumbel_softmax,5.551e-17
+A,gamma0.5_k1,3.768e-03
+A,gamma0.5_k2,2.846e-03
+A,gamma0.5_k3,2.470e-03
+A,gamma0.5_k5,2.116e-03
+A,gamma0.5_k8,1.293e-03
+A,gamma0.5_ghk1e3,8.006e-03
+A,gamma0.5_ghk1e4,3.195e-03
+A,gamma1.5_k1,2.374e-02
+A,gamma1.5_k2,1.478e-02
+A,gamma1.5_k3,9.526e-03
+A,gamma1.5_k5,5.221e-03
+A,gamma1.5_k8,2.558e-03
+A,gamma1.5_ghk1e3,1.310e-02
+A,gamma1.5_ghk1e4,3.386e-03
+A,gamma3.0_k1,5.576e-02
+A,gamma3.0_k2,1.919e-02
+A,gamma3.0_k3,1.634e-02
+A,gamma3.0_k5,4.956e-03
+A,gamma3.0_k8,1.187e-03
+A,gamma3.0_ghk1e3,2.211e-02
+A,gamma3.0_ghk1e4,4.136e-03
+B,plain logit (IIA)_singles,0.01313
+B,plain logit (IIA)_pairs,0.00220
+B,factor mixed logit_singles,0.00965
+B,factor mixed logit_pairs,0.00213
+B,factor probit_singles,0.00521
+B,factor probit_pairs,0.00161
