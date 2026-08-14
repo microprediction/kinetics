@@ -50,7 +50,7 @@ fn forward_kernel(
     f_nodes: ArrayView2<f64>,
     w: ArrayView1<f64>,
     points: usize,
-) -> (Array1<f64>, f64) {
+) -> (Array1<f64>, Array1<f64>, f64) {
     let n = mu.len();
     let q = f_nodes.nrows();
     let sd: Vec<f64> = d.iter().map(|x| x.sqrt()).collect();
@@ -81,7 +81,7 @@ fn forward_kernel(
         .map(|qi| {
             let m = &m_all[qi * n..(qi + 1) * n];
             let wq = w[qi];
-            let mut acc = vec![0.0f64; n];
+            let mut acc = vec![0.0f64; 2 * n];
             let mut logs = vec![0.0f64; n * TILE];
             let mut logg = vec![0.0f64; n * TILE];
             let mut field = vec![0.0f64; TILE];
@@ -107,21 +107,28 @@ fn forward_kernel(
                 for i in 0..n {
                     let row_s = &logs[i * TILE..i * TILE + tl];
                     let row_g = &logg[i * TILE..i * TILE + tl];
+                    let inv_sd = 1.0 / sd[i];
+                    let mi = m[i];
                     let mut s = 0.0f64;
+                    let mut sl = 0.0f64;
                     for t in 0..tl {
                         let e = row_g[t] + field[t] - row_s[t];
                         if e > -745.0 {
-                            s += e.exp();
+                            let v = e.exp();
+                            s += v;
+                            let x = lo + (t0 + t) as f64 * dx;
+                            sl += (x - mi) * inv_sd * inv_sd * v;
                         }
                     }
                     acc[i] += wq * s * dx;
+                    acc[n + i] += wq * sl * dx;
                 }
                 t0 += tl;
             }
             acc
         })
         .reduce(
-            || vec![0.0f64; n],
+            || vec![0.0f64; 2 * n],
             |mut a, b| {
                 for (x, y) in a.iter_mut().zip(b) {
                     *x += y;
@@ -130,14 +137,39 @@ fn forward_kernel(
             },
         );
 
-    let total: f64 = p.iter().sum();
-    let out: Array1<f64> = Array1::from_iter(p.into_iter().map(|x| x / total));
-    (out, total)
+    let total: f64 = p[..n].iter().sum();
+    let p_norm: Array1<f64> = Array1::from_iter(p[..n].iter().map(|x| x / total));
+    let slopes: Array1<f64> = Array1::from_iter(p[n..].iter().cloned());
+    (p_norm, slopes, total)
 }
 
-/// Min-wins factor-race win probabilities plus the pre-normalization total.
-/// Mirrors raceutil.win_probabilities_factor(mu, V, D, F, W, points,
-/// return_total=True).
+/// Min-wins factor-race win probabilities (normalized), raw own-location
+/// slopes of the unnormalized map (the inversion preconditioner), and the
+/// pre-normalization total. slope_i = d p_raw_i / d mu_i.
+#[pyfunction]
+#[pyo3(signature = (mu, v, d, f, w, points=1501))]
+fn forward_and_slopes<'py>(
+    py: Python<'py>,
+    mu: PyReadonlyArray1<f64>,
+    v: PyReadonlyArray2<f64>,
+    d: PyReadonlyArray1<f64>,
+    f: PyReadonlyArray2<f64>,
+    w: PyReadonlyArray1<f64>,
+    points: usize,
+) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>, f64)> {
+    let mu_o: Array1<f64> = mu.as_array().to_owned();
+    let v_o: Array2<f64> = v.as_array().to_owned();
+    let d_o: Array1<f64> = d.as_array().to_owned();
+    let f_o: Array2<f64> = f.as_array().to_owned();
+    let w_o: Array1<f64> = w.as_array().to_owned();
+    let (p, sl, total) = py.allow_threads(|| {
+        forward_kernel(mu_o.view(), v_o.view(), d_o.view(), f_o.view(),
+                       w_o.view(), points)
+    });
+    Ok((p.into_pyarray_bound(py), sl.into_pyarray_bound(py), total))
+}
+
+/// Back-compatible forward-only entry point: (normalized p, total).
 #[pyfunction]
 #[pyo3(signature = (mu, v, d, f, w, points=1501))]
 fn win_probabilities_factor<'py>(
@@ -149,28 +181,21 @@ fn win_probabilities_factor<'py>(
     w: PyReadonlyArray1<f64>,
     points: usize,
 ) -> PyResult<(Bound<'py, PyArray1<f64>>, f64)> {
-    // copy inputs to owned arrays so the GIL-free closure captures no
-    // Python-backed memory (Ungil requirement); the copies are O(N + Qk)
     let mu_o: Array1<f64> = mu.as_array().to_owned();
     let v_o: Array2<f64> = v.as_array().to_owned();
     let d_o: Array1<f64> = d.as_array().to_owned();
     let f_o: Array2<f64> = f.as_array().to_owned();
     let w_o: Array1<f64> = w.as_array().to_owned();
-    let (p, total) = py.allow_threads(|| {
-        forward_kernel(
-            mu_o.view(),
-            v_o.view(),
-            d_o.view(),
-            f_o.view(),
-            w_o.view(),
-            points,
-        )
+    let (p, _sl, total) = py.allow_threads(|| {
+        forward_kernel(mu_o.view(), v_o.view(), d_o.view(), f_o.view(),
+                       w_o.view(), points)
     });
     Ok((p.into_pyarray_bound(py), total))
 }
 
 #[pymodule]
 fn fastrace(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(forward_and_slopes, m)?)?;
     m.add_function(wrap_pyfunction!(win_probabilities_factor, m)?)?;
     Ok(())
 }
