@@ -583,8 +583,22 @@ weeks. Numerical well-posedness
 matches Theorem~\ref{thm:inv}: the reduced Jacobian assembled from $N$
 JVP calls at $N=50$ is symmetric to $1.7\times10^{-18}$, has row-sum defect
 $6.2\times10^{-17}$, and reduced eigenvalues in $[2.5\times10^{-5},
-0.22]$, positive definite as proved. We are not aware of probit
-share inversion at this scale in current simulation-based practice.
+0.22]$, positive definite as proved. The gap to simulation here is structural, not incremental, and simple
+arithmetic shows why (labeled as arithmetic, not measurement). An iterative
+inversion evaluates the forward map $\sim$15 times and cannot drive its
+residual below the per-evaluation noise; simulation noise on shares scales
+as $\sqrt{p_{\max}/R}$, so a share-residual tolerance $\tau$ costs $R
+\approx p_{\max}/\tau^2$ draws per evaluation. At $N = 5000$ and the
+measured direct-simulation rate, matching this solver's model-side
+consistency ($\tau \sim 10^{-6}$) prices one forward evaluation in weeks
+and the calibration in months to a year; even $\tau = 10^{-5}$ prices the
+calibration in days against our 330 seconds; and at the crude $\tau =
+10^{-4}$ where simulation-in-the-loop first becomes feasible, the calibrated
+model mismatches its own targets at $10^{-4}$ and the derivative noise
+forces stochastic-approximation methods. The quadrature route's cost is
+independent of $\tau$ until resolution binds. We are unaware of a reported
+probit share inversion at this scale in simulation-based practice, and this
+scaling is presumably why.
 
 \paragraph{Removal ensemble (by-product).} The cached field also yields all
 $N$ single-removal share vectors in $O(QN^2L)$. Against the strongest simulation comparator, which reuses each draw's
