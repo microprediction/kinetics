@@ -18,6 +18,7 @@ one of these scripts' results.csv / figures/ outputs; the mapping is:
   exp17 run_convergence.py     -> L/Q sweeps, RQMC scramble distribution,
                                   Jacobian diagnostics, accuracy-time frontier
   exp18 run_deletion_baseline.py -> top-two direct-simulation deletion baseline
+  exp19 run_calibration_scaling.py -> calibration wall time and recovery, N to 10000
 
 Total wall time is roughly 1.5 hours on an Apple M4 (single-threaded BLAS).
 """
@@ -38,6 +39,7 @@ SCRIPTS = [
     "exp16_benchmark_addendum/run_replication.py",
     "exp17_convergence/run_convergence.py",
     "exp18_deletion_baseline/run_deletion_baseline.py",
+    "exp19_calibration_scaling/run_calibration_scaling.py",
 ]
 
 def main():

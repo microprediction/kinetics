@@ -18,7 +18,7 @@ pdfauthor={Peter Cotton}}
 \title{Scalable Probit Calibration}
 \author{Peter Cotton\thanks{Numbers in this paper are produced by committed, seeded
 scripts with correctness anchors run before any comparison
-(\url{https://github.com/microprediction/kinetics}, experiments 13--18; the
+(\url{https://github.com/microprediction/kinetics}, experiments 13--19; the
 exact commit is recorded in the repository README and an immutable tag is
 pinned at circulation). The algorithm ships in the \texttt{thurstone}
 package; package--benchmark agreement is itself a reported number.
@@ -40,7 +40,9 @@ have no closed form, the standard simulator prices one alternative at a
 time, and calibration, meaning the recovery of the utilities at which model
 shares match observed shares, has been out of reach at scale. We give an
 algorithm that calibrates factor-structured probit at a thousand
-alternatives in under a minute. Conditionally on the factors the
+alternatives in under a minute. Its cost grows linearly from there, reaching
+ten thousand alternatives in eleven minutes, where calibration through the
+standard simulator at matched accuracy extrapolates to weeks. Conditionally on the factors the
 alternatives are independent, so a single shared survival product yields
 every choice probability in one differentiable pass, and the inverse problem
 this solves is well posed, with shares determining utilities up to a common
@@ -539,7 +541,16 @@ $3\times10^{-4}$) to maximum error $0.017$. A replication study (experiment
 independent $5\times10^6$-draw targets: 57 seconds each, 161--162
 alternatives identified (98.1\% of share mass), recovery error maximum
 $0.015$--$0.023$ and median $\approx 0.0027$ across replicates, with the
-recovery-versus-share curve committed alongside. Numerical well-posedness
+recovery-versus-share curve committed alongside.
+
+Scaling is linear in $N$ (experiment 19): calibration takes 48, 120, 330,
+and 639 seconds at $N = 1000$, $2000$, $5000$, $10000$, a flat 11--15
+forward-pass equivalents throughout, with recovery quality unchanged
+(median error near $0.003$, 96--99\% of share mass identified). At
+$N=5000$ a single matched-accuracy forward evaluation by the per-alternative
+simulator extrapolates to roughly fifty hours and calibration needs about
+fifteen of them, so the same calibration through simulation extrapolates to
+weeks. Numerical well-posedness
 matches Theorem~\ref{thm:inv}: the reduced Jacobian assembled from $N$
 JVP calls at $N=50$ is symmetric to $1.7\times10^{-18}$, has row-sum defect
 $6.2\times10^{-17}$, and reduced eigenvalues in $[2.5\times10^{-5},

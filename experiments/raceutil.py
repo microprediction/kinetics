@@ -359,3 +359,4 @@ def jacobian_vector_product(mu, V, D, F, W, h, points=3001):
             integ = gR * (A[None, :] - h[:, None] * Lam[None, :])
             out += Wc[c] * (integ.sum(1) * dx)
     return out
+
