@@ -50,15 +50,16 @@ fails.
 
 \section{Introduction}
 
-When an alternative disappears or changes, where does its demand go? The
-models used to answer this, essentially universally, are the logit family:
-multinomial logit, nested logit, and above all random-coefficients logit in
-the BLP tradition, the workhorse of demand estimation in industrial
-organization, antitrust, and pricing \cite{berry1995,train2009,conlon2020}.
-They are universal for one reason. They can be computed. Choice modeling did
-not start there: it started with Thurstone's 1927 model \cite{thurstone1927}
-of jointly Gaussian utilities with unrestricted correlation, known in
-econometrics as multinomial probit (MNP).
+Choice models are calibrated to observed shares so that the recovered
+utilities can answer questions the data do not: elasticities, welfare,
+pricing, the effect of adding or removing an alternative. The models used
+for this, essentially universally, are the logit family: multinomial logit,
+nested logit, and above all random-coefficients logit in the BLP tradition
+\cite{berry1995,train2009,conlon2020}. They are universal for one reason.
+They can be computed. Choice modeling did not start there: it started with
+Thurstone's 1927 model \cite{thurstone1927} of jointly Gaussian utilities
+with unrestricted correlation, known in econometrics as multinomial probit
+(MNP).
 
 Probit probabilities are $(N-1)$-dimensional Gaussian integrals with no
 closed form. The standard evaluator is the Geweke--Hajivassiliou--Keane
@@ -71,11 +72,11 @@ So probit survives mainly on small menus, and the field kept the computable
 models and gave up the model it started from.
 
 The concession is not free. Logit-family substitution is structurally
-restricted, and the share-inversion apparatus that demand estimation is
-built on exists on the logit side only. In the substitution study of
-Section~\ref{sec:boundary}, plain logit misallocates about 23\% of the
-demand released by a deleted alternative. The correctly structured probit
-model misallocates 5\%.
+restricted, and the calibration apparatus that demand estimation is built
+on exists on the logit side only. One measure of the cost: in the
+substitution study of Section~\ref{sec:boundary}, plain logit misallocates
+about 23\% of the demand released by a deleted alternative, against 5\%
+for the correctly structured probit model.
 
 This paper's point is that for the covariance structure applied work most
 often actually has, the factor model $\Sigma = VV^\top + \mathrm{diag}(D)$,
