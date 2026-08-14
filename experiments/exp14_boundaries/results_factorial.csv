@@ -19,6 +19,14 @@ factor_mixed_logit_0.5-2%,0.19858
 factor_probit_>10%,0.04517
 factor_probit_2-10%,0.06184
 factor_probit_0.5-2%,0.09351
+independent_Luce_singles_mean,0.26510
+independent_Luce_pairs_mean,0.25543
+independent_probit_singles_mean,0.24251
+independent_probit_pairs_mean,0.23010
+factor_mixed_logit_singles_mean,0.17870
+factor_mixed_logit_pairs_mean,0.17054
+factor_probit_singles_mean,0.08026
+factor_probit_pairs_mean,0.07645
 factor_incr_gumbel_>10%,0.11515
 factor_incr_gaussian_>10%,0.16500
 family_incr_indep_>10%,0.01903

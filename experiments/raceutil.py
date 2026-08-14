@@ -229,7 +229,8 @@ def win_probabilities_factor(mu: np.ndarray, V: np.ndarray, D: np.ndarray,
 def abilities_from_probabilities_factor(p: np.ndarray, V: np.ndarray,
                                         D: np.ndarray, F: np.ndarray,
                                         W: np.ndarray, n_iter: int = 50,
-                                        tol: float = 1e-6) -> np.ndarray:
+                                        tol: float = 1e-6,
+                                        return_info: bool = False):
     """Inverse transform under the factor model, by coordinate-wise Newton.
 
     Design synthesis (credit where due): the coordinate-Newton-against-a-frozen-
@@ -300,6 +301,9 @@ def abilities_from_probabilities_factor(p: np.ndarray, V: np.ndarray,
         delta = np.clip(damp * resid / dlogp, -step_cap, step_cap)
         mu = mu - delta                      # Newton: mu <- mu - resid / dlogp
         mu -= mu.mean()
+    if return_info:
+        return mu, {"iterations": _ + 1, "residual": float(res),
+                    "converged": bool(res < tol)}
     return mu
 
 
@@ -316,7 +320,7 @@ def qmc_nodes(k: int, m: int = 13, seed: int = 0):
     return F, np.full(len(F), 1.0 / len(F))
 
 
-def jacobian_vector_product(mu, V, D, F, W, h, points=3001):
+def jacobian_vector_product(mu, V, D, F, W, h, points=3001, form="ibp"):
     """(J h)_i for J = d p / d mu of the min-wins factor race, in O(Q N L).
 
     Uses the integration-by-parts form (referee of the factor-probit paper):
@@ -334,6 +338,16 @@ def jacobian_vector_product(mu, V, D, F, W, h, points=3001):
     normalization correction (v - p (1^T v))/s is O(quadrature defect)
     because 1^T v = 0 analytically, and this formula matches central finite
     differences of the returned normalized map to ~5e-9 in tests.
+
+    form="ibp" (default) is the integration-by-parts / weighted-Laplacian
+    form: the exact derivative of the CONTINUUM map, and a symmetric
+    surrogate for the lattice map (gap 1.7e-14 at L=1501, but 2e-5 at L=51).
+    form="grid" is the exact derivative of the frozen-grid rectangle sum
+    itself (own-term (x - m_i)/D_i instead of the IBP form): it matches
+    finite differences of the frozen-grid map to ~1e-10 at EVERY lattice
+    resolution, at identical O(QNL) cost. Use "grid" when exact
+    differentiation of the returned numerical map matters; "ibp" when the
+    symmetric SPD structure matters.
     """
     mu = np.asarray(mu, dtype=float)
     h = np.asarray(h, dtype=float)
@@ -352,11 +366,14 @@ def jacobian_vector_product(mu, V, D, F, W, h, points=3001):
             z = (x[None, :] - M[c][:, None]) / sd[:, None]
             logS = log_ndtr(-z)
             logg = -0.5 * z**2 - log_norm[:, None]
-            haz = np.exp(logg - logS)          # Gaussian hazard, ~z in the tail
-            Lam = haz.sum(0)
+            haz = np.exp(logg - logS)   # Mills ratio: grows only linearly
             A = (h[:, None] * haz).sum(0)
             gR = np.exp(np.clip(logg + logS.sum(0)[None, :] - logS, -745.0, 700.0))
-            integ = gR * (A[None, :] - h[:, None] * Lam[None, :])
+            if form == "grid":
+                own = h[:, None] * (x[None, :] - M[c][:, None]) / np.asarray(D)[:, None]
+                integ = gR * (own + A[None, :] - h[:, None] * haz)
+            else:
+                integ = gR * (A[None, :] - h[:, None] * haz.sum(0)[None, :])
             out += Wc[c] * (integ.sum(1) * dx)
     return out
 

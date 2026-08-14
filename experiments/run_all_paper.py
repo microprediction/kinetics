@@ -41,6 +41,8 @@ SCRIPTS = [
     "exp18_deletion_baseline/run_deletion_baseline.py",
     "exp19_calibration_scaling/run_calibration_scaling.py",
     "exp20_separated_pass/run_separated.py",
+    "exp14_boundaries/run_basis_replication.py",
+    "exp21_calibration_validation/run_validation.py",
 ]
 
 def main():

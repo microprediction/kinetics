@@ -171,3 +171,45 @@ New items beyond rounds 2-3 (much of review 4 targeted an older draft):
 Remaining queued: minimax tilting baseline, substitution replication across
 designs/heteroskedasticity axis, style-repo guidelines (repo not found —
 possibly private; user to provide).
+
+---
+
+## Fifth + sixth reviews — executed 2026-08-14/15
+
+Verified before adopting (standing rule):
+- Review 5's exact-grid JVP formula has MAX-WINS signs; with min-wins signs
+  restored it matches FD to 1e-10 at EVERY lattice resolution (it IS the
+  code's derivative), while the IBP/Laplacian form matches to 1.7e-14 at
+  L=1501 but degrades to 2.6e-5 at L=51, 1e-3 at L=31 — both reviewers'
+  three-object distinction is real and now MEASURED. form="grid" shipped in
+  raceutil + coarse-lattice test.
+- Pruning deficit at k=2 is analytically 2.39e-8 = the measured |1-T|
+  exactly, so the pre-normalization defect decomposes: all factor-weight,
+  lattice below that.
+
+Fixes: 23x not "three orders" (500x in draws); Mills ratio unbounded/linear
++ 1-Phi rounds to zero via cancellation (paper, raceutil, lib.rs); legacy
+1-ndtr removed from the independent transform; theorem completed (envelope
+theorem, constrained FOC -> multiplier zero, inverse-function smoothness,
+fixed known (V,D)); "identified" -> "well-resolved" + zero-share boundary
+discussion; inversion description now matches code (envelope rebuilt per
+iteration, mean projection every update, slopes = Jacobi preconditioner);
+intro Newton oversell fixed (JVP supports Newton-Krylov; reported solver is
+Jacobi); rectangle-trapezoid "negligible endpoint terms"; near-exponential
+not "spectral"; O(QN(k+L)); fit specified as principal-factor heuristic on
+P Sigma P + quotient residual reported; gamma=1.5 gloss softened; diag(D);
+factorial: oracle-loading framing, variance-standardized Gumbel stated,
+Gaussian candidate factors stated, design constants, 150/45/105/83/22
+accounting, caption 27-of-50, singles/pairs split (0.080 vs 0.076);
+prior-art row for direct simulation; direct-MC column in headline table;
+extrapolations labeled double + "our implementation"; abstract qualifiers
+(two-factor, laptop, observed discrepancies, "illustrate"); WDZ/McFadden
+cite; k>4 "fixed-node and reproducible"; footnote -> Reproducibility
+section.
+
+New experiments: exp21 calibration validation (noiseless inverse-crime,
+noisy decomposition, 20-problem robustness, large-N self-convergence
+certificates); exp14 run_basis_replication (3 eigenbases x 3 gammas: rank-8
+beats GHK R=1e4 in 8/9, single loss at intermediate decay — the
+single-basis GHK-wins finding was basis-dependent); factorial rerun with
+singles/pairs split.

@@ -174,6 +174,16 @@ def main():
             summ[(nm, lab)] = v
         print(f"{nm:>22}", *[f"{v:>10.3f}" for v in vals])
 
+    # singles vs pairs, reported separately (sixth-review request)
+    print()
+    for nm in names:
+        s1 = [r_ for n_, sz, m, r_ in per_obs if n_ == nm and sz == 1]
+        s2 = [r_ for n_, sz, m, r_ in per_obs if n_ == nm and sz == 2]
+        print(f"{nm:>22}: singles mean TV/mass {np.mean(s1):.3f} "
+              f"(n={len(s1)}), pairs {np.mean(s2):.3f} (n={len(s2)})")
+        rows += [f"{nm.replace(' ', '_')}_singles_mean,{np.mean(s1):.5f}",
+                 f"{nm.replace(' ', '_')}_pairs_mean,{np.mean(s2):.5f}"]
+
     # factorial decomposition on the mid stratum (largest informative stratum)
     for lab, _, _ in strata[:2]:
         iL, iP = summ[("independent Luce", lab)], summ[("independent probit", lab)]

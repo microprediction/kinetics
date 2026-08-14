@@ -271,3 +271,36 @@ def test_jvp_matches_normalized_map_both_conventions():
               - win_probabilities_factor(-(mu - eps * h), V, D, F, W)) / (2 * eps)
     jv_max = -jacobian_vector_product(a, V, D, F, W, h)
     assert np.abs(jv_max - fd_max).max() < 1e-6
+
+
+def test_grid_jvp_exact_at_coarse_lattice_where_ibp_degrades():
+    """Fifth review: the IBP/Laplacian JVP is the continuum derivative, not
+    the derivative of the finite rectangle sum. The form="grid" variant IS
+    the derivative of the frozen-grid map: it must match finite differences
+    even on a coarse lattice where the IBP form visibly degrades."""
+    from raceutil import jacobian_vector_product
+    rng = np.random.default_rng(7)
+    n = 9
+    mu = rng.normal(0, 0.7, n)
+    V = 0.5 * rng.standard_normal((n, 2))
+    D = rng.uniform(0.4, 1.1, n)
+    F, W = hermite_nodes(2)
+    h = rng.normal(0, 1, n); h -= h.mean()
+    eps = 1e-6
+    L = 51
+    # frozen-grid FD is approximated well by the adaptive map's FD here
+    # because the envelope shift is O(eps); compare unnormalized forms via
+    # the library map (normalized): both JVPs are of the unnormalized map,
+    # and 1^T v = 0 keeps normalization corrections at quadrature level.
+    fd = (win_probabilities_factor(mu + eps * h, V, D, F, W, points=L)
+          - win_probabilities_factor(mu - eps * h, V, D, F, W, points=L)) / (2 * eps)
+    jg = jacobian_vector_product(mu, V, D, F, W, h, points=L, form="grid")
+    ji = jacobian_vector_product(mu, V, D, F, W, h, points=L, form="ibp")
+    # residual vs the LIBRARY map includes normalization + envelope motion,
+    # so "exact" here means: several times closer than the IBP form
+    assert np.abs(jg - fd).max() < 1e-5
+    assert np.abs(ji - fd).max() > 2 * np.abs(jg - fd).max()
+    # and at production resolution the two coincide
+    jg2 = jacobian_vector_product(mu, V, D, F, W, h, form="grid")
+    ji2 = jacobian_vector_product(mu, V, D, F, W, h, form="ibp")
+    assert np.abs(jg2 - ji2).max() < 1e-12

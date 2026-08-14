@@ -181,8 +181,12 @@ def main():
             counts += np.bincount(np.argmin(X, axis=0), minlength=N)
         truth = counts / counts.sum()
         errs, times = [], []
+        Pn = np.eye(N) - np.ones((N, N)) / N
         for k in KS:
             V, D = factor_model_contrast(C, k)   # choice-relevant quotient fit
+            qres = (np.linalg.norm(Pn @ (C - V @ V.T - np.diag(D)) @ Pn)
+                    / np.linalg.norm(Pn @ C @ Pn))
+            rows.append(f"A,gamma{gamma}_k{k}_quotient_residual,{qres:.3e}")
             Fk, Wk = hermite_nodes(k) if k <= 4 else qmc_nodes(k)
             t0 = time.perf_counter()
             pk, _ = factor_shares_base(mu, V, D, Fk, Wk)   # min-wins, as the MC truth
