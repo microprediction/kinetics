@@ -95,7 +95,7 @@ counterfactuals:
 probabilities at once in $O(QNL)$ for $Q$ factor nodes and $L$ lattice
 points. All 5000 shares of an $N=5000$ problem in 21 seconds, at accuracy
 near the $10^{-4}$ noise floor of the simulation reference; matching that
-with our per-alternative GHK implementation extrapolates to roughly forty
+with our per-alternative GHK implementation extrapolates to roughly fifty
 hours.
 \item \textbf{Calibration} (observed shares $\to$ utilities): the probit
 analogue of the logit-side inversions used throughout demand estimation
@@ -140,17 +140,17 @@ alternatives grows: the per-alternative simulator's cost bends upward and
 crosses the lattice transform near $N \approx 200$ \emph{at three orders of
 magnitude more error} (Table~\ref{tab:frontier}); by $N = 5000$ the lattice
 computes all shares in 21 seconds where matched-accuracy GHK extrapolates to
-roughly forty hours.
+roughly fifty hours.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.62\textwidth]{figs/frontier.png}
 \caption{Wall time for the full $N$-alternative share vector as $N$ grows
-($k=2$ factors). Measured points for both methods; dashed line is the
-power-law extrapolation of the per-alternative GHK cost at $R=1000$, at which
-setting its error is $\sim\!10^{-3}$ against the lattice's
-$\sim\!3\times10^{-4}$ (Table~\ref{tab:frontier}). Matched-accuracy GHK
-cost at $N=5000$ extrapolates to $\sim$40 hours (Section~\ref{sec:benchmark}).}
+($k=2$ factors). The upper GHK line rescales $R$ by the squared error ratio
+($R^{-1/2}$ scaling) so both methods deliver the same accuracy; at $N=5000$
+it extrapolates to roughly fifty hours against the lattice's 21 seconds
+(Section~\ref{sec:benchmark}). Dashed segments are power-law
+extrapolations; all other points are measured (Table~\ref{tab:frontier}).}
 \label{fig:scaling}
 \end{figure}
 
@@ -424,16 +424,17 @@ $2\times10^6$-draw reference.
 $N$ & lattice transform & GHK ($R=1000$) \\
 \midrule
 5 & 20 ms, err $5.7\times10^{-4}$ & 1 ms, err $3.1\times10^{-3}$ \\
-20 & 87 ms, err $4.4\times10^{-4}$ & 12 ms, err $4.4\times10^{-3}$ \\
-50 & 214 ms, err $2.7\times10^{-4}$ & 75 ms, err $7.9\times10^{-3}$ \\
-200 & 827 ms, err $3.0\times10^{-4}$ & 1275 ms, err $6.8\times10^{-3}$ \\
-1000 & 4.1 s, err $6.8\times10^{-4}$\,$\dagger$ & --- \\
-5000 & 20.7 s, err $5.0\times10^{-4}$\,$\dagger$ & --- \\
+20 & 86 ms, err $4.4\times10^{-4}$ & 12 ms, err $4.4\times10^{-3}$ \\
+50 & 217 ms, err $2.7\times10^{-4}$ & 77 ms, err $7.9\times10^{-3}$ \\
+200 & 860 ms, err $3.0\times10^{-4}$ & 1323 ms, err $6.8\times10^{-3}$ \\
+1000 & 4.3 s, err $6.8\times10^{-4}$\,$\dagger$ & --- \\
+5000 & 21.5 s, err $5.0\times10^{-4}$\,$\dagger$ & --- \\
 \bottomrule
 \end{tabular}
 \caption{Full share vector, $k=2$ factors, one problem per size, generated
 as $\mu_i \sim N(0, s^2)$ with spread $s = 1$ through $N=200$ and $1.5$
-above, $v_{ir} \sim N(0, 0.25/k)$, $D_i \sim U[0.5, 1.5]$. Reference: $2\times10^6$ MC draws
+above, $v_{ir} \sim N(0, 0.25/k)$, $D_i \sim U[0.5, 1.5]$. Sub-second
+timings are warmed medians of three runs. Reference: $2\times10^6$ MC draws
 through $N=200$; $5\times10^5$ draws at $N=1000$ and $5000$ ($\dagger$: there
 the reference's own maximum-coordinate noise is of comparable order, so these
 entries bound the lattice error only to that order). A replication study at
@@ -450,7 +451,7 @@ power law to the reference implementation's timings over $N \in [20, 200]$
 ($\alpha \approx 2.0$; a lower bound, the asymptotic per-share cost being
 cubic) and combining with $R^{-1/2}$ error scaling suggests that matching the
 lattice's $5\times10^{-4}$ at $N=5000$ would take this implementation on the
-order of forty hours (0.25 h at $R=1000$, times
+order of fifty hours (0.27 h at $R=1000$, times
 $(6.8\times10^{-3}/5\times10^{-4})^2 \approx 185$), against 21 seconds. The baseline is a straightforward
 single-threaded Python GHK: per-alternative Cholesky, plain pseudorandom
 uniforms, one realization per problem, shares normalized by their sum. It
@@ -461,9 +462,9 @@ field-wide impossibility.
 \emph{direct utility simulation} --- draw utilities, take argmax, average --- which
 produces the whole share vector per draw and, unlike GHK, does not pay per
 alternative. We ran it at wall time matched to the lattice call (experiment
-16): its maximum-coordinate error was $1.6$--$6\times$ the lattice's at
-every tested $N$ ($6.1\times10^{-4}$ versus $3.9\times10^{-4}$ at $N=1000$,
-$0.5$M draws in the matched 4.3 seconds). At the $10^{-3}$ accuracy level,
+16): its maximum-coordinate error was $1.5$--$4\times$ the lattice's at
+every tested $N$ ($6.2\times10^{-4}$ versus $3.9\times10^{-4}$ at $N=1000$,
+$0.5$M draws in the matched 4.1 seconds). At the $10^{-3}$ accuracy level,
 then, raw forward speed does not by itself separate the methods.
 
 The separation is in error decay (experiment 17, $N=200$, $k=2$).
@@ -571,23 +572,31 @@ choice-relevant, so $D$ must come from the quotient fit.
 Loadings are centered and SVD-canonicalized (ordered columns, fixed signs),
 making results reproducible at the covariance level.
 
-With this fit: one random correlation matrix at each spectral decay
-$\lambda_m \propto m^{-\gamma}$, $\gamma \in \{0.5, 1.5, 3\}$, at
-$N=50$ (single realizations), share error against an $8\times10^6$-draw
-reference, GHK at the exact $\Sigma$ for comparison. The plotted quantity is
-the rank-$k$ approximation error of the stated procedure, not a minimum over
-factor models. Error decays fastest for near-low-rank truth ($\gamma=3$:
-$4.3\times10^{-2}$ at $k=1$ to $1.5\times10^{-3}$ at $k=8$) and slowest at
-intermediate decay ($\gamma=1.5$: $2.0\times10^{-2}$ to
-$2.3\times10^{-3}$).
+With this fit: correlation matrices at spectral decay $\lambda_m \propto
+m^{-\gamma}$, $\gamma \in \{0.5, 1.5, 3\}$, at $N=50$, sharing one
+orthogonal eigenbasis across $\gamma$ so decay comparisons are not
+confounded with basis realization. The power law holds before diagonal
+standardization, which perturbs the spectrum; the actual leading eigenvalues
+(3.7, 17.1, 34.2 at $\gamma = 0.5, 1.5, 3$) are printed by the script.
+Share error is measured against an $8\times10^6$-draw reference, with GHK
+at the exact $\Sigma$ for comparison; the plotted quantity is the rank-$k$
+approximation error of the stated procedure, not a minimum over factor
+models. Rank-8 errors: $1.8\times10^{-3}$, $3.7\times10^{-3}$, and
+$3.1\times10^{-3}$ at $\gamma = 0.5, 1.5, 3$ from $k=1$ starting points of
+$2.3\times10^{-3}$, $1.5\times10^{-2}$, $7.1\times10^{-2}$.
 
-In these three single-matrix illustrations the rank-8 approximation at the
-stated $Q, L$ had lower observed maximum discrepancy than GHK at $R=10^4$
-($3.2$--$4.1\times10^{-3}$). This was \emph{not} a wall-time-matched
-comparison: at this size the $k=8$ RQMC evaluation takes $\sim$14 s against
-0.5--0.7 s for GHK at $R=10^4$, so at $N=50$ GHK is the cheaper route to
-$3$--$4\times10^{-3}$; the lattice's advantage is large $N$ at small $k$,
-not this corner. Where accuracy demands exceed the achievable rank-$k$
+Decomposing the error with a second simulation under the fitted factor model:
+integration error is flat at $2$--$7\times10^{-4}$ across every $(\gamma,
+k)$ tested, so the rank-$k$ error is essentially covariance-fit error ---
+rank, not quadrature, is the binding constraint. Against GHK at $R = 10^4$
+($3.2$, $2.3$, $4.3\times10^{-3}$), rank-8 wins at $\gamma = 0.5$ and $3$
+but \emph{loses at intermediate decay} $\gamma = 1.5$
+($3.7\times10^{-3}$ versus $2.3\times10^{-3}$): a GHK-wins regime does
+exist, where the spectrum is too flat to truncate and too structured to
+ignore. Nor is this wall-time-matched: the $k=8$ RQMC evaluation takes
+15--24 s against 0.5--0.9 s for GHK at $R=10^4$, so at $N=50$ GHK is the
+cheaper route to $3$--$4\times10^{-3}$; the lattice's advantage is large
+$N$ at small $k$. Where accuracy demands exceed the achievable rank-$k$
 error, GHK's arbitrary-$\Sigma$ generality is the right tool.
 
 \paragraph{Substitution: a $2\times2$ factorial.} The design varies factor

@@ -136,3 +136,38 @@ reproduced exactly.
 7. Intro rewritten per user: leads with the locked-probit story, then an
    explicit 4-item list (forward pass / calibration / derivatives /
    counterfactuals) so both directions are unmistakable.
+
+---
+
+## Fourth review — executed 2026-08-14
+
+New items beyond rounds 2-3 (much of review 4 targeted an older draft):
+- Jacobian property tests added: symmetry <h,Jk>=<Jh,k>, Laplacian sign,
+  normalized-map FD in BOTH conventions (min-wins + reflected max-wins).
+- Theorem strengthened to bijection onto the simplex interior.
+- Algorithm box (rectangle rule, pruning absorbed by normalization, min-wins
+  orientation, full inversion update spec) + generator in table caption.
+- exp18 TOP-TWO DELETION BASELINE (reviewer's O(RN+N^2) construction): at
+  matched 64s wall time, field ensemble 4.2e-5 vs top-two MC 1.2e-4 on top-20
+  deletion rows vs independent 1e8-draw reference — field ~3x more accurate;
+  2.8e-17 clarified as algebraic consistency only.
+- exp17 additions: QMC-GHK (4.2e-4 @ 7.0s, 5-7x better than plain GHK, still
+  off the lattice frontier), GHK 8-seed band (median 7.5e-3, [3.9e-3,1.3e-2]),
+  refinement.png replaces the smoothness panel (roughness stat kept as text).
+- exp14 Part A REDESIGN: shared eigenbasis across gamma; actual post-
+  standardization spectra disclosed; decomposition shows integration error
+  flat 2-7e-4 => rank-k error IS covariance-fit error. KEY REVERSAL: with the
+  shared basis, rank-8 LOSES to GHK R=1e4 at gamma=1.5 (3.7e-3 vs 2.3e-3) —
+  the GHK-wins regime exists at intermediate decay; paper says so.
+- exp13: warmed median-of-3 timings; two-line GHK scaling figure (R=1000 +
+  lattice-matched-error via R^{-1/2} scaling) per user request.
+- exp16: 99%-mass-restricted error metric added.
+- exp13 README stale claims scrubbed ("noise as bias", "unbiased derivatives").
+- Style per user: title "Scalable Probit Calibration", 152-word abstract,
+  short paragraphs, GHK defined at first use, no self-commentary
+  ("Anchors first", "Scope honestly", "measured rather than asserted" etc.),
+  intro reframed on universal logit tools + Thurstone 1927 + explicit
+  forward/calibration list + prior-art table + scaling figure up front.
+Remaining queued: minimax tilting baseline, substitution replication across
+designs/heteroskedasticity axis, style-repo guidelines (repo not found —
+possibly private; user to provide).
