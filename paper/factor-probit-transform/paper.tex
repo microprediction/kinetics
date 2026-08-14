@@ -4,24 +4,30 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={Deterministic Approximation and Share Inversion for
+Factor Probit with Many Alternatives}, pdfauthor={Peter Cotton}}
 
 \newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
 \theoremstyle{remark}
 \newtheorem{remark}{Remark}
 
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\Prob}{\mathbb{P}}
 
-\title{Deterministic Choice Probabilities and Share Inversion\\
+\title{Deterministic Approximation and Share Inversion\\
 for Factor Probit with Many Alternatives}
 \author{Peter Cotton\thanks{Numbers in this paper are produced by committed, seeded
 scripts with correctness anchors run before any comparison
-(\url{https://github.com/microprediction/kinetics}, experiments 13--16; an
-immutable commit will be pinned at submission). The algorithm ships in the
-\texttt{thurstone} package; package--benchmark agreement is itself a reported
-number. Benchmarks: Apple M4, 16\,GB, Python 3.12.9, NumPy 2.4.6, SciPy
-1.18.0, single-threaded; timings are single realizations without warm-up
-medians; peak memory below 2\,GB.}}
+(\url{https://github.com/microprediction/kinetics}, experiments 13--17; the
+exact commit is recorded in the repository README and an immutable tag is
+pinned at circulation). The algorithm ships in the \texttt{thurstone}
+package; package--benchmark agreement is itself a reported number.
+Benchmarks: Apple M4, 16\,GB, Python 3.12.9, NumPy 2.4.6, SciPy 1.18.0;
+experiment 17 enforces single-threaded BLAS via \texttt{threadpoolctl} and
+reports median-of-3 timings for sub-second calls; long simulations are single
+realizations, disclosed as such. Monte Carlo chunk sizes derive from an
+explicit memory budget (1.5\,GB); peak resident memory stays below 2\,GB.}}
 \date{August 2026 --- working draft, revised}
 
 \begin{document}
@@ -31,47 +37,93 @@ medians; peak memory below 2\,GB.}}
 Multinomial probit choice probabilities are high-dimensional Gaussian integrals
 with no closed form; the standard tool, the GHK simulator, computes them one
 alternative at a time by smoothed importance sampling. For the factor-structured
-case $\Sigma = VV^\top + \mathrm{diag}(D)$ we describe a deterministic method
-that computes \emph{all} $N$ probabilities together: conditionally on $k$
-Gaussian factors the alternatives are independent, and a lattice
-survival-product identity yields the entire share vector in $O(QNL)$ for $Q$
-quadrature nodes and $L$ lattice points --- deterministic quadrature at low
-factor rank, reproducible fixed-seed RQMC at higher rank. In the tested $k=2$
-problems the method had observed maximum discrepancy below $10^{-3}$ from the
-stated simulation references, from $N=5$ to $N=5000$ (22 seconds at $N=5000$,
-where the reference's own noise is of comparable order), and became faster
-than our reference GHK implementation near $N=200$; extrapolating that
-implementation's timing and $R^{-1/2}$ accuracy suggests hours, not seconds,
-at matched error for $N=5000$. A direct utility simulator at matched wall
-time reaches errors within a factor of $1.3$--$3$ at these budgets, so at the
-$10^{-3}$ level the case for the method is not raw forward speed but error
-decay, reproducibility, resampling-free derivatives, and inversion. Because
-the approximation is reproducible and differentiable without resampling, it supports
-practical market-share inversion (a Jacobi-style diagonal-Newton fixed point;
-$N=1000$ in under a minute) and reuse of the conditional field for all $N$
-single-removal counterfactuals in $O(QN^2L)$. Boundary experiments are reported
-as they fell: on dense covariances with three spectral-decay profiles, the
-rank-8 approximation matched or beat GHK at $R=10^4$ throughout the tested
-size, and in a substitution study with all noise families standardized to unit
-variance, factor structure supplied the larger accuracy increment on
-high-mass deletions while family and factor increments were comparable on
-mid-mass deletions, in this Gaussian-adjacent design.
+case $\Sigma = VV^\top + \mathrm{diag}(D)$ we describe a reproducible
+approximation that computes \emph{all} $N$ probabilities together:
+conditionally on $k$ Gaussian factors the alternatives are independent, and a
+lattice survival-product identity yields the entire share vector in $O(QNL)$
+for $Q$ factor nodes and $L$ lattice points --- Gauss--Hermite quadrature at
+low factor rank, fixed-design RQMC at higher rank. In tested $k=2$ problems
+the maximum observed discrepancy from simulation references stayed below
+$10^{-3}$ from $N=5$ to $N=5000$ (21 seconds at $N=5000$); a direct utility
+simulator at matched wall time reaches errors $1.6$--$6\times$ larger at
+these budgets and separates decisively below the $10^{-3}$ level, so the case
+for the method is error decay, reproducibility, resampling-free derivatives,
+and calibration --- not raw forward speed alone. The share map is
+the gradient of the social-surplus function; its Jacobian is minus a weighted
+graph Laplacian, giving symmetric positive-definite reduced systems,
+$O(QNL)$ Jacobian--vector products, and a globally well-posed share inversion
+(existence, uniqueness modulo location) solved at $N=1000$ in under a minute,
+with all $N$ single-removal counterfactuals in $O(QN^2L)$ from one conditional
+field. The method requires the factor form: where $\Sigma$ has no adequate
+low-rank-plus-diagonal approximation in the choice-relevant quotient space,
+simulation at exact $\Sigma$ remains the tool.
 \end{abstract}
 
 \section{Introduction}
 
-The multinomial probit (MNP) model computes choice among $N$ alternatives with
-jointly normal utilities, allowing flexible substitution patterns --- the
-property that plain multinomial logit trades away for tractability. Its
-probabilities are $(N-1)$-dimensional Gaussian orthant integrals. The field's
-workhorse for three decades has been the GHK simulator
-\cite{geweke1994,hajivassiliou1998,train2009}: smoothed importance sampling
-along a Cholesky factor, one alternative at a time. GHK is accurate and well
-understood at moderate $N$; its structural costs are that error decays as
-$R^{-1/2}$ in the number of draws, that the full share vector requires a
-separate computation per alternative, and that each evaluation is a
-finite-simulation approximation whose characteristics enter derivative-based
-estimation (Section~\ref{sec:benchmark}).
+When a consumer chooses one product from a large assortment, a commuter one
+route from a network, or a platform ranks one item above thousands of others,
+the modeling question is always the same: if an alternative disappears or
+changes, \emph{where does its demand go?} Getting that right requires
+correlated utilities. The canonical model that allows them --- multinomial
+probit (MNP), with jointly normal utilities and unrestricted substitution
+patterns --- has been effectively locked away from exactly the settings that
+need it most. Its probabilities are $(N-1)$-dimensional Gaussian integrals
+with no closed form, and for three decades the field's tool has been the GHK
+simulator \cite{geweke1994,hajivassiliou1998,train2009}: smoothed importance
+sampling, one alternative at a time, with $R^{-1/2}$ error in the number of
+draws. At $N$ in the hundreds or thousands, that is a separate simulation per
+alternative per likelihood evaluation. So practice at scale retreats to the
+multinomial logit family --- not because anyone believes proportional (IIA)
+substitution, but because logit is what remains computable. The cost of that
+retreat is measurable: in the substitution study of
+Section~\ref{sec:boundary}, plain logit misallocates about 23\% of the
+demand released by a deleted alternative where the correctly structured probit
+model misallocates 5\%.
+
+This paper's point is that for the covariance structure applied work most
+often actually has --- a factor model, $\Sigma = VV^\top + \mathrm{diag}(D)$
+--- the lock is not real. We give one algorithm that solves \emph{both
+directions} of the probit share map, plus its derivatives and
+counterfactuals:
+
+\begin{enumerate}
+\item \textbf{Forward pass} (utilities $\to$ shares): all $N$ choice
+probabilities at once in $O(QNL)$ for $Q$ factor nodes and $L$ lattice
+points. All 5000 shares of an $N=5000$ problem in 21 seconds, at accuracy
+near the $10^{-4}$ noise floor of the simulation reference; matching that
+with our per-alternative GHK implementation extrapolates to roughly forty
+hours.
+\item \textbf{Calibration} (observed shares $\to$ utilities): the probit
+analogue of the logit-side inversions used throughout demand estimation
+\cite{berry1995,conlon2020}. Globally well-posed
+(Theorem~\ref{thm:inv}: existence and uniqueness modulo location) and
+solved for $N=1000$ in under a minute.
+\item \textbf{Derivatives}: Jacobian--vector products in $O(QNL)$ with an
+exact weighted-graph-Laplacian structure --- symmetric positive-definite
+reduced systems, hence Krylov methods --- with no resampling noise.
+\item \textbf{Counterfactuals}: all $N$ single-removal share vectors from
+one conditional field pass in $O(QN^2L)$.
+\end{enumerate}
+
+The mechanism is a single trick used four ways: conditionally on the $k$
+factors the alternatives are independent, and a lattice survival-product
+identity computes every alternative's integral in one shared $O(NL)$ pass ---
+the field's survival product is built once and each alternative's
+leave-one-out integrand is recovered by division.
+
+Scope, honestly. The method needs the factor form: where $\Sigma$ has no
+adequate low-rank-plus-diagonal approximation in the choice-relevant quotient
+space, simulation at exact $\Sigma$ remains the tool
+(Section~\ref{sec:boundary}). And at coarse accuracy targets
+($\sim10^{-3}$), plain direct utility simulation is a genuinely competitive
+forward baseline (Section~\ref{sec:benchmark}); the decisive advantages are
+error decay below that level, reproducibility, resampling-free derivatives,
+and the inversion and counterfactual machinery. The one-pass identity itself
+comes from an unlikely literature --- inferring ability from win
+probabilities in multi-entrant races \cite{cotton2021} --- which is perhaps
+why it has not been assembled for probit before, despite each ingredient
+being classical.
 
 This paper concerns the factor-structured case
 \begin{equation}
@@ -80,19 +132,13 @@ U_i \;=\; \mu_i + v_i^\top f + \sqrt{D_i}\,\varepsilon_i,
 \quad D_i > 0,
 \label{eq:model}
 \end{equation}
-i.e.\ $\Sigma = VV^\top + \mathrm{diag}(D)$ --- the form in which applied
-covariance structure often arrives. Factor dimension reduction for probit is
-itself classical: one-factor quadrature goes back to Butler and Moffitt
-\cite{butler1982}, and factor-analytic probit to Elrod and Keane
-\cite{elrod1995}. What appears not to have been assembled is the
-\emph{all-alternatives} computation: conditionally on the factors, a lattice
-survival-product identity \cite{cotton2021} computes every alternative's
-one-dimensional integral in a single $O(NL)$ pass --- the field survival
-product is built once and each alternative's leave-one-out field is recovered
-by division. A $k$-dimensional quadrature around that inner loop gives the
-whole share vector deterministically. The contribution here is that assembly,
-its inverse (share-to-utility) transform, the reuse of the conditional field
-for removal counterfactuals, and benchmark plus boundary evidence.
+i.e.\ $\Sigma = VV^\top + \mathrm{diag}(D)$. Factor dimension reduction
+for probit is itself classical --- one-factor quadrature goes back to Butler
+and Moffitt \cite{butler1982}, factor-analytic probit to Elrod and Keane
+\cite{elrod1995} --- and GHK is accurate and well understood at moderate
+$N$. The contribution here is the all-alternatives assembly, its inverse
+transform, the derivative and counterfactual structure, and benchmark plus
+boundary evidence for all of it.
 
 \begin{proposition}[Conditional identity]\label{prop:identity}
 Under \eqref{eq:model}, with $g_i(\cdot \mid f)$ and $F_i(\cdot \mid f)$
@@ -140,29 +186,110 @@ differentiating $p(\mu + c\mathbf{1}) = p(\mu)$ in $c$ gives $J\mathbf{1} =
 projecting with $B^\top$ gives the reduced formula under the stated
 regularity.
 \end{proof}
-\begin{remark}
-For the Gaussian model with $D_i > 0$, $p(\mu) = \nabla_\mu G(\mu)$ for the
-social-surplus function $G(\mu) = \E \max_i \{\mu_i + \xi_i\}$; strict
-convexity of $G$ on $\mathbf{1}^\perp$ would give injectivity of the share
-map modulo location and, with a coercivity argument, existence and uniqueness
-of the inverse for every strictly positive target. We use this only as
-motivation here; a proof is future work.
-\end{remark}
+\begin{theorem}[Weighted-Laplacian structure and global inversion]\label{thm:inv}
+For model \eqref{eq:model} with $D_i > 0$, in max-wins coordinates, define
+for $i \ne j$
+\[
+w_{ij} \;=\; \E_f \int g_i(x \mid f)\, g_j(x \mid f)
+\prod_{\ell \ne i,j} F_\ell(x \mid f)\, dx \;>\; 0 .
+\]
+Then $J = \partial p / \partial \mu$ satisfies $J_{ij} = -w_{ij}$ and
+$J_{ii} = \sum_{j \ne i} w_{ij}$, i.e.
+\[
+J \;=\; \sum_{i<j} w_{ij} (e_i - e_j)(e_i - e_j)^\top,
+\qquad
+h^\top J h \;=\; \sum_{i<j} w_{ij} (h_i - h_j)^2 ,
+\]
+a weighted graph Laplacian with everywhere-positive weights: $J$ is symmetric,
+positive semidefinite, has $\mathbf{1}$ as its only null direction, and
+$B^\top J B \succ 0$ for every full-rank basis $B$ of $\mathbf{1}^\perp$.
+Moreover $p = \nabla G$ for the social-surplus function
+$G(\mu) = \E \max_i \{\mu_i + \xi_i\}$, and for every strictly positive
+target $\hat p$ the inverse problem $p(\mu) = \hat p$ has exactly one
+solution on $\mathbf{1}^\perp$.
+\end{theorem}
+\begin{proof}
+Differentiating \eqref{eq:forward} in $\mu_j$ and integrating by parts gives
+$J_{ij} = -w_{ij}$ for $i \ne j$; the diagonal follows from $J\mathbf{1} = 0$
+(Proposition~\ref{prop:ident}), and positivity of $w_{ij}$ from positivity of
+Gaussian densities. The quadratic form is then immediate, and it vanishes only
+for constant $h$. For inversion, minimize $H(\mu) = G(\mu) - \hat p^\top
+\mu$ over $\mathbf{1}^\perp$: $H$ is strictly convex there (its Hessian is
+the reduced $J$), and since the shocks have zero mean, $G(\mu) \ge \max_i
+\mu_i$, so
+\[
+H(\mu) \;\ge\; \max_i \mu_i - \hat p^\top \mu
+\;=\; \textstyle\sum_i \hat p_i (\max_j \mu_j - \mu_i)
+\;\ge\; \hat p_{\min} \,(\max_i \mu_i - \min_i \mu_i)
+\;\to\; \infty
+\]
+as $\|\mu\| \to \infty$ on $\mathbf{1}^\perp$. The unique minimizer
+satisfies $\nabla G = \hat p$. (Every identity here is verified numerically
+in the repository: the $w_{ij}$ representation to $6\times10^{-9}$ against
+finite differences, symmetry to $4\times10^{-12}$, and positive definiteness
+of the reduced numerical Jacobian; the theorem statement was proposed by a
+referee.) Social-surplus convex duality for discrete choice is classical
+\cite{chiong2016,norets2013}; the contribution here is not well-posedness
+itself but its scalable realization.
+\end{proof}
 
 \begin{proposition}[Jacobian--vector products in $O(QNL)$]\label{prop:jvp}
-For a direction $h$, let $A(x, f) = \sum_j h_j\, \partial_{a_j} \log
-S_j(x \mid f)$ in the reflected (min-wins) coordinates $a$. Then
+With hazards $\lambda_j = g_j / F_j$, $\Lambda = \sum_j \lambda_j$, and
+$A = \sum_j h_j \lambda_j$ (all conditional on $f$, all functions of $x$),
+the Jacobian of the exact max-wins map acts on a direction $h$ as
 \[
-(Jh)_i \;=\; \E_f \int R_i \left[\, h_i\, \partial_{a_i} g_i
-+ g_i \left( A - h_i\, \partial_{a_i} \log S_i \right) \right] dx,
-\qquad R_i = \prod_{j \ne i} S_j,
+(Jh)_i \;=\; \E_f \int g_i \Big(\prod_{j \ne i} F_j\Big)
+\left( h_i \Lambda - A \right) dx ,
 \]
-where the field sum $A$ is formed once per node and lattice location, so all
-$N$ components cost $O(NL)$ per node. (Verified against central finite
-differences to $8\times10^{-9}$; implemented and tested in the repository.)
+where the field sums $\Lambda$ and $A$ are formed once per node and lattice
+point, so all $N$ components cost $O(NL)$ per node. Translation invariance is
+visible ($h = \mathbf{1}$ gives $A = \Lambda$, hence $Jh = 0$), and the
+weighted-Laplacian form of Theorem~\ref{thm:inv} follows by expanding $A$.
 This enables Krylov solves of the reduced system in
 Proposition~\ref{prop:ident} without forming $J$ densely at $O(QN^2L)$.
 \end{proposition}
+\begin{proof}
+Differentiate \eqref{eq:forward}: the $\mu_i$-derivative of $g_i$
+contributes $\int g_i' \prod_{j\ne i} F_j$, which after integration by
+parts equals $\int g_i \sum_{j \ne i} \lambda_j F_j^{-1} \cdot
+(\prod_{\ell \ne i} F_\ell) \, g_j / \lambda_j$-terms assembled as
+$\int g_i \prod_{j \ne i} F_j (\Lambda - \lambda_i)$; the
+$\mu_j$-derivatives of the $F_j$ factors contribute $-w_{ij} h_j$ summed to
+$-\int g_i \prod_{j\ne i} F_j (A - h_i \lambda_i)$. Combining gives the
+display.
+\end{proof}
+
+\paragraph{Which map is differentiated, exactly.} Three maps must be
+distinguished: the exact max-wins map $p^{\max}(\mu)$; the reflected
+min-wins map $p^{\min}(a)$ used by the implementation, related by $a = -\mu$
+so that $D_\mu p^{\max}[h] = D_a p^{\min}[-h]$; and the implemented
+approximation $p_{Q,L} = \tilde p_{Q,L} / (\mathbf{1}^\top \tilde
+p_{Q,L})$, whose derivative carries a normalization correction: with $v =
+D\tilde p[h]$ and $s = \mathbf{1}^\top \tilde p$,
+\[
+D p_{Q,L}[h] \;=\; \frac{v - p_{Q,L}\, (\mathbf{1}^\top v)}{s}.
+\]
+Since $\mathbf{1}^\top v = 0$ analytically, the correction is of the order
+of the quadrature defect; empirically the uncorrected formula matches central
+finite differences of the returned normalized map to $5\times10^{-9}$. One
+further convention: the adaptive lattice endpoints depend on $\mu$, so
+derivative statements refer to the \emph{fixed-design} map --- the lattice
+envelope and factor nodes are frozen during any inversion or outer-derivative
+computation, and the inversion's analytic own-location slopes are accordingly
+a Jacobi quasi-Newton preconditioner rather than the diagonal of the adaptive
+map's Jacobian.
+
+\paragraph{Tail-stable implementation.} A referee exhibited a modest problem
+($N = 8$, heterogeneous $D$) on which our published derivative code returned
+NaN/infinity: the density was floored before its logarithm while the exact
+log-survival stayed finite, producing spurious $e^{+92}$ hazards. The
+implementation now works in the log domain throughout --- $\log \Phi$
+directly (never $1 - \Phi$, which underflows at $z \approx 8.3$), analytic
+$\log g$, hazards as $\exp(\log g - \log \Phi)$ (bounded, $\sim z$ in
+the tail) --- and the failing case is a regression test. The same fix applies
+to the forward map, where deep-tail shares now resolve to genuine small
+positives rather than floored zeros.
+
 
 The factors need not be Gaussian: \eqref{eq:forward} requires only
 conditional independence and an integrable factor law, so Student, mixture,
@@ -207,7 +334,7 @@ inversion \cite{cotton2021} and the calibration practice of
 \section{Benchmark against GHK}\label{sec:benchmark}
 
 Anchors first. On the binary case, where MNP has a closed form, the lattice
-transform agrees to $3\times10^{-16}$ and our GHK implementation --- validated
+transform agrees to $3.3\times10^{-16}$ and our GHK implementation --- validated
 before being compared against --- to $2\times10^{-14}$ at $R = 2\times10^5$
 (an easy anchor for both methods, useful for code validation rather than as
 evidence about the hard regime). At $N=5$ both methods sit within the noise of
@@ -220,7 +347,7 @@ reference. A maximum over $N$ coordinates tends to grow with $N$ at fixed
 per-coordinate accuracy, and the reference's own maximum-coordinate noise
 behaves likewise; mean-absolute and total-variation summaries are committed
 alongside (experiment 16): at $N=1000$ the lattice's mean absolute error is
-$6\times10^{-6}$ and total variation $3.1\times10^{-3}$ against a fresh
+$5.6\times10^{-6}$ and total variation $2.8\times10^{-3}$ against a fresh
 $2\times10^6$-draw reference.
 
 \begin{table}[h]
@@ -229,12 +356,12 @@ $2\times10^6$-draw reference.
 \toprule
 $N$ & lattice transform & GHK ($R=1000$) \\
 \midrule
-5 & 21 ms, err $4.1\times10^{-4}$ & 1 ms, err $3.1\times10^{-3}$ \\
-20 & 95 ms, err $3.8\times10^{-4}$ & 12 ms, err $4.4\times10^{-3}$ \\
-50 & 257 ms, err $2.1\times10^{-4}$ & 77 ms, err $7.7\times10^{-3}$ \\
-200 & 930 ms, err $2.8\times10^{-4}$ & 1333 ms, err $6.7\times10^{-3}$ \\
-1000 & 4.5 s, err $8.0\times10^{-4}$\,$\dagger$ & --- \\
-5000 & 22.6 s, err $9.0\times10^{-4}$\,$\dagger$ & --- \\
+5 & 20 ms, err $5.7\times10^{-4}$ & 1 ms, err $3.1\times10^{-3}$ \\
+20 & 87 ms, err $4.4\times10^{-4}$ & 12 ms, err $4.4\times10^{-3}$ \\
+50 & 214 ms, err $2.7\times10^{-4}$ & 75 ms, err $7.9\times10^{-3}$ \\
+200 & 827 ms, err $3.0\times10^{-4}$ & 1275 ms, err $6.8\times10^{-3}$ \\
+1000 & 4.1 s, err $6.8\times10^{-4}$\,$\dagger$ & --- \\
+5000 & 20.7 s, err $5.0\times10^{-4}$\,$\dagger$ & --- \\
 \bottomrule
 \end{tabular}
 \caption{Full share vector, $k=2$ factors, one problem per size (utility
@@ -244,7 +371,7 @@ the reference's own maximum-coordinate noise is of comparable order, so these
 entries bound the lattice error only to that order). A replication study at
 common spread 1.0 (experiment 16; ten problems per size at $N \le 200$, three
 at $N=1000$, twin independent $2\times10^6$-draw references per problem)
-gives worst-case lattice error $2.9$--$3.6\times10^{-4}$ at every size, at or
+gives worst-case lattice error $3.5$--$4.6\times10^{-4}$ at every size, at or
 below the references' own replicate-to-replicate noise. Lattice error stayed
 below $10^{-3}$ throughout; GHK cost crossed over by $N \approx 200$.}
 \label{tab:frontier}
@@ -254,8 +381,9 @@ below $10^{-3}$ throughout; GHK cost crossed over by $N \approx 200$.}
 power law to the reference implementation's timings over $N \in [20, 200]$
 ($\alpha \approx 2.0$; a lower bound, the asymptotic per-share cost being
 cubic) and combining with $R^{-1/2}$ error scaling suggests that matching the
-lattice's $9\times10^{-4}$ at $N=5000$ would take this implementation on the
-order of twelve hours, against 22 seconds. The baseline is a straightforward
+lattice's $5\times10^{-4}$ at $N=5000$ would take this implementation on the
+order of forty hours (0.25 h at $R=1000$, times
+$(6.8\times10^{-3}/5\times10^{-4})^2 \approx 185$), against 21 seconds. The baseline is a straightforward
 single-threaded Python GHK: per-alternative Cholesky, plain pseudorandom
 uniforms, one realization per problem, shares normalized by their sum. It
 establishes the scaling of the per-alternative simulation approach, not a
@@ -263,27 +391,41 @@ field-wide impossibility. The strongest cheap baseline is \emph{direct
 utility simulation} --- draw utilities, take argmax, average --- which
 produces the whole share vector per draw and, unlike GHK, does not pay per
 alternative. We ran it at wall time matched to the lattice call (experiment
-16): its maximum-coordinate error was within a factor of $1.3$--$3$ of the
-lattice's at every tested $N$ ($7.2\times10^{-4}$ versus $4.9\times10^{-4}$
-at $N=1000$, $0.6$M draws in the matched 4.4 seconds). At the $10^{-3}$
-accuracy level, then, raw forward speed does not by itself separate the
-methods; what does is error decay ($R^{-1/2}$ against spectral-in-$L$,
-so each added decimal digit costs $100\times$ in draws against a linear
-lattice refinement), reproducibility, resampling-free derivatives, and the
-inversion and removal machinery below. Remaining stronger baselines ---
-QMC-GHK, seed-replicated uncertainty bands, minimax tilting \cite{botev2017}
---- are queued in the repository.
+16): its maximum-coordinate error was $1.6$--$6\times$ the lattice's at
+every tested $N$ ($6.1\times10^{-4}$ versus $3.9\times10^{-4}$ at $N=1000$,
+$0.5$M draws in the matched 4.3 seconds). At the $10^{-3}$ accuracy level,
+then, raw forward speed does not by itself separate the methods. What does is
+error decay, and this is now measured rather than asserted (experiment 17,
+$N=200$, $k=2$): holding the factor rule fixed, lattice self-convergence is
+$2.7\times10^{-8}$ at $L=101$ and at machine precision from $L \approx 200$
+--- the integrand is analytic and endpoint-decaying, so the uniform lattice
+is effectively spectrally accurate and $L$-error is subdominant; holding $L$
+fixed, the Gauss--Hermite sweep decays from $5.3\times10^{-4}$ (order 3) to
+$5.9\times10^{-9}$ (order 15); the pre-normalization defect
+$|1 - \mathbf{1}^\top \tilde p\,|$ is $2.4\times10^{-8}$. On the same
+problem the measured accuracy--time frontier
+(Figure~\ref{fig:frontier}, left) has the lattice at $4.1\times10^{-5}$
+error in 0.03 seconds (at the twin-reference noise floor), direct MC at
+$1.2\times10^{-4}$ in 15.7 seconds ($R = 10^7$), scrambled-Sobol direct QMC
+at $2.0\times10^{-4}$ in 2.6 seconds ($2^{20}$ points), and GHK at
+$2.0\times10^{-3}$ in 10.1 seconds ($R = 10^4$): at accuracy targets below
+$10^{-3}$ the deterministic map separates decisively, consistent with
+$R^{-1/2}$ against a rapidly-converging quadrature. Remaining stronger
+baselines --- QMC-GHK, minimax tilting \cite{botev2017} --- are queued in
+the repository.
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.48\textwidth]{figs/frontier.png}\hfill
+\includegraphics[width=0.48\textwidth]{figs/frontier_full.png}\hfill
 \includegraphics[width=0.48\textwidth]{figs/smoothness.png}
-\caption{Left: wall time for the full share vector (log--log). Right: a choice
-probability along a line in utility space. Fresh-draw GHK shows run-to-run
-simulation noise (roughness statistic --- maximum second difference over
-$dt^2$ --- 39.3 vs.\ 0.01); common-random-number GHK is a smooth
-deterministic approximation conditional on its draw set, and its curve
-differs visibly from the lattice curve --- a discrepancy between two
+\caption{Left: measured accuracy--time frontier at $N=200$, $k=2$ (experiment
+17) --- every method timed on the same problem against twin
+$5\times10^7$-draw references; direct simulation is a first-class baseline.
+Right: fixed-design smoothness along a utility path. Fresh-draw GHK shows
+run-to-run simulation noise (roughness statistic --- maximum second
+difference over $dt^2$ --- 39.3, versus 0.01 for both common-random-number
+GHK and the lattice); CRN-GHK is smooth conditional on its draw set, and the
+offset between its curve and the lattice's is a discrepancy between two
 approximations whose decomposition requires an independent high-accuracy
 reference, queued. All three are approximations.}
 \label{fig:frontier}
@@ -302,92 +444,117 @@ versus draw count --- not the possibility of differentiation.
 
 \paragraph{Share inversion.} At $N=1000$, $k=2$, with targets from
 $5\times10^6$ MC draws floored at $10^{-7}$ and renormalized: the inversion
-completes in 59 seconds. The iteration solves its own equations to
-$6.3\times10^{-9}$ --- a statement about the solver, not statistical accuracy,
+completes in 57 seconds. The iteration solves its own equations to
+$6.4\times10^{-9}$ --- a statement about the solver, not statistical accuracy,
 since the target carries sampling noise $\sim\!2\times10^{-4}$ --- and
 recovers the utilities of identified alternatives (target share above
-$3\times10^{-4}$) to maximum error $0.014$. A replication study (experiment
+$3\times10^{-4}$) to maximum error $0.017$. A replication study (experiment
 16) repeats the inversion on a second $N=1000$ problem against three
-independent $5\times10^6$-draw targets: 58--61 seconds each, the same 162
-alternatives identified each time (98.1\% of share mass), recovery error
-maximum $0.018$--$0.025$ and median $0.0026$ across replicates, with the
-recovery-versus-share curve committed alongside. We are not aware of probit
+independent $5\times10^6$-draw targets: 57 seconds each, 161--162
+alternatives identified (98.1\% of share mass), recovery error maximum
+$0.015$--$0.023$ and median $\approx 0.0027$ across replicates, with the
+recovery-versus-share curve committed alongside. Numerical well-posedness
+matches Theorem~\ref{thm:inv}: the reduced Jacobian assembled from $N$
+JVP calls at $N=50$ is symmetric to $1.7\times10^{-18}$, has row-sum defect
+$6.2\times10^{-17}$, and reduced eigenvalues in $[2.5\times10^{-5},
+0.22]$ --- positive definite as proved. We are not aware of probit
 share inversion at this scale in current simulation-based practice.
 
 \paragraph{Removal ensemble.} All 200 single-removal share vectors from one
-conditional field construction in $O(QN^2L)$: 3.7$\times$ faster than an
-extrapolation from direct recomputations, with ten evenly spaced removals
-checked directly (maximum discrepancy $5.6\times10^{-17}$).
+conditional field construction in $O(QN^2L)$: 51.5 seconds versus 172.4
+seconds recomputing (3.3$\times$), with ten evenly spaced removals checked
+directly (maximum discrepancy $2.8\times10^{-17}$).
 
 \section{Boundary experiments}\label{sec:boundary}
 
 \paragraph{General covariance through the factor approximation.} The method
-requires $\Sigma \approx VV^\top + D$; GHK does not. We generated one random
-correlation matrix at each spectral decay $\lambda_m \propto m^{-\gamma}$,
-$\gamma \in \{0.5, 1.5, 3\}$, at $N=50$ (single realizations; replication over
-matrices and utility vectors is queued), fit factors by iterated principal
-factor analysis, and measured share error against an $8\times10^6$-draw
-reference, with GHK at the exact $\Sigma$ for comparison. The plotted quantity
-is the \emph{rank-$k$ approximation error of the stated fitting and
-integration procedure} --- covariance-fit error plus factor-integration and
-lattice error --- not a minimum over factor models. Findings as they fell:
-error decays fastest for near-low-rank truth ($\gamma=3$: $5.6\times10^{-2}$
-at $k=1$ to $1.2\times10^{-3}$ at $k=8$) and slowest at intermediate decay
-($\gamma=1.5$: $2.4\times10^{-2}$ to $2.6\times10^{-3}$); at every tested
-decay the $k=8$ result (fixed-seed RQMC nodes) matched or beat GHK at
-$R=10^4$ ($3.2$--$4.1\times10^{-3}$). We expected a clear GHK-wins regime at
-this size and did not find one; where accuracy demands exceed the achievable
-rank-$k$ error --- intermediate spectra with $k$ capped, or short-range
-correlation at large $N$ --- GHK's arbitrary-$\Sigma$ generality is the right
-tool. Further practical boundaries (small $D_{\min}/D_{\max}$, wide utility
-ranges, near-perfect correlation, extreme shares) stress the uniform lattice
-and are queued as resolution sweeps in $L$ and $Q$.
+requires $\Sigma \approx VV^\top + D$; GHK does not. Choices depend on
+$(\mu, \Sigma)$ only through $P\mu$ and $P\Sigma P$, $P = I -
+\mathbf{1}\mathbf{1}^\top/N$: a common factor loading $V \to V +
+\mathbf{1}c^\top$ shifts every conditional location equally and cannot move
+the argmax (machine-precision fact, tested), so the factor fit must be run in
+this choice-relevant quotient space --- fitting raw $\Sigma$ can spend
+scarce rank on an irrelevant common component ($\Sigma = \tau^2
+\mathbf{1}\mathbf{1}^\top + \beta\beta^\top + D$ with large $\tau$: the
+raw rank-1 fit takes $\mathbf{1}\mathbf{1}^\top$ and misses
+$\beta\beta^\top$ entirely; on such an example the contrast-space fit cuts
+rank-1 share error from $4.6\times10^{-2}$ to $8.3\times10^{-3}$). A
+caution from a wrong first implementation: only the common \emph{factor}
+direction is irrelevant; a common addition to $D$ inflates every difference
+variance and is choice-relevant, so $D$ must come from the quotient fit.
+Loadings are centered and SVD-canonicalized (ordered columns, fixed signs),
+making results reproducible at the covariance level. With this fit: one
+random correlation matrix at each spectral decay $\lambda_m \propto
+m^{-\gamma}$, $\gamma \in \{0.5, 1.5, 3\}$, at $N=50$ (single
+realizations), share error against an $8\times10^6$-draw reference, GHK at
+the exact $\Sigma$ for comparison. The plotted quantity is the rank-$k$
+approximation error of the stated procedure, not a minimum over factor
+models. Findings: error decays fastest for near-low-rank truth ($\gamma=3$:
+$4.3\times10^{-2}$ at $k=1$ to $1.5\times10^{-3}$ at $k=8$) and slowest at
+intermediate decay ($\gamma=1.5$: $2.0\times10^{-2}$ to
+$2.3\times10^{-3}$). In these three single-matrix illustrations the rank-8
+approximation at the stated $Q, L$ had lower observed maximum discrepancy
+than GHK at $R=10^4$ ($3.2$--$4.1\times10^{-3}$); this was \emph{not} a
+wall-time-matched comparison --- at this size the $k=8$ RQMC evaluation
+takes $\sim$14 s against 0.5--0.7 s for GHK at $R=10^4$ (timings now in the
+committed output), so at $N=50$ GHK is the cheaper route to
+$3$--$4\times10^{-3}$; the lattice's advantage is large $N$ at small $k$,
+not this corner. Where accuracy demands exceed the achievable rank-$k$ error,
+GHK's arbitrary-$\Sigma$ generality is the right tool.
 
-\paragraph{Substitution fidelity, with noise families standardized.} Why want
-probit-style flexibility at scale? Ground truth misspecified for every
-candidate: $t(5)$-distributed factors and skew-normal idiosyncratic noise,
-\emph{all noise families standardized to mean zero and unit variance}. (An
-earlier version of this experiment confounded noise family with noise
-variance; the standardized rerun is reported here, and the ordering
-survived.) Candidates --- plain logit, factor mixed logit (unit-variance
-Gumbel base), factor probit --- are calibrated to identical full-menu shares
-with the true loadings supplied (calibration residuals $4.9\times10^{-11}$
-and $1.1\times10^{-9}$ on menu shares), and scored on deletion
-counterfactuals against fresh simulation truths. Blocks whose removed share
-sits at the Monte Carlo noise floor are uninformative (all models tie). Of
-24 deletion blocks, one falls in the high-mass stratum and four in the
-mid-mass stratum --- small strata, so the numbers below are indicative, not
-estimates with useful standard errors. The misallocated fraction of
-redistributed mass is:
+\paragraph{Substitution fidelity: a $2\times2$ factorial.} Why want
+probit-style flexibility at scale? An earlier version of this experiment
+could not attribute its increments: its Gumbel candidate received factor
+loadings \emph{and} alternative-specific scales at once (making it a
+heteroskedastic factor-Gumbel race rather than mixed logit). The redesign
+isolates the axes. Ground truth is misspecified for every candidate ---
+$t(5)$ factors and skew-normal idiosyncratic noise standardized to mean zero
+and unit variance, homoskedastic; the race is computed min-wins, so positive
+skew in race coordinates is \emph{left}-skew in utility coordinates. The
+four candidates hold the idiosyncratic scale fixed at one and vary
+$\{\text{Gumbel}, \text{Gaussian}\}$ base $\times$ $\{V = 0, V =
+V^\star\}$: independent Luce (= plain multinomial logit exactly),
+independent probit, factor mixed logit (common-scale, the term now used
+correctly), and factor probit. All are calibrated to the same full-menu
+shares (residuals $\le 4\times10^{-10}$). Deletion truths come from
+$2\times10^7$ \emph{common} utility draws with the top three alternatives
+retained per draw, from which every single-deletion and pair-deletion truth
+follows with common random numbers: 105 informative blocks stratified by
+deleted mass (26 / 29 / 28 blocks at $>$10\% / 2--10\% / 0.5--2\%),
+against 24 random blocks before. Mean misallocated fraction of redistributed
+mass:
 
 \begin{center}
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
 \toprule
- & deleted mass $>10\%$ & deleted mass 2--10\% \\
+ & mass $>10\%$ & 2--10\% & 0.5--2\% \\
 \midrule
-plain logit (IIA) & 15.9\% & 25.7\% \\
-factor mixed logit & 7.7\% & 17.1\% \\
-factor probit & \textbf{2.8\%} & \textbf{7.8\%} \\
+independent Luce (= plain logit) & 0.229 & 0.245 & 0.261 \\
+independent probit & 0.210 & 0.232 & 0.230 \\
+factor mixed logit & 0.114 & 0.146 & 0.199 \\
+factor probit & \textbf{0.045} & \textbf{0.062} & \textbf{0.094} \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-The precise reading: in the high-mass stratum (a single block), factor
-structure supplies the larger increment ($15.9 \to 7.7$, i.e.\ $8.2$ points,
-versus $7.7 \to 2.8$, $4.9$ points for the idiosyncratic family); in the
-mid-mass stratum (four blocks) the two increments are comparable, with the
-family increment slightly larger ($8.6$ versus $9.3$ points). Caveats: the
-truth's skew-normal noise is Gaussian-adjacent (favoring probit), and this is
-a single design and seed with small strata --- replication across skewness
-and tail designs is queued before any general claim.
+The factorial decomposition (top two strata): the factor increment is
+dominant in both families ($+0.115/+0.099$ within Gumbel, $+0.165/+0.170$
+within Gaussian); the family increment alone is small ($+0.019/+0.013$ at $V
+= 0$) but grows with factors present ($+0.069/+0.084$), a negative
+interaction ($-0.050/-0.071$): factor structure and the Gaussian base are
+complements in this design. Caveats: a single truth design and seed
+(replication across skewness, tails, and a separate heteroskedasticity axis
+is queued), and the skew-normal truth is Gaussian-adjacent. The figure shows
+individual block observations, not bars.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.48\textwidth]{figs/full_sigma.png}\hfill
-\includegraphics[width=0.48\textwidth]{figs/substitution.png}
-\caption{Left: rank-$k$ approximation error under spectral decay $\gamma$
-(dotted: GHK at $R=10^4$, per $\gamma$). Right: substitution fidelity with
-standardized noise families, stratified by deleted share mass.}
+\includegraphics[width=0.48\textwidth]{figs/factorial.png}
+\caption{Left: rank-$k$ contrast-space approximation error under spectral
+decay $\gamma$ (dotted: GHK at $R=10^4$, per $\gamma$; not wall-time
+matched). Right: the $2\times2$ factorial substitution study --- every
+informative single-deletion block shown individually.}
 \label{fig:boundary}
 \end{figure}
 
@@ -401,9 +568,17 @@ classical: Butler--Moffitt one-factor quadrature \cite{butler1982},
 Elrod--Keane factor-analytic probit \cite{elrod1995}, and the probit
 probability approximations surveyed in \cite{connors2014}. The lattice
 survival-product identity and its inverse transform are from
-\cite{cotton2021}. The novelty claimed here is the all-alternatives assembly
-with inversion and removal-ensemble reuse --- not dimensional reduction, which
-is old. Share inversion and its acceleration are central to demand estimation
+\cite{cotton2021}. On inversion, the social-surplus identity $p = \nabla G$
+and convex-conjugate formulation of the inverse are established discrete-choice
+results --- Chiong, Galichon and Shum \cite{chiong2016} formulate the inverse
+through the convex conjugate, and Norets and Takahashi \cite{norets2013}
+establish surjectivity --- and factor-structured MNP for large choice sets has
+been pursued via Bayesian estimation by Loaiza-Maya and Nibbering
+\cite{loaiza2022}. The novelty claimed here is accordingly \emph{not}
+well-posedness of inversion, nor dimensional reduction, both old: it is the
+scalable deterministic realization of the forward and inverse maps ---
+all-alternatives assembly in $O(QNL)$, the $O(QNL)$ Jacobian--vector
+product, and shared-field deletion counterfactuals in $O(QN^2L)$. Share inversion and its acceleration are central to demand estimation
 \cite{berry1995,conlon2020}; automatic differentiation of logit-based BLP is
 recent \cite{chia2021}; a 2026 preprint approximates correlated-choice
 probabilities with equivariant neural networks \cite{huch2026}, evidence of
@@ -467,6 +642,14 @@ logistic demand estimation. arXiv:2106.04636 (2021).
 \bibitem{huch2026} E.~Huch, M.~Keane. Amortized inference for correlated
 discrete choice models via equivariant neural networks. arXiv:2603.24705
 (2026).
+\bibitem{chiong2016} K.~Chiong, A.~Galichon, M.~Shum. Duality in dynamic
+discrete-choice models. \emph{Quantitative Economics} 7 (2016) 83--115.
+\bibitem{norets2013} A.~Norets, S.~Takahashi. On the surjectivity of the
+mapping between utilities and choice probabilities. \emph{Quantitative
+Economics} 4 (2013) 149--155.
+\bibitem{loaiza2022} R.~Loaiza-Maya, D.~Nibbering. Scalable Bayesian
+estimation in the multinomial probit model. \emph{Journal of Business \&
+Economic Statistics} 40 (2022) 1678--1690.
 \bibitem{allocationpkg} The \texttt{allocation} package: Thurstone-tilt
 portfolio construction. \url{https://github.com/microprediction/allocation}.
 \end{thebibliography}

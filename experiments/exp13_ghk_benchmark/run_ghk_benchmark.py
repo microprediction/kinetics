@@ -74,8 +74,11 @@ def lattice_shares(mu, V, D, nodes=None, weights=None):
 # ---------------------------------------------------------------------------
 
 
-def mc_shares(mu, V, D, n_draws, seed=9, chunk=200_000):
+def mc_shares(mu, V, D, n_draws, seed=9, mem_budget_bytes=1.5e9):
+    # chunk size from an explicit memory budget: the utility matrix (m, n) plus
+    # its idiosyncratic draw are the peak (2 float64 arrays + temporaries)
     n, k = V.shape
+    chunk = max(10_000, int(mem_budget_bytes / (n * 8 * 4)))
     rng = np.random.default_rng(seed)
     counts = np.zeros(n)
     done = 0
@@ -297,7 +300,7 @@ def main():
         ax2.plot(ts, curves[kk], "-", color=c, lw=1.4, label=kk)
     ax2.set_xlabel(r"perturbation $t$ of a rival's utility")
     ax2.set_ylabel(r"$P_2(\mu + t e_3)$")
-    ax2.set_title("Why estimation wants a deterministic map:\n"
+    ax2.set_title("Fixed-design smoothness along a utility path:\n"
                   "choice probability along a line", fontsize=10)
     ax2.legend(fontsize=9)
     ax2.grid(True, alpha=0.25)

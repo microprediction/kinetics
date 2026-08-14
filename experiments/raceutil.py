@@ -9,7 +9,7 @@ Inverse transform (win probabilities -> abilities) is a damped fixed point on lo
 from __future__ import annotations
 
 import numpy as np
-from scipy.special import ndtr
+from scipy.special import log_ndtr, ndtr
 
 _TINY = 1e-300
 _PFLOOR = 1e-15
@@ -107,6 +107,41 @@ def factor_model(C: np.ndarray, k: int, n_iter: int = 200,
     return V, D
 
 
+def factor_model_contrast(C: np.ndarray, k: int, n_iter: int = 200,
+                          tol: float = 1e-10) -> tuple[np.ndarray, np.ndarray]:
+    """Factor fit in the choice-relevant quotient space (third-review fix).
+
+    Choices depend on (mu, Sigma) only through P mu and P Sigma P with
+    P = I - 11^T/N: a common factor shock V -> V + 1 c^T shifts every
+    conditional location equally and cannot move the argmax (machine-precision
+    fact, tested). Fitting raw Sigma can therefore spend scarce factor rank on
+    a choice-irrelevant common component (Sigma = tau^2 11^T + b b^T + D with
+    large tau: the raw rank-1 fit takes 11^T and misses b b^T entirely).
+
+    The fit is therefore run on the projected matrix C_P = P C P itself ---
+    the quantity choice probabilities actually depend on --- and the returned
+    (V, D) reproduce C_P, not C. NOTE the asymmetry, caught by a wrong first
+    version of this function: only the common FACTOR direction is irrelevant;
+    a common addition to the idiosyncratic variances D is choice-relevant
+    (it inflates every difference variance), so D must come from the quotient
+    fit, not be refit against diag(C). Loadings are centered (P V) and
+    canonicalized by SVD with a sign convention, making results reproducible
+    at the covariance level rather than the supplied-V level.
+    """
+    C = np.asarray(C, dtype=float)
+    n = len(C)
+    P = np.eye(n) - np.ones((n, n)) / n
+    V, D = factor_model(P @ C @ P, k, n_iter=n_iter, tol=tol)
+    V = P @ V
+    A, sv, _ = np.linalg.svd(V, full_matrices=False)
+    V = A[:, :k] * sv[:k]
+    for j in range(V.shape[1]):
+        i0 = np.argmax(np.abs(V[:, j]))
+        if V[i0, j] < 0:
+            V[:, j] = -V[:, j]
+    return V, D
+
+
 def hermite_nodes(k: int, Q: int = 15, prune: float = 1e-7):
     """Product Gauss-Hermite rule for E over N(0, I_k); returns (nodes, weights)."""
     x, w = np.polynomial.hermite_e.hermegauss(Q)
@@ -126,12 +161,22 @@ def win_probabilities_factor(mu: np.ndarray, V: np.ndarray, D: np.ndarray,
                              F: np.ndarray, W: np.ndarray,
                              keep: np.ndarray | None = None,
                              points: int = 1501,
-                             return_deletions: bool = False):
+                             return_deletions: bool = False,
+                             per_node_interval: bool = False,
+                             return_total: bool = False):
     """Win probabilities for X = mu + V f + sqrt(D) eps, argmin wins.
 
     With return_deletions=True also returns the FULL single-deletion ensemble
     q[i, j] = P(j wins | i removed) from the same conditional field pass --
     the multiplicative cavity, conditionally: divide S_field by S_i (and S_j).
+
+    per_node_interval=True gives each factor node its own lattice
+    [min_i m_i(f_q) - 8 sd_max, max_i m_i(f_q) + 8 sd_max] instead of one
+    global interval over all retained nodes. Same O(QNL) cost; keeps spatial
+    resolution from degrading as Q grows (with a global interval, adding
+    factor nodes widens the lattice at fixed L, entangling Q- and L-errors).
+    return_total=True also returns the pre-normalization quadrature total
+    (|1 - total| is a resolution diagnostic).
     """
     mu = np.asarray(mu, dtype=float)
     if keep is not None:
@@ -139,10 +184,8 @@ def win_probabilities_factor(mu: np.ndarray, V: np.ndarray, D: np.ndarray,
     N = len(mu)
     sd = np.sqrt(D)
     M_all = mu[None, :] + F @ V.T                      # (nodes, N) cond. means
-    lo = M_all.min() - 8.0 * sd.max()
-    hi = M_all.max() + 8.0 * sd.max()
-    x = np.linspace(lo, hi, points)
-    dx = x[1] - x[0]
+    pad = 8.0 * sd.max()
+    grid = np.arange(points) / (points - 1)            # common normalized coord
 
     p = np.zeros(N)
     q = np.zeros((N, N)) if return_deletions else None
@@ -150,29 +193,37 @@ def win_probabilities_factor(mu: np.ndarray, V: np.ndarray, D: np.ndarray,
     for a in range(0, len(F), chunk):
         M = M_all[a:a + chunk]                          # (nc, N)
         Wc = W[a:a + chunk]
-        z = (x[None, None, :] - M[:, :, None]) / sd[None, :, None]
-        S = np.maximum(1.0 - ndtr(z), _TINY)            # (nc, N, L)
+        if per_node_interval:
+            lo_c = M.min(axis=1) - pad                  # (nc,)
+            hi_c = M.max(axis=1) + pad
+        else:
+            lo_c = np.full(M.shape[0], M_all.min() - pad)
+            hi_c = np.full(M.shape[0], M_all.max() + pad)
+        x = lo_c[:, None] + (hi_c - lo_c)[:, None] * grid[None, :]   # (nc, L)
+        dx = (hi_c - lo_c) / (points - 1)               # (nc,)
+        z = (x[:, None, :] - M[:, :, None]) / sd[None, :, None]
         f = np.exp(-0.5 * z**2) / (sd[None, :, None] * np.sqrt(2.0 * np.pi))
-        logS = np.log(S)
+        logS = log_ndtr(-z)     # exact log-survival; 1-ndtr underflows at z~8.3
         logSfield = logS.sum(axis=1)                    # (nc, L)
         rest = np.exp(np.clip(logSfield[:, None, :] - logS, -745.0, 0.0))
-        p += Wc @ (np.sum(f * rest, axis=2) * dx)       # (nc, N) -> (N,)
+        p += (Wc * dx) @ np.sum(f * rest, axis=2)       # (nc, N) -> (N,)
         if return_deletions:
             for i in range(N):
                 # divide the deleted competitor's survival back out
                 rest_i = np.exp(np.clip(
                     logSfield[:, None, :] - logS - logS[:, i:i + 1, :],
                     -745.0, 0.0))
-                contrib = np.sum(f * rest_i, axis=2) * dx
+                contrib = np.sum(f * rest_i, axis=2)
                 contrib[:, i] = 0.0
-                q[i] += Wc @ contrib
+                q[i] += (Wc * dx) @ contrib
     total = p.sum()
     if not np.isfinite(total) or total <= 0:
         raise FloatingPointError("factor race integration failed")
+    out = p / total
     if return_deletions:
         q = q / q.sum(axis=1, keepdims=True)
-        return p / total, q
-    return p / total
+        return (out, q, total) if return_total else (out, q)
+    return (out, total) if return_total else out
 
 
 def abilities_from_probabilities_factor(p: np.ndarray, V: np.ndarray,
@@ -230,9 +281,8 @@ def abilities_from_probabilities_factor(p: np.ndarray, V: np.ndarray,
             M = M_all[a:a + chunk]
             Wc = W[a:a + chunk]
             z = (x[None, None, :] - M[:, :, None]) / sd[None, :, None]
-            S = np.maximum(1.0 - ndtr(z), _TINY)
             f = np.exp(-0.5 * z**2) / (sd[None, :, None] * np.sqrt(2.0 * np.pi))
-            logS = np.log(S)
+            logS = log_ndtr(-z)
             logSfield = logS.sum(axis=1)
             rest = np.exp(np.clip(logSfield[:, None, :] - logS, -745.0, 0.0))
             phat += Wc @ (np.sum(f * rest, axis=2) * dx)
@@ -267,17 +317,24 @@ def qmc_nodes(k: int, m: int = 13, seed: int = 0):
 
 
 def jacobian_vector_product(mu, V, D, F, W, h, points=3001):
-    """(J h)_i for J = d p / d mu of the (unnormalized) min-wins factor race,
-    in O(Q N L): one field pass per node, with the direction entering only
-    through the scalar field A(x) = sum_j h_j * hazard_j(x).
+    """(J h)_i for J = d p / d mu of the min-wins factor race, in O(Q N L).
 
-    Formula due to the referee of the factor-probit paper; verified against
-    central finite differences to ~1e-8 (see tests). Enables Krylov solves of
-    the reduced system on the mean-zero subspace instead of forming J densely
-    (which costs O(Q N^2 L)).
+    Uses the integration-by-parts form (referee of the factor-probit paper):
+        (J h)_i = E_f int g_i R_i (A - h_i Lambda) dx,
+    with hazards lam_j = g_j / S_j, Lambda = sum_j lam_j, A = sum_j h_j lam_j,
+    R_i = prod_{j != i} S_j. Everything is computed in the log domain
+    (log g analytic, log-hazard = log g - log_ndtr(-z)), so no density is
+    floored and no hazard overflows; the earlier density-derivative form
+    produced inf/NaN when g underflowed while log S stayed finite.
+
+    Conventions and scope: this is the JVP of the exact min-wins identity,
+    for which sum_i p_i = 1 and J^T 1 = J 1 = 0; for the max-wins (argmax
+    utility) map with mu = -a the sign flips, (J_max h) = -(J_min h). The
+    implemented forward map normalizes its quadrature output; the
+    normalization correction (v - p (1^T v))/s is O(quadrature defect)
+    because 1^T v = 0 analytically, and this formula matches central finite
+    differences of the returned normalized map to ~5e-9 in tests.
     """
-    from scipy.special import log_ndtr
-
     mu = np.asarray(mu, dtype=float)
     h = np.asarray(h, dtype=float)
     sd = np.sqrt(np.asarray(D, dtype=float))
@@ -286,6 +343,7 @@ def jacobian_vector_product(mu, V, D, F, W, h, points=3001):
     x = np.linspace(M_all.min() - 8 * sd.max(), M_all.max() + 8 * sd.max(), points)
     dx = x[1] - x[0]
     out = np.zeros(N)
+    log_norm = np.log(sd * np.sqrt(2 * np.pi))
     chunk = max(1, int(4e6 / (N * points)))
     for a0 in range(0, len(F), chunk):
         M = M_all[a0:a0 + chunk]
@@ -293,11 +351,11 @@ def jacobian_vector_product(mu, V, D, F, W, h, points=3001):
         for c in range(M.shape[0]):
             z = (x[None, :] - M[c][:, None]) / sd[:, None]
             logS = log_ndtr(-z)
-            g = np.exp(-0.5 * z**2) / (sd[:, None] * np.sqrt(2 * np.pi))
-            dg = z * g / sd[:, None]
-            haz = np.exp(np.log(np.maximum(g, _TINY)) - logS)
-            R = np.exp(np.clip(logS.sum(0)[None, :] - logS, -745.0, 0.0))
+            logg = -0.5 * z**2 - log_norm[:, None]
+            haz = np.exp(logg - logS)          # Gaussian hazard, ~z in the tail
+            Lam = haz.sum(0)
             A = (h[:, None] * haz).sum(0)
-            integ = R * (h[:, None] * dg + g * (A[None, :] - h[:, None] * haz))
+            gR = np.exp(np.clip(logg + logS.sum(0)[None, :] - logS, -745.0, 700.0))
+            integ = gR * (A[None, :] - h[:, None] * Lam[None, :])
             out += Wc[c] * (integ.sum(1) * dx)
     return out

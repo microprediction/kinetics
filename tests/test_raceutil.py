@@ -166,3 +166,64 @@ def test_jacobian_vector_product_matches_finite_differences():
     an = jacobian_vector_product(mu, V, D, F, W, h)
     assert np.abs(an - fd).max() < 1e-6
     assert abs(an.sum()) < 1e-12          # translation invariance: J^T 1 = 0 row sums
+
+
+def test_jvp_stable_on_referee_tail_case():
+    """Third-review regression: N=8, heterogeneous D, GH(11) — the published
+    density-derivative JVP returned NaN/inf here; the log-domain
+    integration-by-parts form must stay finite and match finite differences."""
+    from raceutil import jacobian_vector_product
+    n = 8
+    mu = np.linspace(-2.0, 2.0, n)
+    D = np.logspace(-1, 0, n)
+    V = np.random.default_rng(123).standard_normal((n, 2)) * 0.5
+    F, W = hermite_nodes(2, Q=11)
+    h = np.eye(n)[0] - 1.0 / n
+    jv = jacobian_vector_product(mu, V, D, F, W, h)
+    fd = (win_probabilities_factor(mu + 1e-5 * h, V, D, F, W)
+          - win_probabilities_factor(mu - 1e-5 * h, V, D, F, W)) / 2e-5
+    assert np.all(np.isfinite(jv))
+    assert np.abs(jv - fd).max() < 1e-6
+
+
+def test_forward_deep_tail_shares_positive():
+    """log_ndtr survival: a runner 12 sd behind gets a genuine tiny positive
+    share, not a floored zero, and parity with the independent transform holds."""
+    mu = np.array([-6.0, 0.0, 6.0])
+    p = win_probabilities_factor(mu, np.zeros((3, 1)), np.ones(3),
+                                 np.zeros((1, 1)), np.ones(1))
+    assert np.abs(p - win_probabilities(mu, 1.0)).max() < 1e-12
+    assert p[2] > 0
+
+
+def test_contrast_factor_fit_ignores_common_shock():
+    """Third review: Sigma = tau^2 11^T + b b^T + D. Raw rank-1 fit spends its
+    factor on the choice-irrelevant common component; the contrast-space fit
+    captures b b^T. Compared in the quotient norm ||P (Sigma - fit) P||_F."""
+    from raceutil import factor_model_contrast
+    rng = np.random.default_rng(5)
+    n = 12
+    b = rng.normal(0, 1, n)
+    Sig = 9.0 * np.ones((n, n)) + np.outer(b, b) + np.diag(rng.uniform(0.5, 1, n))
+    P = np.eye(n) - np.ones((n, n)) / n
+    V_raw, D_raw = factor_model(Sig, 1)
+    V_con, D_con = factor_model_contrast(Sig, 1)
+    err_raw = np.linalg.norm(P @ (Sig - V_raw @ V_raw.T - np.diag(D_raw)) @ P)
+    err_con = np.linalg.norm(P @ (Sig - V_con @ V_con.T - np.diag(D_con)) @ P)
+    assert err_con < 0.2 * err_raw
+    assert np.abs(V_con.sum(axis=0)).max() < 1e-8     # centered loadings
+
+
+def test_common_factor_shock_cannot_move_shares():
+    """V -> V + 1 c^T leaves win probabilities unchanged (quotient-space fact
+    behind the contrast fit)."""
+    rng = np.random.default_rng(11)
+    n = 7
+    mu = rng.normal(0, 0.5, n)
+    V = 0.4 * rng.standard_normal((n, 2))
+    D = rng.uniform(0.5, 1.0, n)
+    F, W = hermite_nodes(2)
+    p0 = win_probabilities_factor(mu, V, D, F, W)
+    p1 = win_probabilities_factor(mu, V + np.ones((n, 1)) * np.array([[0.9, -0.4]]),
+                                  D, F, W)
+    assert np.abs(p0 - p1).max() < 1e-12

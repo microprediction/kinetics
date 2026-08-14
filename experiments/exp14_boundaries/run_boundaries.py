@@ -45,7 +45,7 @@ from scipy.special import ndtr
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "exp13_ghk_benchmark"))
-from raceutil import factor_model, hermite_nodes, qmc_nodes  # noqa: E402
+from raceutil import factor_model_contrast, hermite_nodes, qmc_nodes  # noqa: E402
 from run_ghk_benchmark import ghk_all_shares, lattice_shares, mc_shares  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
@@ -170,21 +170,33 @@ def main():
             X = mu[:, None] + L @ r2.standard_normal((N, 200_000))
             counts += np.bincount(np.argmin(X, axis=0), minlength=N)
         truth = counts / counts.sum()
-        errs = []
+        errs, times = [], []
         for k in KS:
-            V, D = factor_model(C, k)
+            V, D = factor_model_contrast(C, k)   # choice-relevant quotient fit
             Fk, Wk = hermite_nodes(k) if k <= 4 else qmc_nodes(k)
+            t0 = time.perf_counter()
             pk, _ = factor_shares_base(mu, V, D, Fk, Wk)   # min-wins, as the MC truth
+            times.append(time.perf_counter() - t0)
             errs.append(np.abs(pk - truth).max())
         curves[gamma] = errs
         top4 = np.sort(np.linalg.eigvalsh(C))[::-1][:4].sum() / N
         # GHK reference errors at the EXACT Sigma (its structural advantage).
         # ghk_prob computes P(max utility); our truth is min-wins, so pass -mu.
         from run_ghk_benchmark import ghk_prob
+        ghk_times = {}
         for R in (1000, 10_000):
+            t0 = time.perf_counter()
             pg = np.array([ghk_prob(-mu, C, i, R=R, seed=100 + i) for i in range(N)])
+            ghk_times[R] = time.perf_counter() - t0
             pg = pg / pg.sum()
             ghk_refs[(gamma, R)] = np.abs(pg - truth).max()
+        print(f"    wall times: lattice per k {[f'{t:.1f}s' for t in times]}; "
+              f"GHK R=1e3 {ghk_times[1000]:.1f}s, R=1e4 {ghk_times[10_000]:.1f}s "
+              f"(NOT wall-time matched; reported for context)")
+        for k, t_ in zip(KS, times):
+            rows.append(f"A,gamma{gamma}_k{k}_seconds,{t_:.2f}")
+        rows += [f"A,gamma{gamma}_ghk1e3_seconds,{ghk_times[1000]:.2f}",
+                 f"A,gamma{gamma}_ghk1e4_seconds,{ghk_times[10_000]:.2f}]".rstrip(']')]
         print(f"  gamma={gamma}: top-4 eig share {100*top4:.0f}%  "
               f"lattice err by k: {[f'{e:.1e}' for e in errs]}  "
               f"GHK: R=1e3 {ghk_refs[(gamma,1000)]:.1e}, R=1e4 {ghk_refs[(gamma,10000)]:.1e}")

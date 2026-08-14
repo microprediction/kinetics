@@ -1,0 +1,58 @@
+part,quantity,value
+meta,thread_note,threadpoolctl: BLAS limited to 1 thread
+A,L101_selfconv,2.653e-08
+A,L101_prenorm_defect,2.662e-07
+A,L101_pernode_diff,2.657e-08
+A,L201_selfconv,5.551e-17
+A,L201_prenorm_defect,2.393e-08
+A,L201_pernode_diff,2.776e-17
+A,L375_selfconv,3.469e-17
+A,L375_prenorm_defect,2.393e-08
+A,L375_pernode_diff,2.776e-17
+A,L751_selfconv,2.776e-17
+A,L751_prenorm_defect,2.393e-08
+A,L751_pernode_diff,6.939e-18
+A,L1501_selfconv,5.551e-17
+A,L1501_prenorm_defect,2.393e-08
+A,L1501_pernode_diff,6.939e-18
+A,L3001_selfconv,5.551e-17
+A,L3001_prenorm_defect,2.393e-08
+A,L3001_pernode_diff,2.776e-17
+A,L6001_selfconv,2.776e-17
+A,L6001_prenorm_defect,2.393e-08
+A,L6001_pernode_diff,6.939e-18
+B,k2_GH3,5.350e-04
+B,k2_GH5,3.943e-05
+B,k2_GH7,3.873e-06
+B,k2_GH9,6.220e-07
+B,k2_GH11,1.167e-07
+B,k2_GH15,5.870e-09
+B,k8_m9_median,1.177e-03
+B,k8_m9_min,6.534e-04
+B,k8_m9_max,2.016e-03
+B,k8_m9_pernode_median,1.177e-03
+B,k8_m11_median,3.859e-04
+B,k8_m11_min,2.223e-04
+B,k8_m11_max,5.852e-04
+B,k8_m11_pernode_median,3.859e-04
+B,k8_m13_median,1.180e-04
+B,k8_m13_min,5.936e-05
+B,k8_m13_max,1.483e-04
+B,k8_m13_pernode_median,1.180e-04
+C,symmetry_defect,1.735e-18
+C,rowsum_defect,6.181e-17
+C,reduced_min_eig,2.4982e-05
+C,reduced_max_eig,2.2342e-01
+D,truth_noise,1.855e-04
+D,lattice_L=375_GH5,0.033s 4.073e-05
+D,lattice_L=751_GH9,0.220s 4.641e-05
+D,lattice_L=1501_GH15,0.824s 4.685e-05
+D,lattice_L=3001_GH15,1.574s 4.685e-05
+D,direct_MC_R=1e+05,0.152s 1.705e-03
+D,direct_MC_R=1e+06,1.583s 5.190e-04
+D,direct_MC_R=1e+07,15.699s 1.165e-04
+D,QMC_direct_2^14,0.046s 1.681e-03
+D,QMC_direct_2^17,0.331s 6.730e-04
+D,QMC_direct_2^20,2.631s 1.972e-04
+D,GHK_R=1000,1.281s 7.961e-03
+D,GHK_R=10000,10.122s 1.990e-03

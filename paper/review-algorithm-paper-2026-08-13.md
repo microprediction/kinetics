@@ -87,3 +87,52 @@ log_ndtr(−z) (hazards were exploding to 1e150).
 - Wording sweep: plain multinomial logit, roughness statistic, discrepancy-between-approximations caption, "rank-k fitted-factor approximation vs GHK" figure title, RQMC phrasing, hardware metadata (Apple M4, 16 GB, Python 3.12.9, NumPy 2.4.6, SciPy 1.18.0; single-realization timings disclosed).
 
 Still queued (declared in paper): QMC-GHK, seed bands, minimax tilting, derivative-truth figure, D_min/D_max and L,Q resolution sweeps, skewness/tail replication for substitution, commit pin at submission.
+
+---
+
+## Third review — executed 2026-08-13
+
+Every mathematical claim verified numerically before adoption (standing rule):
+w_ij Laplacian identity 6.4e-9, new JVP form 4.6e-9, coercivity G>=max mu,
+common-shock invariance 2.8e-17, contrast-fit example 30x, reviewer's NaN case
+reproduced exactly.
+
+1. Jacobian section rewritten: three maps separated (exact max-wins / reflected
+   min-wins / normalized lattice), normalization correction (v - p 1'v)/s and
+   reflection stated, fixed-design convention declared, "damped Jacobi
+   quasi-Newton preconditioner" naming. TAIL BUG FIXED: forward + inversion now
+   use log_ndtr (1-ndtr underflows at z~8.3); JVP rewritten in log domain with
+   the reviewer's integration-by-parts form; their failing case (N=8, D
+   log-spaced, GH11) is a regression test. Deep-tail shares now genuine
+   positives (5.7e-19 parity).
+2. Theorem 1 (weighted Laplacian + global inversion) replaces the Remark, with
+   proof; novelty repositioned (Chiong-Galichon-Shum, Norets-Takahashi,
+   Loaiza-Maya & Nibbering cited); JVP is now the (h_i Λ − A) form.
+3. Contrast-space factor fitting: factor_model_contrast (fit P Σ P, D from the
+   quotient fit — first attempt refitting D against diag(C) was WRONG and
+   caught by test; only the common factor direction is irrelevant), SVD
+   canonicalization. exp14 Part A rerun: rank-1 errors improve at every gamma;
+   k=8 still beats GHK R=1e4 on error but GHK is ~20x cheaper at N=50 —
+   stated as not-wall-time-matched with the reviewer's exact sentence.
+4. Substitution replaced by the 2x2 factorial (run_factorial.py): homoskedastic
+   truth, common-draw top-3 coupled deletion truths, 105 informative blocks
+   (26/29/28 strata). RESULT: factor increment dominant in both families
+   (+0.115/+0.099 Gumbel, +0.165/+0.170 Gaussian); family increment small
+   without factors (+0.019/+0.013), larger with (+0.069/+0.084); negative
+   interaction — factors and Gaussian base are complements. Figure shows
+   individual observations. Abstract conclusion removed.
+5. exp17: L sweep (machine precision from L~200; spectral claim now measured,
+   sentence replaced), GH order sweep 5.3e-4 -> 5.9e-9, RQMC across 8 scrambles
+   with distributions, per-node interval implemented AND measured (no benefit
+   at tested settings — reported honestly), |1-total| = 2.4e-8, Jacobian
+   symmetry 1.7e-18 / reduced PD confirmed. Full accuracy-time frontier with
+   direct MC, Sobol-QMC direct, GHK at several R: lattice 4.1e-5 @ 0.03s vs
+   direct MC 1.2e-4 @ 15.7s. Fig 1 left = this frontier.
+6. Plumbing: mc_shares chunk from 1.5GB memory budget (7.45GiB catch fixed),
+   threadpoolctl in exp17, median-of-3 sub-second timings, run_all_paper.py
+   manifest, exp13/16 rerun under fixed forward (all table numbers updated),
+   figure title "Fixed-design smoothness along a utility path", hyperref
+   pdftitle/pdfauthor, title changed to "Deterministic Approximation and...".
+7. Intro rewritten per user: leads with the locked-probit story, then an
+   explicit 4-item list (forward pass / calibration / derivatives /
+   counterfactuals) so both directions are unmistakable.
