@@ -19,7 +19,7 @@
 //!   instead of re-integrating (the `winning` interpolation trick,
 //!   factor generalization).
 
-use numpy::ndarray::{Array1, ArrayView1, ArrayView2};
+use numpy::ndarray::{Array1, Array2, ArrayView1, ArrayView2};
 use numpy::{IntoPyArray, PyArray1, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::prelude::*;
 use rayon::prelude::*;
@@ -38,17 +38,7 @@ fn log_ndtr(z: f64) -> f64 {
     } else {
         let z2 = z * z;
         -0.5 * z2 - LN_SQRT_2PI - (-z).ln()
-            + (1.0 - 1.0 / z2 + 3.0 / (z2 * z2) - 15.0 / (z2 * z2 * z2)).ln_1p_free()
-    }
-}
-
-trait Ln1pFree {
-    fn ln_1p_free(self) -> f64;
-}
-impl Ln1pFree for f64 {
-    #[inline]
-    fn ln_1p_free(self) -> f64 {
-        self.ln()
+            + (1.0 - 1.0 / z2 + 3.0 / (z2 * z2) - 15.0 / (z2 * z2 * z2)).ln()
     }
 }
 
@@ -159,13 +149,20 @@ fn win_probabilities_factor<'py>(
     w: PyReadonlyArray1<f64>,
     points: usize,
 ) -> PyResult<(Bound<'py, PyArray1<f64>>, f64)> {
+    // copy inputs to owned arrays so the GIL-free closure captures no
+    // Python-backed memory (Ungil requirement); the copies are O(N + Qk)
+    let mu_o: Array1<f64> = mu.as_array().to_owned();
+    let v_o: Array2<f64> = v.as_array().to_owned();
+    let d_o: Array1<f64> = d.as_array().to_owned();
+    let f_o: Array2<f64> = f.as_array().to_owned();
+    let w_o: Array1<f64> = w.as_array().to_owned();
     let (p, total) = py.allow_threads(|| {
         forward_kernel(
-            mu.as_array(),
-            v.as_array(),
-            d.as_array(),
-            f.as_array(),
-            w.as_array(),
+            mu_o.view(),
+            v_o.view(),
+            d_o.view(),
+            f_o.view(),
+            w_o.view(),
             points,
         )
     });
