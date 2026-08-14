@@ -52,16 +52,22 @@ def main():
         mu_hat, info = abilities_from_probabilities_factor(
             target, V, D, F, W, return_info=True)
         dt = time.perf_counter() - t0
-        err = np.abs(mu_hat - mu)
+        # align means WITHIN each tier: the solver's mean-zero projection is
+        # over all N coordinates, and unresolvable tail coordinates would
+        # otherwise leak a common shift into the well-resolved errors
         tiers = {"all": np.ones(n, bool),
                  "share>1e-7": target > 1e-7,
                  "share>3e-4": target > 3e-4}
-        msg = ", ".join(f"{k_}: {err[v].max():.1e}" for k_, v in tiers.items())
+        err = {}
+        for k_, v in tiers.items():
+            d_ = (mu_hat[v] - mu_hat[v].mean()) - (mu[v] - mu[v].mean())
+            err[k_] = np.abs(d_).max()
+        msg = ", ".join(f"{k_}: {err[k_]:.1e}" for k_ in tiers)
         print(f"  N={n}: max utility error by tier [{msg}], "
               f"{info['iterations']} iterations, residual {info['residual']:.1e}, "
               f"{dt:.0f}s")
-        for k_, v in tiers.items():
-            rows.append(f"A,N{n}_max_err_{k_},{err[v].max():.3e}")
+        for k_ in tiers:
+            rows.append(f"A,N{n}_max_err_{k_},{err[k_]:.3e}")
         rows += [f"A,N{n}_iterations,{info['iterations']}",
                  f"A,N{n}_residual,{info['residual']:.3e}"]
 

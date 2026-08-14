@@ -43,6 +43,8 @@ SCRIPTS = [
     "exp20_separated_pass/run_separated.py",
     "exp14_boundaries/run_basis_replication.py",
     "exp21_calibration_validation/run_validation.py",
+    "exp22_minimax_tilting/run_tilting.py",
+    "exp23_newton_cg/run_newton_cg.py",
 ]
 
 def main():
