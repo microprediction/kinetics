@@ -65,6 +65,11 @@ def test_calibration_roundtrip_both_bases():
 
 
 def test_spectral_corr_is_valid_correlation():
-    C = bd.spectral_corr(20, 1.5, RNG)
+    basis, _ = np.linalg.qr(RNG.standard_normal((20, 20)))
+    C, eig = bd.spectral_corr(20, 1.5, basis)
     assert np.abs(np.diag(C) - 1.0).max() < 1e-12
     assert np.linalg.eigvalsh(C).min() > -1e-10
+    assert eig[0] >= eig[-1] > 0          # disclosed post-rescale spectrum
+    # shared basis: same basis, different gamma -> comparisons not confounded
+    C2, _ = bd.spectral_corr(20, 3.0, basis)
+    assert not np.allclose(C, C2)
