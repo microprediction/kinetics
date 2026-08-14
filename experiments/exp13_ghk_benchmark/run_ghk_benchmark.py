@@ -202,6 +202,7 @@ def main():
 
     # ---- Part C: large N (GHK infeasible; cost extrapolated) ----------------
     print("\nPart C: large N")
+    big_Ns, big_t = [], []
     for n in (1000, 5000):
         mu, V, D = make_problem(n, 2, rng, spread=1.5)
         t0 = time.perf_counter(); p_l = lattice_shares(mu, V, D)
@@ -212,6 +213,7 @@ def main():
         # GHK cost extrapolated by empirical power law fitted on part B timings
         alpha, logc = np.polyfit(np.log(Ns[1:]), np.log(t_ghk_list[1:]), 1)
         t_ghk_extrap = np.exp(logc) * n ** alpha
+        big_Ns.append(n); big_t.append(t_l)
         print(f"  N={n}: lattice {t_l:.1f}s, err {err:.1e} (MC noise ~{noise:.0e}); "
               f"GHK extrapolated ~{t_ghk_extrap/3600:.1f} h")
         rows.append(f"C,{n},lat_s={t_l:.2f};err={err:.2e};ghk_extrap_h={t_ghk_extrap/3600:.2f}")
@@ -285,14 +287,20 @@ def main():
 
     # ---- figures ------------------------------------------------------------------
     fig_dir = HERE / "figures"; fig_dir.mkdir(exist_ok=True)
-    fig, ax = plt.subplots(figsize=(6, 4.4))
-    ax.loglog(Ns, np.array(t_ghk_list), "o-", color="#2a1a12", label="GHK (R=1000), all N shares")
-    ax.loglog(Ns, np.array(t_lat_list), "s-", color="#c2410c", label="lattice transform, all N shares")
+    fig, ax = plt.subplots(figsize=(6.4, 4.4))
+    alpha_fit, logc_fit = np.polyfit(np.log(Ns[1:]), np.log(t_ghk_list[1:]), 1)
+    Nx = np.array([200, 500, 1000, 2000, 5000], dtype=float)
+    ax.loglog(Nx, np.exp(logc_fit) * Nx**alpha_fit, "--", color="#2a1a12", lw=1,
+              label="GHK (R=1000), power-law extrapolation")
+    ax.loglog(Ns, np.array(t_ghk_list), "o-", color="#2a1a12",
+              label="GHK (R=1000), measured")
+    ax.loglog(Ns + big_Ns, np.array(t_lat_list + big_t), "s-", color="#c2410c",
+              label="lattice transform, measured")
     ax.set_xlabel("number of alternatives N")
     ax.set_ylabel("wall time for the full share vector (s)")
-    ax.set_title("Factor-probit shares: deterministic lattice vs GHK", fontsize=10)
+    ax.set_title("All N factor-probit shares: wall time vs N", fontsize=10)
     ax.grid(True, which="both", alpha=0.25)
-    ax.legend(fontsize=9)
+    ax.legend(fontsize=8.5)
     fig.tight_layout(); fig.savefig(fig_dir / "frontier.png", dpi=150)
 
     fig2, ax2 = plt.subplots(figsize=(6, 4.4))
