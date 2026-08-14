@@ -33,19 +33,20 @@ explicit memory budget (1.5\,GB); peak resident memory stays below 2\,GB.}}
 \maketitle
 
 \begin{abstract}
-Calibrating a multinomial probit model means recovering the utilities at
-which the model's choice probabilities match observed market shares. Probit
-probabilities have no closed form, and the standard simulator prices one
-alternative at a time, so calibration has been out of reach beyond small
-menus. We give an algorithm that calibrates a factor-structured probit model
-with a thousand alternatives in under a minute. Conditionally on the factors
-the alternatives are independent, so a single shared survival product yields
-every choice probability in one pass, and the map is differentiable without
-resampling. The inverse problem is well posed: shares determine utilities up
-to a common shift. Forward errors stay below one part in a thousand from
-five to five thousand alternatives. The method requires a factor
-approximation of the covariance, and the experiments locate where that
-fails.
+Probit models are a cornerstone of economic, choice, and contest theory, and
+machine learning runs on the same latent-utility family. Yet their
+many-alternative form is barely used, because probit probabilities have no
+closed form and the standard simulator prices one alternative at a time.
+Calibration, recovering the utilities at which model shares match observed
+shares, has stayed out of reach beyond small menus. We give an algorithm
+that calibrates factor-structured probit at a thousand alternatives in under
+a minute. Conditionally on the factors the alternatives are independent, so
+one shared survival product yields every choice probability in a single
+pass, differentiable without resampling. The inverse problem is well posed:
+shares determine utilities up to a common shift. Forward errors stay below
+one part in a thousand from five to five thousand alternatives. The method
+requires a factor approximation of the covariance, and the experiments
+locate where that fails.
 \end{abstract}
 
 \section{Introduction}
