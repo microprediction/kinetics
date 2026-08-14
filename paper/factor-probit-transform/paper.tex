@@ -35,19 +35,18 @@ explicit memory budget (1.5\,GB); peak resident memory stays below 2\,GB.}}
 \begin{abstract}
 Probit models are a cornerstone of economic, choice, and contest theory, and
 machine learning runs on the same latent-utility family. Yet the
-many-alternative form sees little use beyond small menus, because probit
-probabilities have no closed form and the standard simulator prices one
-alternative at a time.
-Calibration, recovering the utilities at which model shares match observed
-shares, has been out of reach entirely at scale. We give an algorithm
-that calibrates factor-structured probit at a thousand alternatives in under
-a minute. Conditionally on the factors the alternatives are independent, so
-one shared survival product yields every choice probability in a single
-pass, differentiable without resampling. The inverse problem is well posed:
-shares determine utilities up to a common shift. Forward errors stay below
-one part in a thousand from five to five thousand alternatives. The method
-requires a factor approximation of the covariance, and the experiments
-locate where that fails.
+many-alternative form sees little use beyond small menus: its probabilities
+have no closed form, the standard simulator prices one alternative at a
+time, and calibration, meaning the recovery of the utilities at which model
+shares match observed shares, has been out of reach at scale. We give an
+algorithm that calibrates factor-structured probit at a thousand
+alternatives in under a minute. Conditionally on the factors the
+alternatives are independent, so a single shared survival product yields
+every choice probability in one differentiable pass, and the inverse problem
+this solves is well posed, with shares determining utilities up to a common
+shift. Forward errors stay below one part in a thousand from five to five
+thousand alternatives, and the experiments locate where the required factor
+approximation of the covariance fails.
 \end{abstract}
 
 \section{Introduction}
@@ -77,10 +76,10 @@ closed form. The standard evaluator is the Geweke--Hajivassiliou--Keane
 (GHK) simulator \cite{geweke1994,hajivassiliou1998,train2009}: it writes
 the probability that alternative $i$ beats the rest as an orthant
 probability of the difference utilities, and estimates it by sampling
-truncated normals sequentially along a Cholesky factor. That is a separate
-simulation per alternative, with $R^{-1/2}$ error in the number of draws.
-So probit survives mainly on small menus, and the field kept the computable
-models and gave up the model it started from.
+truncated normals sequentially along a Cholesky factor. That is a separate simulation per alternative, with $R^{-1/2}$ error in
+the number of draws, and it is why probit survives mainly on small menus:
+the field kept the computable models and gave up the model it started
+from.
 
 The concession is not free. Logit-family substitution is structurally
 restricted, and the calibration apparatus that demand estimation is built
@@ -89,9 +88,9 @@ substitution study of Section~\ref{sec:boundary}, plain logit misallocates
 about 23\% of the demand released by a deleted alternative, against 5\%
 for the correctly structured probit model.
 
-This paper's point is that for the covariance structure applied work most
-often actually has, the factor model $\Sigma = VV^\top + \mathrm{diag}(D)$,
-the barrier is not real. The goal is \textbf{calibration}: given
+This paper's point is that the barrier is not real for the covariance
+structure applied work most often actually has, the factor model
+$\Sigma = VV^\top + \mathrm{diag}(D)$. The goal is \textbf{calibration}: given
 observed shares, recover the utilities at which the probit model reproduces
 them, the probit analogue of the inversions demand estimation runs on the
 logit side every day \cite{berry1995,conlon2020}. We solve it at $N = 1000$
@@ -155,14 +154,14 @@ extrapolations; all other points are measured (Table~\ref{tab:frontier}).}
 \label{fig:scaling}
 \end{figure}
 
-\paragraph{Scope.} The method needs the factor form. Where $\Sigma$ has no
+\paragraph{Scope.} The method needs the factor form: where $\Sigma$ has no
 adequate low-rank-plus-diagonal approximation in the choice-relevant quotient
 space, simulation at exact $\Sigma$ remains the tool
 (Section~\ref{sec:boundary}). At accuracy targets near $10^{-3}$, plain
 direct utility simulation is a genuinely competitive forward baseline
-(Section~\ref{sec:benchmark}). The decisive advantages are error decay
-below that level, reproducibility, resampling-free derivatives, and the
-calibration machinery.
+(Section~\ref{sec:benchmark}), and the decisive advantages lie elsewhere:
+error decay below that level, reproducibility, resampling-free derivatives,
+and the calibration machinery.
 
 The one-pass identity comes from an unlikely literature: inferring ability
 from win probabilities in multi-entrant races \cite{cotton2021}. That is
@@ -362,8 +361,8 @@ Factor integration: the GHK benchmark (experiment 13) uses product
 Gauss--Hermite of order 15/11/9 for $k = 2/3/4$; the boundary experiment
 (experiment 14) uses order 15 per dimension for all $k \le 4$, which after
 pruning weights below $10^{-7}$ of the maximum leaves $Q = 145$, $1317$, and
-$10929$ nodes for $k = 2, 3, 4$. The growth of $Q$ with rank is
-exponential. Scrambled-Sobol nodes ($2^{13}$ points, fixed seed) are used
+$10929$ nodes for $k = 2, 3, 4$, making the exponential growth of $Q$
+with rank explicit. Scrambled-Sobol nodes ($2^{13}$ points, fixed seed) are used
 for $k > 4$: reproducible fixed-seed randomized QMC, disclosed as such.
 
 Survival floors sit at $10^{-300}$ and the quadrature output is normalized by
@@ -480,7 +479,8 @@ The separation is in error decay (experiment 17, $N=200$, $k=2$).
 Holding the factor rule fixed, lattice self-convergence is
 $2.7\times10^{-8}$ at $L=101$ and at machine precision from $L \approx
 200$: the integrand is analytic and endpoint-decaying, so the uniform
-lattice is effectively spectrally accurate. $L$-error is subdominant. Holding $L$
+lattice is effectively spectrally accurate and the $L$-error is
+subdominant. Holding $L$
 fixed, the Gauss--Hermite sweep decays from $5.3\times10^{-4}$ (order 3) to
 $5.9\times10^{-9}$ (order 15). The pre-normalization defect
 $|1 - \mathbf{1}^\top \tilde p\,|$ is $2.4\times10^{-8}$.
@@ -589,8 +589,8 @@ $2.3\times10^{-3}$, $1.5\times10^{-2}$, $7.1\times10^{-2}$.
 
 Decomposing the error with a second simulation under the fitted factor model:
 integration error is flat at $2$--$7\times10^{-4}$ across every $(\gamma,
-k)$ tested, so the rank-$k$ error is essentially covariance-fit error.
-Rank, not quadrature, is the binding constraint. Against GHK at $R = 10^4$
+k)$ tested, so the rank-$k$ error is essentially covariance-fit error:
+rank, not quadrature, is the binding constraint. Against GHK at $R = 10^4$
 ($3.2$, $2.3$, $4.3\times10^{-3}$), rank-8 wins at $\gamma = 0.5$ and $3$
 but \emph{loses at intermediate decay} $\gamma = 1.5$
 ($3.7\times10^{-3}$ versus $2.3\times10^{-3}$): a GHK-wins regime does
