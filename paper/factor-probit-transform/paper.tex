@@ -4,8 +4,8 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage[hidelinks]{hyperref}
-\hypersetup{pdftitle={Deterministic Approximation and Share Inversion for
-Factor Probit with Many Alternatives}, pdfauthor={Peter Cotton}}
+\hypersetup{pdftitle={A New Algorithm for Calibrating Probit Models with
+Many Alternatives}, pdfauthor={Peter Cotton}}
 
 \newtheorem{proposition}{Proposition}
 \newtheorem{theorem}{Theorem}
@@ -15,8 +15,8 @@ Factor Probit with Many Alternatives}, pdfauthor={Peter Cotton}}
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\Prob}{\mathbb{P}}
 
-\title{Deterministic Approximation and Share Inversion\\
-for Factor Probit with Many Alternatives}
+\title{A New Algorithm for Calibrating Probit Models\\
+with Many Alternatives}
 \author{Peter Cotton\thanks{Numbers in this paper are produced by committed, seeded
 scripts with correctness anchors run before any comparison
 (\url{https://github.com/microprediction/kinetics}, experiments 13--17; the
@@ -63,23 +63,29 @@ simulation at exact $\Sigma$ remains the tool.
 
 When a consumer chooses one product from a large assortment, a commuter one
 route from a network, or a platform ranks one item above thousands of others,
-the modeling question is always the same: if an alternative disappears or
-changes, \emph{where does its demand go?} Getting that right requires
-correlated utilities. The canonical model that allows them --- multinomial
-probit (MNP), with jointly normal utilities and unrestricted substitution
-patterns --- has been effectively locked away from exactly the settings that
-need it most. Its probabilities are $(N-1)$-dimensional Gaussian integrals
-with no closed form, and for three decades the field's tool has been the GHK
-simulator \cite{geweke1994,hajivassiliou1998,train2009}: smoothed importance
-sampling, one alternative at a time, with $R^{-1/2}$ error in the number of
-draws. At $N$ in the hundreds or thousands, that is a separate simulation per
-alternative per likelihood evaluation. So practice at scale retreats to the
-multinomial logit family --- not because anyone believes proportional (IIA)
-substitution, but because logit is what remains computable. The cost of that
-retreat is measurable: in the substitution study of
-Section~\ref{sec:boundary}, plain logit misallocates about 23\% of the
-demand released by a deleted alternative where the correctly structured probit
-model misallocates 5\%.
+the question a model must answer is: if an alternative disappears or changes,
+\emph{where does its demand go?} The tools used for this, essentially
+universally, are the logit family --- multinomial logit, nested logit, and
+above all random-coefficients (mixed) logit in the BLP tradition, the
+workhorse of demand estimation in empirical industrial organization,
+antitrust, and pricing \cite{berry1995,train2009,conlon2020}. They are
+universal for one reason: they are the ones that can be computed. Choice
+modeling did not start there. It started with Thurstone's 1927 model
+\cite{thurstone1927} --- jointly Gaussian utilities, unrestricted correlation,
+hence unrestricted substitution --- known in econometrics as multinomial
+probit (MNP). Its probabilities are $(N-1)$-dimensional Gaussian integrals
+with no closed form; the standard evaluator, the GHK simulator
+\cite{geweke1994,hajivassiliou1998,train2009}, is a separate smoothed
+importance-sampling run \emph{per alternative} with $R^{-1/2}$ error in the
+draws. That cost is why probit survives mainly in small-$N$ settings
+(transportation panels, a handful of alternatives) and effectively vanished
+from large-$N$ practice: the field kept the computable models and gave up the
+model it started from. The concession is not free. Logit-family substitution
+is structurally restricted, and the whole apparatus of share inversion that
+demand estimation is built on exists on the logit side only. In the
+substitution study of Section~\ref{sec:boundary}, plain logit misallocates
+about 23\% of the demand released by a deleted alternative where the
+correctly structured probit model misallocates 5\%.
 
 This paper's point is that for the covariance structure applied work most
 often actually has --- a factor model, $\Sigma = VV^\top + \mathrm{diag}(D)$
@@ -606,6 +612,8 @@ curves are cross-correlations, evaluable at all offsets simultaneously),
 which we have not yet exploited.
 
 \begin{thebibliography}{9}
+\bibitem{thurstone1927} L.~L. Thurstone. A law of comparative judgment.
+\emph{Psychological Review} 34 (1927) 273--286.
 \bibitem{geweke1994} J.~Geweke, M.~Keane, D.~Runkle. Alternative computational
 approaches to inference in the multinomial probit model. \emph{Review of
 Economics and Statistics} 76 (1994) 609--632.
