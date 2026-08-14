@@ -56,17 +56,19 @@ microeconometrics, and the Lazear--Rosen tournament are all the same
 Gaussian latent-performance model. Machine learning runs on the same
 family: a softmax output layer is its Luce--Gumbel member, and
 Thurstone--Mosteller pairwise comparison, the probit member, underlies
-rating systems and preference learning. Such models are calibrated to observed
-shares so that the recovered utilities can answer questions the data do
-not: elasticities, welfare, pricing, the effect of adding or removing an
-alternative. The models used
+rating systems and preference learning.
+
+Such models are calibrated to observed shares so that the recovered
+utilities can answer questions the data do not: elasticities, welfare,
+pricing, the effect of adding or removing an alternative. The models used
 for this, essentially universally, are the logit family: multinomial logit,
 nested logit, and above all random-coefficients logit in the BLP tradition
 \cite{berry1995,train2009,conlon2020}. They are universal for one reason.
-They can be computed. Choice modeling did not start there: it started with
-Thurstone's 1927 model \cite{thurstone1927} of jointly Gaussian utilities
-with unrestricted correlation, known in econometrics as multinomial probit
-(MNP).
+They can be computed.
+
+Choice modeling did not start there: it started with Thurstone's 1927 model
+\cite{thurstone1927} of jointly Gaussian utilities with unrestricted
+correlation, known in econometrics as multinomial probit (MNP).
 
 Probit probabilities are $(N-1)$-dimensional Gaussian integrals with no
 closed form. The standard evaluator is the Geweke--Hajivassiliou--Keane
