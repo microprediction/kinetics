@@ -33,20 +33,21 @@ explicit memory budget (1.5\,GB); peak resident memory stays below 2\,GB.}}
 \maketitle
 
 \begin{abstract}
-Multinomial probit allows unrestricted substitution between alternatives, but
-its choice probabilities have no closed form and the standard simulation
-method computes them one alternative at a time. For the factor-structured case
-$\Sigma = VV^\top + \mathrm{diag}(D)$ we give an algorithm that computes
-all $N$ probabilities in a single $O(QNL)$ pass ($Q$ factor nodes, $L$
-lattice points): conditionally on the factors the alternatives are
-independent, and a survival-product identity yields every alternative's
-integral from one shared field. The map is reproducible and differentiable,
-with $O(QNL)$ Jacobian--vector products, and its inverse --- calibrating
-utilities to observed shares --- is globally well-posed and solved in under a
-minute at $N = 1000$; forward share errors stay below $10^{-3}$ from $N = 5$
-to $5000$ (21 seconds at $N = 5000$). The method requires an adequate factor
-approximation of $\Sigma$; benchmark and boundary experiments locate where
-it wins and where simulation remains the tool.
+Calibrating a multinomial probit model to observed market shares ---
+recovering the utilities at which model shares match data --- has no
+scalable method: probit probabilities have no closed form, the standard
+simulator computes them one alternative at a time, and the inversion is
+never attempted beyond small menus. We give an algorithm that calibrates
+factor-structured probit ($\Sigma = VV^\top + \mathrm{diag}(D)$) at
+$N = 1000$ alternatives in under a minute. The engine is a forward map that
+computes all $N$ probabilities in one $O(QNL)$ pass --- conditionally on the
+$k$ factors the alternatives are independent, and a survival-product
+identity yields every integral from one shared field --- with share errors
+below $10^{-3}$ from $N = 5$ to $5000$ and resampling-free $O(QNL)$
+Jacobian--vector products. The inverse problem is globally well-posed: the
+Jacobian is minus a weighted graph Laplacian, and shares determine utilities
+uniquely up to location. The method requires an adequate factor
+approximation of $\Sigma$; experiments locate where it fails.
 \end{abstract}
 
 \section{Introduction}
@@ -86,34 +87,30 @@ correctly structured probit model misallocates 5\%.
 
 This paper's point is that for the covariance structure applied work most
 often actually has --- a factor model, $\Sigma = VV^\top + \mathrm{diag}(D)$
---- this barrier is not real. We give one algorithm that solves \emph{both
-directions} of the probit share map, plus its derivatives and
-counterfactuals:
+--- this barrier is not real. The goal is \textbf{calibration}: given
+observed shares, recover the utilities at which the probit model reproduces
+them --- the probit analogue of the inversions demand estimation runs on the
+logit side every day \cite{berry1995,conlon2020}. We solve it at $N = 1000$
+in under a minute, and the inverse problem is globally well-posed
+(Theorem~\ref{thm:inv}: shares determine utilities uniquely up to
+location). Three ingredients make it work:
 
 \begin{enumerate}
-\item \textbf{Forward pass} (utilities $\to$ shares): all $N$ choice
+\item \textbf{A fast forward map} (utilities $\to$ shares): all $N$
 probabilities at once in $O(QNL)$ for $Q$ factor nodes and $L$ lattice
-points. All 5000 shares of an $N=5000$ problem in 21 seconds, at accuracy
-near the $10^{-4}$ noise floor of the simulation reference; matching that
-with our per-alternative GHK implementation extrapolates to roughly fifty
-hours.
-\item \textbf{Calibration} (observed shares $\to$ utilities): the probit
-analogue of the logit-side inversions used throughout demand estimation
-\cite{berry1995,conlon2020}. Globally well-posed
-(Theorem~\ref{thm:inv}: existence and uniqueness modulo location) and
-solved for $N=1000$ in under a minute.
-\item \textbf{Derivatives}: Jacobian--vector products in $O(QNL)$ with
-no resampling noise; the Jacobian is an exact weighted graph Laplacian, so
-reduced systems are symmetric positive definite and Krylov-solvable.
-\item \textbf{Counterfactuals}: all $N$ single-removal share vectors from
-one conditional field pass in $O(QN^2L)$.
-\end{enumerate}
-
-The mechanism is a single trick used four ways: conditionally on the $k$
+points --- all 5000 shares of an $N = 5000$ problem in 21 seconds, where
+matched-accuracy per-alternative simulation extrapolates to roughly fifty
+hours. Calibration needs many forward evaluations; this is what makes them
+affordable.
+\item \textbf{Resampling-free derivatives}: Jacobian--vector products in
+$O(QNL)$; the Jacobian is an exact weighted graph Laplacian, so the reduced
+systems Newton solves are symmetric positive definite.
+\item \textbf{A single shared construction}: conditionally on the $k$
 factors the alternatives are independent, and a lattice survival-product
-identity computes every alternative's integral in one shared $O(NL)$ pass ---
-the field's survival product is built once and each alternative's
-leave-one-out integrand is recovered by division.
+identity computes every alternative's integral from one field --- built
+once, reused for shares, slopes, and (as a by-product) all $N$
+single-removal counterfactuals.
+\end{enumerate}
 
 \paragraph{Prior art.} The nearest methods, and what each lacks:
 
@@ -517,7 +514,9 @@ differentiates its approximation, analytically or with fixed draws
 and controllability of the approximation error --- quadrature resolution
 versus draw count --- not the possibility of differentiation.
 
-\paragraph{Share inversion.} At $N=1000$, $k=2$, with targets from
+\section{Calibration at $N=1000$}\label{sec:calibration}
+
+At $N=1000$, $k=2$, with targets from
 $5\times10^6$ MC draws floored at $10^{-7}$ and renormalized: the inversion
 completes in 57 seconds. The iteration solves its own equations to
 $6.4\times10^{-9}$ --- a statement about the solver, not statistical accuracy,
@@ -535,22 +534,13 @@ $6.2\times10^{-17}$, and reduced eigenvalues in $[2.5\times10^{-5},
 0.22]$ --- positive definite as proved. We are not aware of probit
 share inversion at this scale in current simulation-based practice.
 
-\paragraph{Removal ensemble.} All 200 single-removal share vectors come from
-one conditional field construction in $O(QN^2L)$: 51.5 seconds versus 172.4
-seconds recomputing per removal, with ten removals checked directly
-(agreement $2.8\times10^{-17}$ --- an algebraic-consistency check between
-two implementations of the same approximation, not an accuracy statement).
-The strongest simulation comparator also reuses its draws: one draw's winner
-$w$ and runner-up $s$ determine every single-removal outcome (delete $i \ne
-w$: winner stays $w$; delete $w$: winner becomes $s$), so counting winners
-and winner/runner-up pairs yields the whole $N \times N$ deletion matrix in
-$O(RN + N^2)$. At wall time matched to the field ensemble (64 s), this
-top-two baseline reaches $1.2\times10^{-4}$ maximum error on the twenty
-highest-share deletion rows against an independent $10^8$-draw reference,
-versus $4.2\times10^{-5}$ for the conditional field (experiment 18): the
-deterministic ensemble is about $3\times$ more accurate at matched time,
-and the reuse trick, not the field construction alone, is the right
-simulation benchmark.
+\paragraph{Removal ensemble (by-product).} The cached field also yields all
+$N$ single-removal share vectors in $O(QN^2L)$. Against the strongest
+simulation comparator --- reusing each draw's winner and runner-up to answer
+every removal at once, $O(RN + N^2)$ --- the deterministic ensemble is about
+$3\times$ more accurate at matched wall time at $N=200$
+($4.2\times10^{-5}$ versus $1.2\times10^{-4}$; experiment 18). This is a
+side capability, not the paper's case.
 
 \section{Boundary experiments}\label{sec:boundary}
 
