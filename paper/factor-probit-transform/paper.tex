@@ -35,8 +35,8 @@ explicit memory budget (1.5\,GB); peak resident memory stays below 2\,GB.}}
 
 \begin{abstract}
 Multinomial probit allows unrestricted substitution between alternatives, but
-its choice probabilities have no closed form and the standard GHK simulator
-computes them one alternative at a time. For the factor-structured case
+its choice probabilities have no closed form and the standard simulation
+method computes them one alternative at a time. For the factor-structured case
 $\Sigma = VV^\top + \mathrm{diag}(D)$ we give an algorithm that computes
 all $N$ probabilities in a single $O(QNL)$ pass ($Q$ factor nodes, $L$
 lattice points): conditionally on the factors the alternatives are
@@ -67,10 +67,13 @@ hence unrestricted substitution --- known in econometrics as multinomial
 probit (MNP).
 
 Its probabilities are $(N-1)$-dimensional Gaussian integrals
-with no closed form; the standard evaluator, the GHK simulator
-\cite{geweke1994,hajivassiliou1998,train2009}, is a separate smoothed
-importance-sampling run \emph{per alternative} with $R^{-1/2}$ error in the
-draws. That cost is why probit survives mainly in small-$N$ settings
+with no closed form. The standard evaluator is the
+Geweke--Hajivassiliou--Keane (GHK) simulator
+\cite{geweke1994,hajivassiliou1998,train2009}: it writes the probability
+that alternative $i$ beats the rest as an orthant probability of the
+difference utilities and estimates it by sampling truncated normals
+sequentially along a Cholesky factor --- a separate simulation \emph{per
+alternative}, with $R^{-1/2}$ error in the number of draws $R$. That cost is why probit survives mainly in small-$N$ settings
 (transportation panels, a handful of alternatives) and effectively vanished
 from large-$N$ practice: the field kept the computable models and gave up the
 model it started from.
