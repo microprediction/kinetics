@@ -41,29 +41,28 @@ SEED = 21
 
 
 def _psi_grad(par, L, u):
-    """Gradient system for Botev's minimax tilting of P(X < u), X ~ N(0, LL').
+    """Saddle system for Botev's minimax tilting of P(X < u), X = L Z.
 
-    Variables: x (n-1 free saddle coordinates) and tilting means mu
-    (n-1 free), with the last x fixed by convention. Following Botev (2017),
-    with sequential bounds u_t(x) = (u - L[:, :t] x[:t]) / L[t, t]:
-      grad_x:  x - mu + c = 0,  where c accumulates L-weighted downstream terms
-      grad_mu: mu - EV = 0,     EV the truncated-normal mean under tilting.
+    Unknowns: x[0:n-1] (saddle point) and mu[0:n-1] (tilting means), with
+    x[n-1] = mu[n-1] = 0. With sequential bounds
+    ub_t = (u_t - sum_{j<t} L_tj x_j) / L_tt and hazard
+    h_t = phi(ub_t - mu_t)/Phi(ub_t - mu_t), the first-order conditions are
+        x_j - mu_j + h_j = 0                     (x is the tilted mean)
+        mu_j + sum_{t>j} (L_tj/L_tt) h_t = 0.
     """
     n = len(u)
     x = np.zeros(n)
     mu = np.zeros(n)
     x[:n - 1] = par[:n - 1]
     mu[:n - 1] = par[n - 1:]
-    # sequential upper bounds under current x
     ub = (u - L @ x + np.diag(L) * x) / np.diag(L)
-    # tilted one-sided truncated-normal log-mass and moments
     lnP = log_ndtr(ub - mu)
-    phi = np.exp(-0.5 * (ub - mu) ** 2 - 0.5 * np.log(2 * np.pi) - lnP)
-    EV = mu - phi                       # E[Z | Z < ub] under N(mu, 1)
-    grad_mu = mu[:n - 1] - EV[:n - 1]
-    # backpropagate through the bounds: dpsi/dx_j includes sum_t>j L_tj/L_tt phi_t
-    c = np.array([(L[t, :n - 1] / L[t, t] * phi[t]) for t in range(n)]).sum(0)
-    grad_x = x[:n - 1] - mu[:n - 1] + c[:n - 1]
+    h = np.exp(-0.5 * (ub - mu) ** 2 - 0.5 * np.log(2 * np.pi) - lnP)
+    grad_x = x[:n - 1] - mu[:n - 1] + h[:n - 1]
+    Lr = L / np.diag(L)[:, None]
+    strict = np.tril(np.ones((n, n)), -1)          # t > j strictly
+    cross = (Lr * strict).T @ h                    # sum_{t>j} (L_tj/L_tt) h_t
+    grad_mu = mu[:n - 1] + cross[:n - 1]
     return np.concatenate([grad_x, grad_mu])
 
 

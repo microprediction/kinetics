@@ -51,21 +51,23 @@ def newton_cg_calibrate(target, V, D, F, W, tol=1e-6, max_newton=25,
         if res < tol:
             return mu, {"newton_iters": it, "jvp_calls": n_jvp,
                         "residual": res, "converged": True}
-        # CG on J delta = r restricted to mean-zero vectors
+        # Newton step delta = J^{-1} r. Min-wins J is MINUS a weighted
+        # Laplacian (negative definite on the quotient), so run CG on the
+        # SPD operator A = -J with right-hand side -r: A delta = -r.
         delta = np.zeros(n)
-        cr = r - 0.0
-        cr -= cr.mean()
+        b = -(r - r.mean())
+        cr = b.copy()
         d = cr.copy()
         rs = cr @ cr
         for _ in range(max_cg):
-            Jd = jacobian_vector_product(mu, V, D, F, W, d, form="grid")
-            Jd -= Jd.mean()
+            Ad = -jacobian_vector_product(mu, V, D, F, W, d, form="grid")
+            Ad -= Ad.mean()
             n_jvp += 1
-            alpha = rs / max(d @ Jd, 1e-300)
+            alpha = rs / max(d @ Ad, 1e-300)
             delta += alpha * d
-            cr -= alpha * Jd
+            cr -= alpha * Ad
             rs_new = cr @ cr
-            if np.sqrt(rs_new) < cg_tol * np.sqrt(r @ r):
+            if np.sqrt(rs_new) < cg_tol * np.sqrt(b @ b):
                 break
             d = cr + (rs_new / rs) * d
             rs = rs_new
