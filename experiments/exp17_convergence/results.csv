@@ -44,15 +44,20 @@ C,rowsum_defect,6.181e-17
 C,reduced_min_eig,2.4982e-05
 C,reduced_max_eig,2.2342e-01
 D,truth_noise,1.855e-04
-D,lattice_L=375_GH5,0.033s 4.073e-05
-D,lattice_L=751_GH9,0.220s 4.641e-05
-D,lattice_L=1501_GH15,0.824s 4.685e-05
-D,lattice_L=3001_GH15,1.574s 4.685e-05
-D,direct_MC_R=1e+05,0.152s 1.705e-03
-D,direct_MC_R=1e+06,1.583s 5.190e-04
-D,direct_MC_R=1e+07,15.699s 1.165e-04
-D,QMC_direct_2^14,0.046s 1.681e-03
-D,QMC_direct_2^17,0.331s 6.730e-04
-D,QMC_direct_2^20,2.631s 1.972e-04
-D,GHK_R=1000,1.281s 7.961e-03
-D,GHK_R=10000,10.122s 1.990e-03
+D,ghk_seedband_median,7.519e-03
+D,ghk_seedband_min,3.911e-03
+D,ghk_seedband_max,1.273e-02
+D,lattice_L=375_GH5,0.034s 4.073e-05
+D,lattice_L=751_GH9,0.228s 4.641e-05
+D,lattice_L=1501_GH15,0.854s 4.685e-05
+D,lattice_L=3001_GH15,1.651s 4.685e-05
+D,direct_MC_R=1e+05,0.156s 1.705e-03
+D,direct_MC_R=1e+06,1.642s 5.190e-04
+D,direct_MC_R=1e+07,15.992s 1.165e-04
+D,QMC_direct_2^14,0.049s 1.681e-03
+D,QMC_direct_2^17,0.339s 6.730e-04
+D,QMC_direct_2^20,2.693s 1.972e-04
+D,GHK_R=1000,1.293s 7.961e-03
+D,GHK_R=10000,10.691s 1.990e-03
+D,QMC-GHK_R=1024,1.151s 1.232e-03
+D,QMC-GHK_R=8192,6.963s 4.157e-04

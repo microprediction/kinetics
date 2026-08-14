@@ -479,26 +479,26 @@ On the same problem the measured accuracy--time frontier
 (Figure~\ref{fig:frontier}, left) has the lattice at $4.1\times10^{-5}$
 error in 0.03 seconds (at the twin-reference noise floor), direct MC at
 $1.2\times10^{-4}$ in 15.7 seconds ($R = 10^7$), scrambled-Sobol direct QMC
-at $2.0\times10^{-4}$ in 2.6 seconds ($2^{20}$ points), and GHK at
-$2.0\times10^{-3}$ in 10.1 seconds ($R = 10^4$). Below $10^{-3}$ the
+at $2.0\times10^{-4}$ in 2.6 seconds ($2^{20}$ points), GHK at
+$2.0\times10^{-3}$ in 10.7 seconds ($R = 10^4$; over 8 seeds at $R = 10^3$
+its error spans $[3.9\times10^{-3}, 1.3\times10^{-2}]$), and QMC-GHK
+(scrambled-Sobol uniforms in the same kernel) at $4.2\times10^{-4}$ in 7.0
+seconds ($R = 8192$) --- a $5$--$7\times$ error improvement over plain GHK
+at equal $R$, still well off the lattice frontier. Below $10^{-3}$ the
 deterministic map separates decisively, consistent with $R^{-1/2}$ against a
-rapidly-converging quadrature. Stronger stochastic baselines --- QMC-GHK, minimax tilting
-\cite{botev2017} --- remain to be added.
+rapidly-converging quadrature. One stronger stochastic baseline --- minimax
+tilting \cite{botev2017} --- remains to be added.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.48\textwidth]{figs/frontier_full.png}\hfill
-\includegraphics[width=0.48\textwidth]{figs/smoothness.png}
+\includegraphics[width=0.48\textwidth]{figs/refinement.png}
 \caption{Left: measured accuracy--time frontier at $N=200$, $k=2$ (experiment
 17) --- every method timed on the same problem against twin
-$5\times10^7$-draw references; direct simulation is a first-class baseline.
-Right: fixed-design smoothness along a utility path. Fresh-draw GHK shows
-run-to-run simulation noise (roughness statistic --- maximum second
-difference over $dt^2$ --- 39.3, versus 0.01 for both common-random-number
-GHK and the lattice); CRN-GHK is smooth conditional on its draw set, and the
-offset between its curve and the lattice's is a discrepancy between two
-approximations; decomposing it requires an independent high-accuracy
-reference. All three curves are approximations.}
+$5\times10^7$-draw references; direct simulation and QMC-GHK are first-class
+baselines. Right: factor-quadrature refinement at fixed $L$: Gauss--Hermite
+at $k=2$, and at $k=8$ the median and range over eight independent RQMC
+scrambles.}
 \label{fig:frontier}
 \end{figure}
 
@@ -506,7 +506,10 @@ reference. All three curves are approximations.}
 lattice, the transform is a reproducible, (piecewise-)differentiable function
 of $\mu$ whose derivatives are evaluated without resampling; analytic
 own-location slopes of the unnormalized map come from the same pass and serve
-as the inversion preconditioner. These are derivatives of the numerical
+as the inversion preconditioner. (Along a utility path at $N=50$, the
+maximum second difference over $dt^2$ is 39.3 for fresh-draw GHK against
+0.01 for both CRN-GHK and the lattice; the committed smoothness figure shows
+the curves.) These are derivatives of the numerical
 approximation, not exact MNP derivatives, and GHK-based practice likewise
 differentiates its approximation, analytically or with fixed draws
 \cite{hajivassiliou1998,train2009}. The practical distinction is the character
@@ -531,10 +534,22 @@ $6.2\times10^{-17}$, and reduced eigenvalues in $[2.5\times10^{-5},
 0.22]$ --- positive definite as proved. We are not aware of probit
 share inversion at this scale in current simulation-based practice.
 
-\paragraph{Removal ensemble.} All 200 single-removal share vectors from one
-conditional field construction in $O(QN^2L)$: 51.5 seconds versus 172.4
-seconds recomputing (3.3$\times$), with ten evenly spaced removals checked
-directly (maximum discrepancy $2.8\times10^{-17}$).
+\paragraph{Removal ensemble.} All 200 single-removal share vectors come from
+one conditional field construction in $O(QN^2L)$: 51.5 seconds versus 172.4
+seconds recomputing per removal, with ten removals checked directly
+(agreement $2.8\times10^{-17}$ --- an algebraic-consistency check between
+two implementations of the same approximation, not an accuracy statement).
+The strongest simulation comparator also reuses its draws: one draw's winner
+$w$ and runner-up $s$ determine every single-removal outcome (delete $i \ne
+w$: winner stays $w$; delete $w$: winner becomes $s$), so counting winners
+and winner/runner-up pairs yields the whole $N \times N$ deletion matrix in
+$O(RN + N^2)$. At wall time matched to the field ensemble (64 s), this
+top-two baseline reaches $1.2\times10^{-4}$ maximum error on the twenty
+highest-share deletion rows against an independent $10^8$-draw reference,
+versus $4.2\times10^{-5}$ for the conditional field (experiment 18): the
+deterministic ensemble is about $3\times$ more accurate at matched time,
+and the reuse trick, not the field construction alone, is the right
+simulation benchmark.
 
 \section{Boundary experiments}\label{sec:boundary}
 
