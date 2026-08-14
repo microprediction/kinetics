@@ -40,6 +40,7 @@ SCRIPTS = [
     "exp17_convergence/run_convergence.py",
     "exp18_deletion_baseline/run_deletion_baseline.py",
     "exp19_calibration_scaling/run_calibration_scaling.py",
+    "exp20_separated_pass/run_separated.py",
 ]
 
 def main():

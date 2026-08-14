@@ -68,11 +68,17 @@ because the curve build costs about as much as the ~11 re-integrations it
 avoids. The economics flip once the pass itself is cheap (low-rank and/or
 Rust): revisit then. Removed from raceutil to keep the library honest.
 
+## Validation (exp20, 2026-08-14): CONFIRMED
+
+Prototype in `experiments/exp20_separated_pass/`. Exponential convergence;
+speedup grows with N. At N=5000: 45x at 6.1e-5, 29x at 6.3e-7, 22x at
+9.1e-9 (NumPy vs NumPy exact). The r needed is larger than the single-node
+rank (the field sums N interpolation errors before exponentiating), but the
+economics are decisive anyway.
+
 ## Suggested order of work
 
-1. Validate the separated expansion end-to-end at k=2 (accuracy sweep vs the
-   exact pass; per-entry tail error). Target: same 1e-3 share accuracy at
-   r≈15.
+1. ~~Validate the separated expansion end-to-end at k=2~~ DONE (exp20).
 2. Wire it into the Rust kernel (fastrace) — the r(N+L) inner loop is even
    more SIMD/cache-friendly than the fused O(NL) loop.
 3. Re-run the calibration lookup on top (its economics become favorable).

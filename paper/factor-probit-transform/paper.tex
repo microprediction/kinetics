@@ -18,7 +18,7 @@ pdfauthor={Peter Cotton}}
 \title{Scalable Probit Calibration}
 \author{Peter Cotton\thanks{Numbers in this paper are produced by committed, seeded
 scripts with correctness anchors run before any comparison
-(\url{https://github.com/microprediction/kinetics}, experiments 13--19; the
+(\url{https://github.com/microprediction/kinetics}, experiments 13--20; the
 exact commit is recorded in the repository README and an immutable tag is
 pinned at circulation). The algorithm ships in the \texttt{thurstone}
 package; package--benchmark agreement is itself a reported number.
@@ -714,6 +714,14 @@ differentiation, a route to differentiable probit demand estimation at large
 $N$. Estimating $(V, D)$ rather than supplying them raises the usual
 identification cautions: scale normalization, factor rotation, and the fact
 that only difference covariances are identified.
+
+The pass itself can be accelerated further: its two stages are smooth-kernel
+sums whose matrices are numerically low-rank, and a Chebyshev-separated
+evaluation (in the spirit of black-box fast multipole methods) reduces each
+node's cost from $O(NL)$ to $O(r(N+L))$; a committed prototype (experiment
+20) reproduces the exact pass to $6\times10^{-5}$ at $45\times$ speed for
+$N=5000$, with exponential convergence in $r$. Development to full
+generality is left to a companion note.
 
 Beyond the Gaussian family, the same machinery computes races with arbitrary
 alternative-specific idiosyncratic densities. A common-scale Gumbel base with
