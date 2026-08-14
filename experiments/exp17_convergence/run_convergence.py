@@ -185,6 +185,28 @@ def main():
         p, dt = timed(lambda: ghk_all_shares(mu, V, D, R=R), reps=1)
         frontier.append(("GHK", f"R={R}", dt, np.abs(p - truth).max()))
 
+    # QMC-GHK: scrambled-Sobol uniforms fed into the same GHK kernel
+    from run_ghk_benchmark import ghk_prob
+    Sig = V @ V.T + np.diag(D)
+    for R in (1024, 8192):
+        def qmc_ghk(R=R):
+            u = qmc.Sobol(d=199, scramble=True, seed=13).random(R)
+            pg = np.array([ghk_prob(mu, Sig, i, u=u) for i in range(200)])
+            return pg / pg.sum()
+        p, dt = timed(qmc_ghk, reps=1)
+        frontier.append(("QMC-GHK", f"R={R}", dt, np.abs(p - truth).max()))
+
+    # GHK seed band at R=1000: error distribution over 8 seeds
+    errs_band = []
+    for sd_ in range(8):
+        pg = ghk_all_shares(mu, V, D, R=1000, seed=1000 + 37 * sd_)
+        errs_band.append(np.abs(pg - truth).max())
+    print(f"  GHK R=1000 seed band (8 seeds): median {np.median(errs_band):.1e} "
+          f"range [{min(errs_band):.1e}, {max(errs_band):.1e}]")
+    rows += [f"D,ghk_seedband_median,{np.median(errs_band):.3e}",
+             f"D,ghk_seedband_min,{min(errs_band):.3e}",
+             f"D,ghk_seedband_max,{max(errs_band):.3e}"]
+
     print(f"  {'method':>12} {'setting':>12} {'seconds':>9} {'max err':>9}")
     for meth, lab, dt, err in frontier:
         print(f"  {meth:>12} {lab:>12} {dt:>9.2f} {err:>9.1e}")
@@ -192,7 +214,8 @@ def main():
 
     fig, ax = plt.subplots(figsize=(6.4, 4.6))
     marks = {"lattice": ("o-", "#c2410c"), "direct MC": ("s-", "#5b7c99"),
-             "QMC direct": ("d-", "#2a9d8f"), "GHK": ("^-", "#9a9a9a")}
+             "QMC direct": ("d-", "#2a9d8f"), "GHK": ("^-", "#9a9a9a"),
+             "QMC-GHK": ("v-", "#6a5acd")}
     for meth in marks:
         pts = sorted((dt, err) for m_, l_, dt, err in frontier if m_ == meth)
         mk, c = marks[meth]
@@ -209,8 +232,38 @@ def main():
     (HERE / "figures").mkdir(exist_ok=True)
     fig.savefig(HERE / "figures" / "frontier_full.png", dpi=150)
 
+    fig2, ax2 = plt.subplots(figsize=(6.2, 4.4))
+    orders = [3, 5, 7, 9, 11, 15]
+    gh_errs = [float(r.split(",")[-1]) for r in rows
+               if r.startswith("B,k2_GH")]
+    gh_nodes = [len(hermite_nodes(2, Q=o)[1]) for o in orders]
+    ax2.loglog(gh_nodes, gh_errs, "o-", color="#c2410c",
+               label="k=2 Gauss-Hermite refinement")
+    ms = [9, 11, 13]
+    med = [float(next(r.split(",")[-1] for r in rows
+                      if r.startswith(f"B,k8_m{m}_median"))) for m in ms]
+    lo = [float(next(r.split(",")[-1] for r in rows
+                     if r.startswith(f"B,k8_m{m}_min"))) for m in ms]
+    hi = [float(next(r.split(",")[-1] for r in rows
+                     if r.startswith(f"B,k8_m{m}_max"))) for m in ms]
+    nodes8 = [2**m for m in ms]
+    ax2.loglog(nodes8, med, "s-", color="#5b7c99",
+               label="k=8 RQMC (median of 8 scrambles)")
+    ax2.fill_between(nodes8, lo, hi, color="#5b7c99", alpha=0.2,
+                     label="k=8 RQMC scramble range")
+    ref_n = np.array([30., 10000.])
+    ax2.loglog(ref_n, 3e-2 * ref_n**-0.5, ":", color="#9a9a9a",
+               label=r"$Q^{-1/2}$ guide")
+    ax2.set_xlabel("factor nodes Q")
+    ax2.set_ylabel("max abs share error vs refined reference")
+    ax2.set_title("Factor-quadrature refinement at fixed L", fontsize=10)
+    ax2.legend(fontsize=8)
+    ax2.grid(True, which="both", alpha=0.25)
+    fig2.tight_layout()
+    fig2.savefig(HERE / "figures" / "refinement.png", dpi=150)
+
     (HERE / "results.csv").write_text("\n".join(rows) + "\n")
-    print("\nwrote results.csv, figures/frontier_full.png")
+    print("\nwrote results.csv, figures/frontier_full.png, figures/refinement.png")
 
 
 if __name__ == "__main__":

@@ -184,13 +184,18 @@ def main():
     print("\nPart B: full share vector, GHK vs lattice vs MC truth")
     Ns = [5, 20, 50, 200]
     t_ghk_list, t_lat_list, e_ghk_list, e_lat_list = [], [], [], []
+    def timed3(fn):
+        fn()                                    # warm-up discarded
+        ts = []
+        for _ in range(3):
+            t0 = time.perf_counter(); out = fn(); ts.append(time.perf_counter() - t0)
+        return out, float(np.median(ts))
+
     for n in Ns:
         mu, V, D = make_problem(n, 2, rng)
         truth = mc_shares(mu, V, D, 2_000_000)
-        t0 = time.perf_counter(); p_l = lattice_shares(mu, V, D)
-        t_l = time.perf_counter() - t0
-        t0 = time.perf_counter(); p_g = ghk_all_shares(mu, V, D, R=1000)
-        t_g = time.perf_counter() - t0
+        p_l, t_l = timed3(lambda: lattice_shares(mu, V, D))
+        p_g, t_g = timed3(lambda: ghk_all_shares(mu, V, D, R=1000))
         rel_l = np.abs(p_l - truth).max()
         rel_g = np.abs(p_g - truth).max()
         t_lat_list.append(t_l); t_ghk_list.append(t_g)
@@ -290,17 +295,24 @@ def main():
     fig, ax = plt.subplots(figsize=(6.4, 4.4))
     alpha_fit, logc_fit = np.polyfit(np.log(Ns[1:]), np.log(t_ghk_list[1:]), 1)
     Nx = np.array([200, 500, 1000, 2000, 5000], dtype=float)
-    ax.loglog(Nx, np.exp(logc_fit) * Nx**alpha_fit, "--", color="#2a1a12", lw=1,
-              label="GHK (R=1000), power-law extrapolation")
+    # matched-error GHK: scale R by (err_ghk/err_lat)^2 per R^{-1/2}; cost ~ R
+    t_matched = [t * (eg / el) ** 2 for t, eg, el
+                 in zip(t_ghk_list, e_ghk_list, e_lat_list)]
+    am, lm = np.polyfit(np.log(Ns[1:]), np.log(t_matched[1:]), 1)
+    ax.loglog(Nx, np.exp(lm) * Nx**am, "--", color="#8a6a52", lw=1.2)
+    ax.loglog(Ns, t_matched, "^-", color="#8a6a52",
+              label="GHK at lattice-matched error ($R^{-1/2}$ scaled)")
+    ax.loglog(Nx, np.exp(logc_fit) * Nx**alpha_fit, "--", color="#2a1a12", lw=1)
     ax.loglog(Ns, np.array(t_ghk_list), "o-", color="#2a1a12",
-              label="GHK (R=1000), measured")
+              label="GHK at R=1000 (err $\\sim\\!10^{-3}$--$10^{-2}$)")
     ax.loglog(Ns + big_Ns, np.array(t_lat_list + big_t), "s-", color="#c2410c",
-              label="lattice transform, measured")
+              label="lattice transform (err $\\sim\\!3\\times10^{-4}$)")
     ax.set_xlabel("number of alternatives N")
     ax.set_ylabel("wall time for the full share vector (s)")
-    ax.set_title("All N factor-probit shares: wall time vs N", fontsize=10)
+    ax.set_title("All N factor-probit shares: wall time vs N\n(dashed: power-law extrapolation)",
+                 fontsize=10)
     ax.grid(True, which="both", alpha=0.25)
-    ax.legend(fontsize=8.5)
+    ax.legend(fontsize=8.5, loc="upper left")
     fig.tight_layout(); fig.savefig(fig_dir / "frontier.png", dpi=150)
 
     fig2, ax2 = plt.subplots(figsize=(6, 4.4))

@@ -39,8 +39,11 @@ SEED = 21   # exp13's seed: reproduce its problem sequence exactly
 def metrics(p, truth):
     d = np.abs(p - truth)
     big = truth > 1e-3
+    order = np.argsort(truth)[::-1]
+    mass99 = order[:int(np.searchsorted(np.cumsum(truth[order]), 0.99)) + 1]
     return {"max": d.max(), "mean": d.mean(), "tv": 0.5 * d.sum(),
-            "max_big": d[big].max() if big.any() else np.nan}
+            "max_big": d[big].max() if big.any() else np.nan,
+            "max_mass99": d[mass99].max()}
 
 
 def main():

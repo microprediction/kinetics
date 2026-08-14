@@ -36,9 +36,11 @@ extrapolation used a naive N³ constant; corrected here from the empirical fit.)
 
 **Derivative smoothness** (curvature noise of P(μ+t·e) along a line; the
 estimation-relevant metric): lattice 0.01, GHK-CRN 0.01, GHK-fresh 39.3. The nuance
-matters: common random numbers make GHK smooth *by freezing the noise in as bias* —
-the CRN curve visibly sits off the true one (figures/smoothness.png) — while the
-lattice is smooth *and* accurate. The correct claim is "GHK trades noise for bias;
+matters: common random numbers make GHK smooth conditional on its draw set;
+its curve sits off the lattice curve (figures/smoothness.png), a discrepancy
+between two approximations that only an independent high-accuracy reference
+could decompose. The correct claim is "both methods differentiate their own
+approximations;
 the lattice needs no trade."
 
 **Share inversion (probit BLP step), N=1000, k=2.** Target shares from 5×10⁶ MC
@@ -56,8 +58,10 @@ curves are cross-correlations, computable at all offsets at once).
 conditional field pass, 3.8× faster than recomputation, identical to 5.6e-17.
 
 **Verdict for the paper.** All four pillars hold on measured evidence: (1) flat-error
-deterministic shares where GHK degrades and then becomes infeasible; (2) smooth and
-*unbiased* derivatives; (3) share inversion at N=1000 in under a minute, matching
+deterministic shares where GHK degrades and then becomes infeasible; (2)
+resampling-free derivatives of a fixed-design approximation (not exact MNP
+derivatives — both methods differentiate approximations); (3) share inversion
+at N=1000 in under a minute, matching
 targets to below their own noise; (4) the one-pass assortment ensemble. Remaining
 before submission: the full-covariance (non-factor) boundary study where GHK
 retains the advantage of arbitrary Σ, and the mixed-logit substitution comparison.

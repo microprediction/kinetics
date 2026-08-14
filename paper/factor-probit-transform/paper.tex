@@ -19,7 +19,7 @@ Many Alternatives}, pdfauthor={Peter Cotton}}
 with Many Alternatives}
 \author{Peter Cotton\thanks{Numbers in this paper are produced by committed, seeded
 scripts with correctness anchors run before any comparison
-(\url{https://github.com/microprediction/kinetics}, experiments 13--17; the
+(\url{https://github.com/microprediction/kinetics}, experiments 13--18; the
 exact commit is recorded in the repository README and an immutable tag is
 pinned at circulation). The algorithm ships in the \texttt{thurstone}
 package; package--benchmark agreement is itself a reported number.
@@ -116,8 +116,7 @@ identity computes every alternative's integral in one shared $O(NL)$ pass ---
 the field's survival product is built once and each alternative's
 leave-one-out integrand is recovered by division.
 
-\paragraph{Prior art.} Against what exists, the gap this fills is
-specific:
+\paragraph{Prior art.} The nearest methods, and what each lacks:
 
 \begin{center}
 \footnotesize
@@ -248,9 +247,10 @@ a weighted graph Laplacian with everywhere-positive weights: $J$ is symmetric,
 positive semidefinite, has $\mathbf{1}$ as its only null direction, and
 $B^\top J B \succ 0$ for every full-rank basis $B$ of $\mathbf{1}^\perp$.
 Moreover $p = \nabla G$ for the social-surplus function
-$G(\mu) = \E \max_i \{\mu_i + \xi_i\}$, and for every strictly positive
-target $\hat p$ the inverse problem $p(\mu) = \hat p$ has exactly one
-solution on $\mathbf{1}^\perp$.
+$G(\mu) = \E \max_i \{\mu_i + \xi_i\}$, and the restriction of $p$ to
+$\mathbf{1}^\perp$ is a smooth bijection onto the interior of the
+probability simplex: every strictly positive target $\hat p$ has exactly one
+mean-zero utility vector.
 \end{theorem}
 \begin{proof}
 Differentiating \eqref{eq:forward} in $\mu_j$ and integrating by parts gives
@@ -366,7 +366,7 @@ approximation of \eqref{eq:forward}; statements about derivatives refer to
 derivatives of this approximation, whose fidelity to exact MNP derivatives is
 governed by $L$ and $Q$.
 
-\paragraph{Algorithm, completely specified.} Orientation: the implementation
+\paragraph{Algorithm.} Orientation: the implementation
 computes the reflected min-wins race on $a = -\mu$. Per retained factor node
 $q$: form conditional locations $m_i(f_q) = a_i + v_i^\top f_q$; on the
 uniform lattice evaluate $\log S_i = \log\Phi(-(x - m_i)/\sqrt{D_i})$;
@@ -401,7 +401,7 @@ inversion \cite{cotton2021} and the calibration practice of
 
 \section{Benchmark against GHK}\label{sec:benchmark}
 
-Anchors first. On the binary case, where MNP has a closed form, the lattice
+\paragraph{Correctness anchors.} On the binary case, where MNP has a closed form, the lattice
 transform agrees to $3.3\times10^{-16}$ and our GHK implementation --- validated
 before being compared against --- to $2\times10^{-14}$ at $R = 2\times10^5$
 (an easy anchor for both methods, useful for code validation rather than as
@@ -410,7 +410,7 @@ a $10^7$-draw Monte Carlo reference, and the shipped
 \texttt{thurstone.FactorRace} agrees with the benchmark kernel to
 $1.1\times10^{-5}$.
 
-Error metric: throughout, $\max_i |\hat p_i - p_i|$ against a simulation
+\paragraph{Error metric.} Throughout, $\max_i |\hat p_i - p_i|$ against a simulation
 reference. A maximum over $N$ coordinates tends to grow with $N$ at fixed
 per-coordinate accuracy, and the reference's own maximum-coordinate noise
 behaves likewise; mean-absolute and total-variation summaries are committed
@@ -467,8 +467,8 @@ every tested $N$ ($6.1\times10^{-4}$ versus $3.9\times10^{-4}$ at $N=1000$,
 $0.5$M draws in the matched 4.3 seconds). At the $10^{-3}$ accuracy level,
 then, raw forward speed does not by itself separate the methods.
 
-What does is error decay, measured rather than asserted (experiment 17,
-$N=200$, $k=2$). Holding the factor rule fixed, lattice self-convergence is
+The separation is in error decay (experiment 17, $N=200$, $k=2$).
+Holding the factor rule fixed, lattice self-convergence is
 $2.7\times10^{-8}$ at $L=101$ and at machine precision from $L \approx 200$
 --- the integrand is analytic and endpoint-decaying, so the uniform lattice
 is effectively spectrally accurate and $L$-error is subdominant. Holding $L$
@@ -544,16 +544,16 @@ requires $\Sigma \approx VV^\top + D$; GHK does not. Choices depend on
 $(\mu, \Sigma)$ only through $P\mu$ and $P\Sigma P$, $P = I -
 \mathbf{1}\mathbf{1}^\top/N$: a common factor loading $V \to V +
 \mathbf{1}c^\top$ shifts every conditional location equally and cannot move
-the argmax (machine-precision fact, tested), so the factor fit must be run in
+the argmax (a machine-precision identity), so the factor fit must be run in
 this choice-relevant quotient space --- fitting raw $\Sigma$ can spend
 scarce rank on an irrelevant common component ($\Sigma = \tau^2
 \mathbf{1}\mathbf{1}^\top + \beta\beta^\top + D$ with large $\tau$: the
 raw rank-1 fit takes $\mathbf{1}\mathbf{1}^\top$ and misses
 $\beta\beta^\top$ entirely; on such an example the contrast-space fit cuts
-rank-1 share error from $4.6\times10^{-2}$ to $8.3\times10^{-3}$). A
-caution from a wrong first implementation: only the common \emph{factor}
-direction is irrelevant; a common addition to $D$ inflates every difference
-variance and is choice-relevant, so $D$ must come from the quotient fit.
+rank-1 share error from $4.6\times10^{-2}$ to $8.3\times10^{-3}$). The
+asymmetry matters: only the common \emph{factor} direction is irrelevant; a
+common addition to $D$ inflates every difference variance and is
+choice-relevant, so $D$ must come from the quotient fit.
 Loadings are centered and SVD-canonicalized (ordered columns, fixed signs),
 making results reproducible at the covariance level.
 
@@ -590,7 +590,7 @@ coordinates is \emph{left}-skew in utility coordinates.) The four candidates
 hold the idiosyncratic scale fixed at one and vary $\{\text{Gumbel},
 \text{Gaussian}\}$ base $\times$ $\{V = 0, V = V^\star\}$: independent
 Luce (= plain multinomial logit exactly), independent probit, factor mixed
-logit (common-scale, the term now used correctly), and factor probit. All are
+logit (common-scale), and factor probit. All are
 calibrated to the same full-menu shares (residuals $\le 4\times10^{-10}$).
 
 Deletion truths come from $2\times10^7$ \emph{common} utility draws with

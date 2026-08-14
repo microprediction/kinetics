@@ -128,13 +128,20 @@ def calibrate_base(target, V, D, F, W, base="normal", n_iter=60, tol=1e-8):
     return mu
 
 
-def spectral_corr(n, gamma, rng):
-    """Random correlation matrix with eigenvalues ~ m^-gamma."""
+def spectral_corr(n, gamma, basis):
+    """Correlation matrix with pre-standardization eigenvalues ~ m^-gamma.
+
+    Fourth-review fixes: (1) the orthogonal basis is passed in and SHARED
+    across gamma values, so decay-rate comparisons are not confounded with
+    basis realization; (2) the power law holds BEFORE diagonal
+    standardization -- rescaling to unit diagonal perturbs the spectrum, so
+    the actual post-standardization eigenvalues are returned for disclosure.
+    """
     lam = np.arange(1, n + 1, dtype=float) ** (-gamma)
-    Q, _ = np.linalg.qr(rng.standard_normal((n, n)))
-    C = (Q * lam) @ Q.T
+    C = (basis * lam) @ basis.T
     d = np.sqrt(np.diag(C))
-    return C / np.outer(d, d)
+    C = C / np.outer(d, d)
+    return C, np.sort(np.linalg.eigvalsh(C))[::-1]
 
 
 def main():
@@ -160,8 +167,11 @@ def main():
     mu = rng.normal(0.0, 1.0, N)
     curves = {}
     ghk_refs = {}
+    basis, _ = np.linalg.qr(rng.standard_normal((N, N)))   # SHARED across gamma
     for gamma in gammas:
-        C = spectral_corr(N, gamma, rng)
+        C, eig_actual = spectral_corr(N, gamma, basis)
+        print(f"  gamma={gamma}: actual top-5 eigenvalues after diagonal "
+              f"standardization: {[f'{e:.2f}' for e in eig_actual[:5]]}")
         L = np.linalg.cholesky(C + 1e-10 * np.eye(N))
         # MC truth under EXACT Sigma
         counts = np.zeros(N)
@@ -178,6 +188,23 @@ def main():
             pk, _ = factor_shares_base(mu, V, D, Fk, Wk)   # min-wins, as the MC truth
             times.append(time.perf_counter() - t0)
             errs.append(np.abs(pk - truth).max())
+            if k in (1, 8):
+                # decomposition: covariance-fit error vs integration error,
+                # via an MC truth under the FITTED factor model
+                r3 = np.random.default_rng(17)
+                cnt = np.zeros(N)
+                for _ in range(40):
+                    ff = r3.standard_normal((200_000, k))
+                    X = (mu[None, :] + ff @ V.T
+                         + np.sqrt(D)[None, :] * r3.standard_normal((200_000, N)))
+                    cnt += np.bincount(np.argmin(X, axis=1), minlength=N)
+                t_fit = cnt / cnt.sum()
+                e_cov = np.abs(t_fit - truth).max()
+                e_int = np.abs(pk - t_fit).max()
+                print(f"    k={k} decomposition: covariance-fit error "
+                      f"{e_cov:.1e}, integration error {e_int:.1e}")
+                rows += [f"A,gamma{gamma}_k{k}_coverr,{e_cov:.3e}",
+                         f"A,gamma{gamma}_k{k}_interr,{e_int:.3e}"]
         curves[gamma] = errs
         top4 = np.sort(np.linalg.eigvalsh(C))[::-1][:4].sum() / N
         # GHK reference errors at the EXACT Sigma (its structural advantage).
