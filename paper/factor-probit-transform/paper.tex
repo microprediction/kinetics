@@ -39,9 +39,7 @@ alternatives in three seconds on a laptop, and five thousand in under
 twenty. Cost grows roughly linearly: ten thousand alternatives take forty
 seconds. The computed shares carry log-odds
 errors of a few parts in a hundred thousand, hundred-to-one tails
-included; matching that on a single hundred-to-one share would take
-direct utility simulation about forty billion draws, or weeks, with the
-cost growing in inverse proportion to the share toward the tail.
+included.
 \end{abstract}
 
 \section{Introduction}
@@ -106,10 +104,8 @@ location). Three ingredients make it work:
 \begin{enumerate}
 \item \textbf{A fast forward map} (utilities $\to$ shares): all $N$
 probabilities at once in $O(QNL)$ for $Q$ factor nodes and $L$ lattice
-points. All 5000 shares of an $N = 5000$ problem take 7 seconds, where our
-plain pseudorandom per-alternative GHK baseline extrapolates (in $N$ and in
-draws) to roughly fifty hours at matched accuracy. Calibration needs many forward evaluations; this is what makes them
-affordable.
+points. Calibration needs many forward evaluations; this is what makes
+them affordable.
 \item \textbf{Resampling-free derivatives}: Jacobian--vector products in
 $O(QNL)$; in max-wins coordinates the Jacobian is a weighted graph
 Laplacian, so reduced systems are symmetric positive definite. This supports
@@ -138,39 +134,31 @@ factor quadrature \cite{butler1982,elrod1995} & $N$ separate $(k{+}1)$-dim integ
 Bayesian factor MNP \cite{loaiza2022} & simulation inside estimation & posterior, not a share map \\
 neural amortization \cite{huch2026} & fast, uncontrolled error & no \\
 BLP-side inversion \cite{berry1995,conlon2020} & --- & logit family only \\
-\textbf{this paper} & one $O(QNL)$ pass & Thm.~\ref{thm:inv}; 3 s at $N{=}1000$ \\
+\textbf{this paper} & one $O(QNL)$ pass & Prop.~\ref{thm:inv}; 3 s at $N{=}1000$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-Figure~\ref{fig:scaling} shows the running-time consequence as the number
-of alternatives grows. The per-alternative simulator's cost crosses the
-lattice transform near $N \approx 200$; at equal running time its error is
-about 23 times larger (Table~\ref{tab:frontier}), so at equal error it is
-roughly 500 times slower. By $N = 5000$ the lattice computes all shares in
-7 seconds and the simulator needs about fifty hours at matched accuracy:
-the lattice is roughly twenty-five thousand times faster
-(Section~\ref{sec:benchmark}).
+Figure~\ref{fig:scaling} shows calibration wall time as the number of
+alternatives grows: roughly linear, three seconds at a thousand
+alternatives and forty at ten thousand in the compiled implementation.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.62\textwidth]{figs/frontier.png}
-\caption{Wall time for the full $N$-alternative share vector as $N$ grows
-($k=2$ factors). The upper GHK line rescales $R$ by the squared error ratio ($R^{-1/2}$
-scaling) so both methods deliver the same accuracy; the matched-accuracy
-extrapolation is developed in Section~\ref{sec:benchmark}. Dashed segments are power-law
-extrapolations; all other points are measured (Table~\ref{tab:frontier}).}
+\includegraphics[width=0.62\textwidth]{figs/calibration_scaling.png}
+\caption{Wall time to calibrate the full utility vector from target
+shares ($k=2$ factors, independent $5\times10^6$-draw targets, experiment
+19). Both implementations grow roughly linearly in $N$; the dashed guide
+has slope one.}
 \label{fig:scaling}
 \end{figure}
 
 \paragraph{Scope.} The method needs the factor form: where $\Sigma$ has no
 adequate low-rank-plus-diagonal approximation in the choice-relevant quotient
 space, simulation at exact $\Sigma$ remains the tool
-(Section~\ref{sec:boundary}). At accuracy targets near $10^{-3}$, plain
-direct utility simulation is a genuinely competitive forward baseline
-(Section~\ref{sec:benchmark}), and the decisive advantages lie elsewhere:
-error decay below that level, reproducibility, resampling-free derivatives,
-and the calibration machinery.
+(Section~\ref{sec:boundary}). The decisive advantages are precision,
+reproducibility, resampling-free derivatives, and the calibration
+machinery.
 
 The one-pass identity comes from an unlikely literature: inferring ability
 from win probabilities in multi-entrant races \cite{cotton2021}. That is
@@ -481,7 +469,7 @@ race, and $-U$ has the same distribution as the reflected model only when the
 factor and base laws are symmetric; for asymmetric laws the reflected
 distributions must be used explicitly.
 
-\paragraph{Numerical method.} The benchmarks use $L = 501$ lattice
+\paragraph{Numerical method.} All experiments use $L = 501$ lattice
 points, chosen from the measured lattice sweep (experiment 17 spans $L =
 101$ to $6001$; self-convergence reaches machine precision by $L \approx
 200$), on the adaptive interval
@@ -489,7 +477,7 @@ $[\min_{i,q} m_i(f_q) - 8\max_i\sqrt{D_i},\,
 \max_{i,q} m_i(f_q) + 8\max_i\sqrt{D_i}]$, where $q = 1, \dots, Q$ indexes
 the retained factor nodes.
 
-Factor integration: the GHK benchmark (experiment 13) uses product
+Factor integration: the main experiments use product
 Gauss--Hermite of order 15/11/9 for $k = 2/3/4$; the boundary experiment
 (experiment 14) uses order 15 per dimension for all $k \le 4$, which after
 pruning weights below $10^{-7}$ of the maximum leaves $Q = 145$, $1317$, and
@@ -591,14 +579,12 @@ tested problems, not a theorem. The design follows the original transform's
 inversion \cite{cotton2021} and the calibration practice of
 \cite{allocationpkg}.
 
-\section{Benchmark against GHK}\label{sec:benchmark}
+\section{Validation}\label{sec:benchmark}
 
-\paragraph{Correctness anchors.} On the binary case, where MNP has a closed form, the lattice
-transform agrees to $3.3\times10^{-16}$, and our GHK implementation
-(validated before being compared against) to $2\times10^{-14}$ at $R =
-2\times10^5$
-(an easy anchor for both methods, useful for code validation rather than as
-evidence about the hard regime).
+\paragraph{Correctness anchors.} On the binary case, where MNP has a
+closed form, the lattice transform agrees to $3.3\times10^{-16}$ (an easy
+anchor, useful for code validation rather than as evidence about the hard
+regime).
 
 At $N=5$ both methods sit within the noise of
 a $10^7$-draw Monte Carlo reference, and the shipped
@@ -619,116 +605,21 @@ alongside (experiment 16): at $N=1000$ the lattice's mean absolute error is
 $5.6\times10^{-6}$ and total variation $2.8\times10^{-3}$ against a fresh
 $2\times10^6$-draw reference.
 
-\begin{table}[h]
-\centering
-\begin{tabular}{lccc}
-\toprule
-$N$ & lattice transform & direct MC, matched time & GHK ($R=1000$) \\
-\midrule
-5 & 7 ms, err $5.7\times10^{-4}$ & err $1.8\times10^{-3}$ & 1 ms, err $3.1\times10^{-3}$ \\
-20 & 29 ms, err $4.4\times10^{-4}$ & err $6.5\times10^{-4}$ & 12 ms, err $4.4\times10^{-3}$ \\
-50 & 71 ms, err $2.7\times10^{-4}$ & err $1.0\times10^{-3}$ & 74 ms, err $7.9\times10^{-3}$ \\
-200 & 290 ms, err $3.0\times10^{-4}$ & err $1.1\times10^{-3}$ & 1300 ms, err $6.8\times10^{-3}$ \\
-1000 & 1.4 s, err $6.8\times10^{-4}$\,$\dagger$ & err $1.1\times10^{-3}$ & --- \\
-5000 & 7.0 s, err $5.0\times10^{-4}$\,$\dagger$ & --- & --- \\
-\bottomrule
-\end{tabular}
-\caption{Full share vector, $k=2$ factors, one problem per size, generated
-as $\mu_i \sim N(0, s^2)$ with spread $s = 1$ through $N=200$ and $1.5$
-above, $v_{ir} \sim N(0, 0.25/k)$, $D_i \sim U[0.5, 1.5]$. Sub-second
-timings are warmed medians of three runs. The direct-MC column runs the
-draw-argmax simulator at wall time matched to the lattice call and is scored
-against experiment 16's fresh $2\times10^6$-draw references, under which
-the lattice's own errors are $3.0$--$3.9\times10^{-4}$ at every size;
-cross-column comparisons should use that common reference (at $N=1000$:
-lattice $3.9\times10^{-4}$ versus direct MC $1.1\times10^{-3}$), not the
-noisier dagger entries. Reference: $2\times10^6$ MC draws
-through $N=200$; $5\times10^5$ draws at $N=1000$ and $5000$ ($\dagger$: there
-the reference's own maximum-coordinate noise is of comparable order, so
-these entries resolve the lattice error only to that order). A replication study at
-common spread 1.0 (experiment 16; ten problems per size at $N \le 200$, three
-at $N=1000$, twin independent $2\times10^6$-draw references per problem)
-gives worst-case lattice error $3.5$--$4.6\times10^{-4}$ at every size, at or
-below the references' own replicate-to-replicate noise. Lattice error stayed
-below $10^{-3}$ throughout; GHK cost crossed over by $N \approx 200$.}
-\label{tab:frontier}
-\end{table}
+\paragraph{Replication.} Ten problems per size at $N \le 200$, three at
+$N=1000$, each scored against twin independent $2\times10^6$-draw
+references (experiment 16): worst-case lattice error
+$3.5$--$4.6\times10^{-4}$ at every size, at or below the references' own
+replicate-to-replicate noise. The lattice's true accuracy is far below
+this measurement floor, as the resolution sweeps and log-odds
+certification show.
 
-\paragraph{Matched-accuracy extrapolation.} Fitting a
-power law to the reference implementation's timings over $N \in [20, 200]$
-($\alpha \approx 2.0$; a lower bound, the asymptotic per-share cost being
-cubic) and combining with $R^{-1/2}$ error scaling suggests that matching the
-lattice's $5\times10^{-4}$ at $N=5000$ would take this implementation on the
-order of fifty hours (0.27 h at $R=1000$, times
-$(6.8\times10^{-3}/5\times10^{-4})^2 \approx 185$), against 7 seconds: at
-equivalent accuracy the lattice is roughly twenty-five thousand times
-faster.
-
-This is an order-of-magnitude illustration, not a forecast. It assumes the
-$N=200$ error constant, and GHK's $R=1000$ error measured directly at
-$N=1000$ is larger ($9.2\times10^{-3}$, 59 s), so the assumption favors
-the baseline; the seed-to-seed spread (Figure~\ref{fig:frontier}) adds a
-further factor-few uncertainty.
-
-In log-odds the comparison must name its target, and the two natural
-targets give opposite verdicts. Matched to the coarsest level our own
-simulation reference can certify ($3\times10^{-2}$, its noise floor, on
-shares above $10^{-3}$), direct utility simulation gets there in minutes:
-at coarse accuracy on head shares, simulation is competitive and the
-lattice's factor-thirty advantage there is not the story. The story is
-the lattice's actual accuracy. Against a super-converged reference
-(Gauss--Hermite $60^2$, $L=5001$; experiment 25) the production lattice's
+\paragraph{Log-odds accuracy.} Against a super-converged reference
+(Gauss--Hermite $60^2$, $L=5001$; experiment 25) the production settings'
 log-odds error is at most $5\times10^{-5}$ on every share from $10^{-9}$
-to one. Simulation needs $1/(p\epsilon^2)$ draws to match relative error
-$\epsilon$ on a share $p$: matching $5\times10^{-5}$ on a single
-hundred-to-one share costs $4\times10^{10}$ draws, about three weeks at
-the measured $N=5000$ draw rate, and every decade further into the tail
-multiplies that by ten.
+to one. No simulation reference could certify this: pinning relative
+error $\epsilon$ on a share $p$ takes about $1/(p\epsilon^2)$ draws.
 
-\paragraph{The baseline.} A plain single-threaded Python GHK:
-per-alternative Cholesky, plain pseudorandom uniforms, one realization per
-problem, shares normalized by their sum. It establishes the scaling of the
-per-alternative simulation approach, not a field-wide impossibility.
-
-A compiled (Rust) implementation of the same baseline, in the repository,
-runs within a factor of two of the NumPy version at these sizes: the
-baseline's cost is intrinsic to the per-alternative sequential
-construction, not a Python artifact.
-
-\paragraph{Direct simulation baseline.} The strongest cheap baseline is
-\emph{direct utility simulation}: draw utilities, take the argmax, average.
-It produces the whole share vector per draw and, unlike GHK, does not pay
-per alternative.
-
-We ran it at wall time matched to the lattice call (experiment
-16, both methods scored against the same fresh $2\times10^6$-draw
-reference): its maximum-coordinate error was $1.8$--$5.6\times$ the
-lattice's at every tested $N$ ($1.1\times10^{-3}$ versus
-$3.9\times10^{-4}$ at $N=1000$, $0.2$M draws in the matched 1.4
-seconds). At the $10^{-3}$ accuracy level,
-then, raw forward speed does not by itself separate the methods.
-
-\paragraph{The fair factor-structured baseline.} Conditioning on the
-factors and the alternative's own shock makes each probability a
-$(k{+}1)$-dimensional integral,
-\[
-p_i = \E_{f,z} \prod_{j \ne i}
-\Phi\!\left(\frac{\mu_i - \mu_j + (v_i - v_j)^\top f +
-\sqrt{D_i}\,z}{\sqrt{D_j}}\right),
-\]
-evaluable by scrambled-Sobol RQMC per alternative: the obvious modern
-competitor that uses exactly the structure this paper assumes. It still
-evaluates $N$ separate integrals, $O(RN^2)$ in total, where the shared
-field couples them into one $O(QN(k+L))$ pass.
-
-Measured (experiment 24; identity verified against the lattice to
-$1.7\times10^{-5}$ before comparison): at $N=50$ it matches the lattice's
-accuracy in comparable time, but at $N=1000$ it needs 215 seconds against
-the lattice's 1.5 to reach the same $4\times10^{-4}$, a $142\times$ gap
-that widens quadratically. That coupling, not any weakness of GHK, is the
-computational content of the paper.
-
-\paragraph{Where the methods separate: error decay.} Experiment 17 sweeps
+\paragraph{Resolution sweeps.} Experiment 17 sweeps
 each resolution knob separately at $N=200$, $k=2$.
 Holding the factor rule fixed, lattice self-convergence is
 $2.7\times10^{-8}$ at $L=101$ and at machine precision from $L \approx
@@ -742,39 +633,6 @@ $5.9\times10^{-9}$ (order 15).
 
 The pre-normalization defect
 $|1 - \mathbf{1}^\top \tilde p\,|$ is $2.4\times10^{-8}$.
-
-\paragraph{Every method on one problem.} Figure~\ref{fig:frontier}
-(left) shows each method at its most accurate tested setting, all timed on
-the same problem against one common reference. The lattice reaches the
-reference's noise floor ($4.1\times10^{-5}$) in 0.03 seconds. Direct MC
-needs 15.7 seconds to reach $1.2\times10^{-4}$ ($R = 10^7$); Sobol direct
-simulation, 2.6 seconds to $2.0\times10^{-4}$ ($2^{20}$ points).
-
-GHK
-reaches $2.0\times10^{-3}$ in 10.7 seconds ($R = 10^4$), with seed-to-seed
-spread $[3.9\times10^{-3}, 1.3\times10^{-2}]$ at $R = 10^3$. QMC-GHK
-improves plain GHK five-to-sevenfold at equal $R$ ($4.2\times10^{-4}$ in
-7.0 seconds), and minimax tilting \cite{botev2017}, implemented and
-anchor-validated (experiment 22), reaches $5.0\times10^{-4}$ in 38
-seconds: both land in the same accuracy class, well off the lattice.
-
-Below
-$10^{-3}$ the deterministic map separates decisively, consistent with
-$R^{-1/2}$ against a rapidly converging quadrature.
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.48\textwidth]{figs/frontier_full.png}\hfill
-\includegraphics[width=0.48\textwidth]{figs/refinement.png}
-\caption{Left: each method at its most accurate tested setting, timed on
-the same $N=200$, $k=2$ problem against one common reference (twin
-$5\times10^7$-draw simulations; experiment 17). The shaded band is the
-reference's own noise: the lattice point sits at that floor, and its true
-error is $\sim10^{-8}$ by self-convergence. Right: factor-quadrature refinement at fixed $L$: Gauss--Hermite
-at $k=2$, and at $k=8$ the median and range over eight independent RQMC
-scrambles.}
-\label{fig:frontier}
-\end{figure}
 
 \paragraph{Derivatives.} For fixed factor nodes and a fixed
 lattice, the transform is a reproducible, (piecewise-)differentiable function
@@ -849,11 +707,6 @@ calibrates $N=1000$ in 3 seconds, $N=5000$ in 18 seconds, and
 $N=10000$ in 38 seconds (10, 11, and 13 iterations; independent
 $5\times10^6$-draw targets, experiment 19).
 
-Its Chebyshev-separated forward variant computes all 5000 shares in 77
-milliseconds at $6\times10^{-5}$ accuracy, a measured $93\times$ over the
-reference pass. The single-threaded NumPy timings above remain the
-reported baseline.
-
 \paragraph{Scaling.} Approximately linear in $N$ over the tested range
 (experiment
 19; at fixed spatial resolution the lattice would grow with the utility
@@ -887,9 +740,9 @@ weeks per evaluation and the calibration in months to a year.
 
 Common
 random numbers do not change the plain-MC rate; QMC and specialized
-Gaussian integration can (both are benchmarked in
-Section~\ref{sec:benchmark}), and a maximum over $N$ coordinates adds a
-further $\log N$ factor in high-probability statements.
+Gaussian integration improve the constants without changing the
+structure, and a maximum over $N$ coordinates adds a further $\log N$
+factor in high-probability statements.
 
 At the crude $\tau = 10^{-4}$ where
 simulation-in-the-loop first becomes feasible, the calibrated model's true
@@ -1114,6 +967,19 @@ Factor dimension reduction for probit is old. Butler and Moffitt
 Loaiza-Maya and Nibbering \cite{loaiza2022} pursue large choice sets by
 Bayesian estimation. The lattice survival-product identity and its inverse
 transform come from racing \cite{cotton2021}.
+
+Conditioning on the factors and the alternative's own shock makes each
+probability a $(k{+}1)$-dimensional integral,
+\[
+p_i = \E_{f,z} \prod_{j \ne i}
+\Phi\!\left(\frac{\mu_i - \mu_j + (v_i - v_j)^\top f +
+\sqrt{D_i}\,z}{\sqrt{D_j}}\right),
+\]
+evaluable per alternative by modern randomized quasi-Monte Carlo: the
+natural competitor that uses exactly the structure this paper assumes. It
+still prices $N$ separate integrals, $O(RN^2)$ in total, where the shared
+field couples them into one $O(QN(k+L))$ pass; experiment 24 measures the
+gap.
 
 Inversion theory is likewise established. Hotz and Miller \cite{hotz1993}
 inverted choice probabilities to utility differences; Norets and Takahashi
