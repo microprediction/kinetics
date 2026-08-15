@@ -269,3 +269,34 @@ cannot find a substantive mathematical flaw." Punch list executed:
 7. "linear" -> "approximately linear over the tested range" with the
    O(sqrt(log N)) fixed-resolution caveat.
 8-9. Coercivity line and distributional remark were already in from round 7.
+
+---
+
+## Ninth review — executed 2026-08-15 (tagged paper-r9)
+
+- REAL catch: Table 1's direct-MC column was scored against exp16's fresh
+  2e6 references while the lattice dagger entries used exp13's 5e5
+  reference — adjacent cells compared different truths (MC looked better
+  than lattice at N=1000). Caption now discloses both references and gives
+  the common-reference comparison; prose states same-reference scoring.
+- tau^-2 surgery: scoped to plain independent MC (QMC/tilting change rates
+  and are benchmarked); draw-argmax is piecewise constant on the 1/R grid
+  (cannot be solved to arbitrary tolerance — only smoothed CRN maps can);
+  tau=1e-6 explicitly labeled as resolving the EXACT map at
+  model-consistency level, beyond the 2e-4 statistical accuracy of the
+  experiments.
+- Reflected Gumbel now stated in the factorial with the committed N=12
+  softmax anchor (2.8e-17); code was already correct.
+- "certified alternating fit" -> exact block updates, no global certificate.
+- Distributional remark gains integrability/differentiability conditions.
+- Abstract: single accuracy notion (50h forward evaluation), no
+  Rust-vs-Python pairing in one sentence.
+- Fourth stratum (0.05-0.5%, 22 blocks) added to the factorial table with
+  its resolution caveat (rerun committed): probit 0.116 vs logit 0.305 —
+  ordering unchanged.
+- Prop 2 complexity O(QN(k+L)) throughout; diffusion metaphor tempered to
+  per-linearization Laplacian systems; opening tempered ("important class
+  of covariance structures"; "routine only on the logit side").
+- Frontier figure rebuilt one-point-per-method with shaded
+  reference-noise band (user request), lattice shown at its cheapest
+  floor-reaching setting.
