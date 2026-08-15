@@ -532,11 +532,218 @@ fn win_probabilities_factor_separated<'py>(
     Ok((p.into_pyarray_bound(py), total))
 }
 
+
+// ---- GHK baseline in Rust: like-for-like compiled comparison ------------
+
+/// splitmix64 seeded xoshiro256++ (dependency-free PRNG).
+struct Xo {
+    s: [u64; 4],
+}
+impl Xo {
+    fn new(seed: u64) -> Self {
+        let mut x = seed;
+        let mut s = [0u64; 4];
+        for v in s.iter_mut() {
+            x = x.wrapping_add(0x9E3779B97F4A7C15);
+            let mut z = x;
+            z = (z ^ (z >> 30)).wrapping_mul(0xBF58476D1CE4E5B9);
+            z = (z ^ (z >> 27)).wrapping_mul(0x94D049BB133111EB);
+            *v = z ^ (z >> 31);
+        }
+        Xo { s }
+    }
+    #[inline]
+    fn next_u64(&mut self) -> u64 {
+        let r = self.s[0]
+            .wrapping_add(self.s[3])
+            .rotate_left(23)
+            .wrapping_add(self.s[0]);
+        let t = self.s[1] << 17;
+        self.s[2] ^= self.s[0];
+        self.s[3] ^= self.s[1];
+        self.s[1] ^= self.s[2];
+        self.s[0] ^= self.s[3];
+        self.s[2] ^= t;
+        self.s[3] = self.s[3].rotate_left(45);
+        r
+    }
+    #[inline]
+    fn uniform(&mut self) -> f64 {
+        // (0, 1): 53-bit mantissa, offset to avoid exact 0
+        ((self.next_u64() >> 11) as f64 + 0.5) * (1.0 / 9007199254740992.0)
+    }
+}
+
+/// Phi(z) via erfc.
+#[inline]
+fn ndtr(z: f64) -> f64 {
+    0.5 * libm::erfc(-z * std::f64::consts::FRAC_1_SQRT_2)
+}
+
+/// Inverse normal CDF: Acklam's rational approximation plus one Halley
+/// refinement through erfc, giving ~1e-15 accuracy.
+fn ndtri(p: f64) -> f64 {
+    let p = p.clamp(1e-300, 1.0 - 1e-16);
+    const A: [f64; 6] = [-3.969683028665376e+01, 2.209460984245205e+02,
+        -2.759285104469687e+02, 1.383577518672690e+02,
+        -3.066479806614716e+01, 2.506628277459239e+00];
+    const B: [f64; 5] = [-5.447609879822406e+01, 1.615858368580409e+02,
+        -1.556989798598866e+02, 6.680131188771972e+01,
+        -1.328068155288572e+01];
+    const C: [f64; 6] = [-7.784894002430293e-03, -3.223964580411365e-01,
+        -2.400758277161838e+00, -2.549732539343734e+00,
+        4.374664141464968e+00, 2.938163982698783e+00];
+    const D: [f64; 4] = [7.784695709041462e-03, 3.224671290700398e-01,
+        2.445134137142996e+00, 3.754408661907416e+00];
+    let x = if p < 0.02425 {
+        let q = (-2.0 * p.ln()).sqrt();
+        (((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5])
+            / ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1.0)
+    } else if p <= 0.97575 {
+        let q = p - 0.5;
+        let r = q * q;
+        (((((A[0] * r + A[1]) * r + A[2]) * r + A[3]) * r + A[4]) * r + A[5]) * q
+            / (((((B[0] * r + B[1]) * r + B[2]) * r + B[3]) * r + B[4]) * r + 1.0)
+    } else {
+        let q = (-2.0 * (1.0 - p).ln()).sqrt();
+        -(((((C[0] * q + C[1]) * q + C[2]) * q + C[3]) * q + C[4]) * q + C[5])
+            / ((((D[0] * q + D[1]) * q + D[2]) * q + D[3]) * q + 1.0)
+    };
+    // one Halley step: f = Phi(x) - p
+    let e = ndtr(x) - p;
+    let u = e * (2.0 * std::f64::consts::PI).sqrt() * (0.5 * x * x).exp();
+    x - u / (1.0 + 0.5 * x * u)
+}
+
+fn cholesky(a: &mut [f64], n: usize) -> bool {
+    for j in 0..n {
+        let mut d = a[j * n + j];
+        for k in 0..j {
+            d -= a[j * n + k] * a[j * n + k];
+        }
+        if d <= 0.0 {
+            return false;
+        }
+        let dj = d.sqrt();
+        a[j * n + j] = dj;
+        for i in (j + 1)..n {
+            let mut v = a[i * n + j];
+            for k in 0..j {
+                v -= a[i * n + k] * a[j * n + k];
+            }
+            a[i * n + j] = v / dj;
+        }
+        for k in (j + 1)..n {
+            a[j * n + k] = 0.0;
+        }
+    }
+    true
+}
+
+/// GHK estimate of P(alternative i has the max utility), R draws.
+fn ghk_prob_one(mu: &[f64], sigma: &[f64], n: usize, i: usize, r_draws: usize,
+                seed: u64) -> f64 {
+    let m = n - 1;
+    // difference covariance C = M Sigma M', means a = mu_others - mu_i
+    let others: Vec<usize> = (0..n).filter(|&j| j != i).collect();
+    let mut a = vec![0.0f64; m];
+    let mut c = vec![0.0f64; m * m];
+    for (r_, &jr) in others.iter().enumerate() {
+        a[r_] = mu[jr] - mu[i];
+        for (c_, &jc) in others.iter().enumerate() {
+            c[r_ * m + c_] = sigma[jr * n + jc] - sigma[jr * n + i]
+                - sigma[i * n + jc] + sigma[i * n + i];
+        }
+    }
+    for d in 0..m {
+        c[d * m + d] += 1e-12;
+    }
+    if !cholesky(&mut c, m) {
+        return f64::NAN;
+    }
+    let mut rng = Xo::new(seed);
+    // draw-major layout: z[t] is an R-vector; the running mean for step t is
+    // accumulated with R-length axpy updates (SIMD-friendly), matching the
+    // vectorization structure of the NumPy baseline
+    let mut z = vec![vec![0.0f64; r_draws]; m];
+    let mut mean = vec![0.0f64; r_draws];
+    let mut logprob = vec![0.0f64; r_draws];
+    for t in 0..m {
+        mean[..r_draws].fill(0.0);
+        for k in 0..t {
+            let ltk = c[t * m + k];
+            if ltk != 0.0 {
+                let zk = &z[k];
+                for (mv, zv) in mean.iter_mut().zip(zk.iter()) {
+                    *mv += ltk * zv;
+                }
+            }
+        }
+        let ltt = c[t * m + t];
+        let at = a[t];
+        let zt = &mut z[t];
+        for dr in 0..r_draws {
+            let b = (-at - mean[dr]) / ltt;
+            let fb = ndtr(b);
+            logprob[dr] += fb.max(1e-300).ln();
+            let u = rng.uniform() * fb;
+            zt[dr] = ndtri(u.clamp(1e-300, 1.0 - 1e-16));
+        }
+    }
+    let mut acc = 0.0f64;
+    for lp in logprob.iter() {
+        acc += lp.exp();
+    }
+        acc / r_draws as f64
+}
+
+/// All-alternative GHK shares (per-alternative sequential importance
+/// sampling), parallel over alternatives, normalized by the sum. The
+/// like-for-like compiled version of the Python baseline.
+#[pyfunction]
+#[pyo3(signature = (mu, v, d, r_draws=1000, seed=9))]
+fn ghk_all_shares<'py>(
+    py: Python<'py>,
+    mu: PyReadonlyArray1<f64>,
+    v: PyReadonlyArray2<f64>,
+    d: PyReadonlyArray1<f64>,
+    r_draws: usize,
+    seed: u64,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let mu_o: Array1<f64> = mu.as_array().to_owned();
+    let v_o: Array2<f64> = v.as_array().to_owned();
+    let d_o: Array1<f64> = d.as_array().to_owned();
+    let out = py.allow_threads(|| {
+        let n = mu_o.len();
+        let k = v_o.ncols();
+        let mut sigma = vec![0.0f64; n * n];
+        for i in 0..n {
+            for j in 0..n {
+                let mut sv = 0.0;
+                for r_ in 0..k {
+                    sv += v_o[[i, r_]] * v_o[[j, r_]];
+                }
+                sigma[i * n + j] = sv + if i == j { d_o[i] } else { 0.0 };
+            }
+        }
+        let mus: Vec<f64> = mu_o.iter().cloned().collect();
+        let p: Vec<f64> = (0..n)
+            .into_par_iter()
+            .map(|i| ghk_prob_one(&mus, &sigma, n, i, r_draws,
+                                  seed.wrapping_add(i as u64)))
+            .collect();
+        let total: f64 = p.iter().sum();
+        Array1::from_iter(p.into_iter().map(|x| x / total))
+    });
+    Ok(out.into_pyarray_bound(py))
+}
+
 #[pymodule]
 fn fastrace(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(forward_and_slopes, m)?)?;
     m.add_function(wrap_pyfunction!(jacobian_vector_product, m)?)?;
     m.add_function(wrap_pyfunction!(win_probabilities_factor_separated, m)?)?;
+    m.add_function(wrap_pyfunction!(ghk_all_shares, m)?)?;
     m.add_function(wrap_pyfunction!(win_probabilities_factor, m)?)?;
     Ok(())
 }

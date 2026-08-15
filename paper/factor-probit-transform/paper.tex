@@ -72,7 +72,10 @@ correlation, known in econometrics as multinomial probit (MNP).
 
 Probit probabilities are $(N-1)$-dimensional Gaussian integrals with no
 closed form. The standard evaluator is the Geweke--Hajivassiliou--Keane
-(GHK) simulator \cite{geweke1994,hajivassiliou1998,train2009}: it writes
+(GHK) simulator \cite{geweke1994,hajivassiliou1998,train2009}, the
+econometric branch of the Genz separation-of-variables family
+\cite{genz1992} whose RQMC form (Genz--Bretz) is the default in
+computational statistics: it writes
 the probability that alternative $i$ beats the rest as an orthant
 probability of the difference utilities, and estimates it by sampling
 truncated normals sequentially along a Cholesky factor. That is a separate simulation per alternative, with $R^{-1/2}$ error in
@@ -135,7 +138,7 @@ approach & all $N$ shares & calibration \\
 GHK simulation \cite{geweke1994,hajivassiliou1998} & $N$ separate runs, $R^{-1/2}$ error & not attempted at scale \\
 direct utility simulation & whole vector per draw, $R^{-1/2}$ & no derivatives, no inversion \\
 analytic approximations \cite{bhat2011,connors2014} & per-alternative & no \\
-factor quadrature \cite{butler1982,elrod1995} & still per-alternative & no \\
+factor quadrature \cite{butler1982,elrod1995} & $N$ separate $(k{+}1)$-dim integrals & no \\
 Bayesian factor MNP \cite{loaiza2022} & simulation inside estimation & posterior, not a share map \\
 neural amortization \cite{huch2026} & fast, uncontrolled error & no \\
 BLP-side inversion \cite{berry1995,conlon2020} & --- & logit family only \\
@@ -655,9 +658,15 @@ $N=1000$ is larger ($9.2\times10^{-3}$, 59 s), so the assumption favors
 the baseline; the seed-to-seed spread (Figure~\ref{fig:frontier}) adds a
 further factor-few uncertainty.
 
-\paragraph{The baseline.} A plain single-threaded Python GHK: per-alternative Cholesky, plain pseudorandom uniforms, one realization
-per problem, shares normalized by their sum. It establishes the scaling of
-the per-alternative simulation approach, not a field-wide impossibility.
+\paragraph{The baseline.} A plain single-threaded Python GHK:
+per-alternative Cholesky, plain pseudorandom uniforms, one realization per
+problem, shares normalized by their sum. It establishes the scaling of the
+per-alternative simulation approach, not a field-wide impossibility.
+
+A compiled (Rust) implementation of the same baseline, in the repository,
+runs within a factor of two of the NumPy version at these sizes: the
+baseline's cost is intrinsic to the per-alternative sequential
+construction, not a Python artifact.
 
 \paragraph{Direct simulation baseline.} The strongest cheap baseline is
 \emph{direct utility simulation}: draw utilities, take the argmax, average.
@@ -671,6 +680,26 @@ lattice's at every tested $N$ ($1.1\times10^{-3}$ versus
 $3.9\times10^{-4}$ at $N=1000$, $0.2$M draws in the matched 1.4
 seconds). At the $10^{-3}$ accuracy level,
 then, raw forward speed does not by itself separate the methods.
+
+\paragraph{The fair factor-structured baseline.} Conditioning on the
+factors and the alternative's own shock makes each probability a
+$(k{+}1)$-dimensional integral,
+\[
+p_i = \E_{f,z} \prod_{j \ne i}
+\Phi\!\left(\frac{\mu_i - \mu_j + (v_i - v_j)^\top f +
+\sqrt{D_i}\,z}{\sqrt{D_j}}\right),
+\]
+evaluable by scrambled-Sobol RQMC per alternative: the obvious modern
+competitor that uses exactly the structure this paper assumes. It still
+evaluates $N$ separate integrals, $O(RN^2)$ in total, where the shared
+field couples them into one $O(QN(k+L))$ pass.
+
+Measured (experiment 24; identity verified against the lattice to
+$1.7\times10^{-5}$ before comparison): at $N=50$ it matches the lattice's
+accuracy in comparable time, but at $N=1000$ it needs 215 seconds against
+the lattice's 1.5 to reach the same $4\times10^{-4}$, a $142\times$ gap
+that widens quadratically. That coupling, not any weakness of GHK, is the
+computational content of the paper.
 
 \paragraph{Where the methods separate: error decay.} Experiment 17 sweeps
 each resolution knob separately at $N=200$, $k=2$.
@@ -1030,12 +1059,25 @@ the dashed line is parity.}
 
 \section{Related work}\label{sec:related}
 
-GHK and simulated likelihood are standard
-\cite{geweke1994,hajivassiliou1998,train2009}. Bhat's MACML \cite{bhat2011}
-and the approximations surveyed by Connors, Hess and Daly \cite{connors2014}
-trade simulation for analytic marginals, still one alternative at a time.
-Botev \cite{botev2017} sharpened Gaussian-restriction simulation with
-minimax tilting.
+GHK and simulated likelihood are standard in econometrics
+\cite{geweke1994,hajivassiliou1998,train2009}; Genz \cite{genz1992}
+developed the same separation-of-variables construction in numerical
+statistics, where its RQMC form is the default MVN evaluator. Ridgway
+\cite{ridgway2016} reads GHK as sequential importance sampling, proves its
+variance can deteriorate exponentially, and builds SMC alternatives; Botev
+\cite{botev2017} sharpened the family with minimax tilting; Cao, Genton,
+Keyes and Turkiyyah \cite{cao2021} push MVN probabilities to thousands of
+dimensions with tile-low-rank QMC, machinery pointed almost exactly at our
+difference covariances, which are diagonal plus rank $k+1$.
+
+Deterministic approximations run from Mendell--Elston \cite{mendell1974}
+(surprisingly competitive when optimally ordered \cite{connors2014})
+through Bhat's MACML \cite{bhat2011} to expectation propagation:
+Cunningham, Hennig and Lacoste-Julien \cite{cunningham2011} found EP
+highly accurate precisely for rectangular regions, and Fasano and Denti
+\cite{fasano2025} evaluate generic Gaussian CDFs by EP on a dual probit
+model, deterministically and sampling-free. Every one of these prices one
+orthant at a time; none couples the $N$ winner probabilities.
 
 Factor dimension reduction for probit is old. Butler and Moffitt
 \cite{butler1982} integrated one factor by quadrature; Elrod and Keane
@@ -1093,7 +1135,7 @@ truth designs and a walk-forward calibration on real assortment data.
 \section*{Reproducibility}
 
 All numbers come from committed, seeded scripts with correctness anchors run
-before any comparison (repository experiments 13--23; a single manifest,
+before any comparison (repository experiments 13--24; a single manifest,
 \texttt{experiments/run\_all\_paper.py}, regenerates every table and
 figure; the exact commit is recorded in the repository README and an
 immutable tag is pinned at circulation). The algorithm ships in the
@@ -1158,6 +1200,24 @@ Economics} 4 (2013) 149--155.
 \bibitem{loaiza2022} R.~Loaiza-Maya, D.~Nibbering. Scalable Bayesian
 estimation in the multinomial probit model. \emph{Journal of Business \&
 Economic Statistics} 40 (2022) 1678--1690.
+\bibitem{genz1992} A.~Genz. Numerical computation of multivariate normal
+probabilities. \emph{J.\ Computational and Graphical Statistics} 1 (1992)
+141--149.
+\bibitem{ridgway2016} J.~Ridgway. Computation of Gaussian orthant
+probabilities in high dimension. \emph{Statistics and Computing} 26 (2016)
+899--916.
+\bibitem{cao2021} J.~Cao, M.~G. Genton, D.~E. Keyes, G.~M. Turkiyyah.
+Exploiting low-rank covariance structures for computing high-dimensional
+normal and Student-$t$ probabilities. \emph{Statistics and Computing} 31
+(2021) 2.
+\bibitem{mendell1974} N.~R. Mendell, R.~C. Elston. Multifactorial
+qualitative traits: genetic analysis and prediction of recurrence risks.
+\emph{Biometrics} 30 (1974) 41--57.
+\bibitem{cunningham2011} J.~P. Cunningham, P.~Hennig, S.~Lacoste-Julien.
+Gaussian probabilities and expectation propagation. arXiv:1111.6832 (2011).
+\bibitem{fasano2025} A.~Fasano, F.~Denti. Expectation propagation for
+multivariate Gaussian cumulative distribution functions.
+\emph{Biometrika} (2025).
 \bibitem{allocationpkg} The \texttt{allocation} package: Thurstone-tilt
 portfolio construction. \url{https://github.com/microprediction/allocation}.
 \end{thebibliography}

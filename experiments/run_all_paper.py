@@ -45,6 +45,7 @@ SCRIPTS = [
     "exp21_calibration_validation/run_validation.py",
     "exp22_minimax_tilting/run_tilting.py",
     "exp23_newton_cg/run_newton_cg.py",
+    "exp24_factor_rqmc/run_factor_rqmc.py",
 ]
 
 def main():
