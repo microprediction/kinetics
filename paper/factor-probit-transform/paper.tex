@@ -134,7 +134,7 @@ factor quadrature \cite{butler1982,elrod1995} & still per-alternative & no \\
 Bayesian factor MNP \cite{loaiza2022} & simulation inside estimation & posterior, not a share map \\
 neural amortization \cite{huch2026} & fast, uncontrolled error & no \\
 BLP-side inversion \cite{berry1995,conlon2020} & --- & logit family only \\
-\textbf{this paper} & one $O(QNL)$ pass & Thm.~\ref{thm:inv}; $<$1 min at $N{=}1000$ \\
+\textbf{this paper} & one $O(QNL)$ pass & Thm.~\ref{thm:inv}; 8 s at $N{=}1000$ \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -151,10 +151,9 @@ comparison is in Section~\ref{sec:benchmark}.
 \centering
 \includegraphics[width=0.62\textwidth]{figs/frontier.png}
 \caption{Wall time for the full $N$-alternative share vector as $N$ grows
-($k=2$ factors). The upper GHK line rescales $R$ by the squared error ratio
-($R^{-1/2}$ scaling) so both methods deliver the same accuracy; at $N=5000$
-it extrapolates to roughly fifty hours against the lattice's 21 seconds
-(Section~\ref{sec:benchmark}). Dashed segments are power-law
+($k=2$ factors). The upper GHK line rescales $R$ by the squared error ratio ($R^{-1/2}$
+scaling) so both methods deliver the same accuracy; the matched-accuracy
+extrapolation is developed in Section~\ref{sec:benchmark}. Dashed segments are power-law
 extrapolations; all other points are measured (Table~\ref{tab:frontier}).}
 \label{fig:scaling}
 \end{figure}
@@ -253,28 +252,6 @@ h^\top J h \;=\; \sum_{i<j} w_{ij} (h_i - h_j)^2 ,
 a weighted graph Laplacian with everywhere-positive weights: $J$ is symmetric,
 positive semidefinite, has $\mathbf{1}$ as its only null direction, and
 $B^\top J B \succ 0$ for every full-rank basis $B$ of $\mathbf{1}^\perp$.
-In English: $w_{ij}$ is the probability density of a photo-finish between
-$i$ and $j$, a tie for the win with everyone else behind, and moving
-utility from $j$ to $i$ moves share along every photo-finish edge at
-exactly that rate. The alternatives form a \emph{photo-finish graph}:
-complete, with strictly positive weights, because Gaussian utilities give
-every pair some chance of a dead heat. The theorem's conclusions are then
-graph facts. Constants span the null space because the quadratic form
-$\sum_{i<j} w_{ij}(h_i - h_j)^2$ sees only differences: shares cannot
-identify the overall utility level, only gaps, which is economically
-obvious and here algebraically automatic. Positive weights make the graph
-connected, so the constant vector is the \emph{only} null direction, the
-gradient map is strictly monotone as an operator on $\mathbf{1}^\perp$
-(not coordinatewise), and shares determine utilities uniquely. And symmetry plus positive definiteness make every
-reduced Newton system SPD, so conjugate gradients apply with the $O(QNL)$
-Jacobian--vector product of Proposition~\ref{prop:jvp} playing the role of
-a fast Laplacian multiply. Structurally, calibration is solving a diffusion
-on the photo-finish graph, and it is easy for the same reason resistor
-networks and heat equations are. None of this is specifically Gaussian:
-any conditionally independent additive random-utility race with
-everywhere-positive smooth densities has a weighted-Laplacian Jacobian and
-an interior-simplex diffeomorphism modulo translation; Gaussian factor
-probit is the computationally important specialization.
 Moreover $p = \nabla G$ for the social-surplus function
 $G(\mu) = \E \max_i \{\mu_i + \xi_i\}$ (the Williams--Daly--Zachary /
 McFadden identity \cite{mcfadden1981}), and the restriction of $p$ to
@@ -308,6 +285,30 @@ coefficient is zero and $p(\mu) = \hat p$. Smoothness of the inverse
 follows from the inverse-function theorem, since $B^\top J B \succ 0$
 everywhere.
 \end{proof}
+\begin{remark}[The photo-finish graph]
+In English: $w_{ij}$ is the probability density of a photo-finish between
+$i$ and $j$, a tie for the win with everyone else behind, and moving
+utility from $j$ to $i$ moves share along every photo-finish edge at
+exactly that rate. The alternatives form a \emph{photo-finish graph}:
+complete, with strictly positive weights, because Gaussian utilities give
+every pair some chance of a dead heat. The theorem's conclusions are then
+graph facts. Constants span the null space because the quadratic form
+$\sum_{i<j} w_{ij}(h_i - h_j)^2$ sees only differences: shares cannot
+identify the overall utility level, only gaps, which is economically
+obvious and here algebraically automatic. Positive weights make the graph
+connected, so the constant vector is the \emph{only} null direction, the
+gradient map is strictly monotone as an operator on $\mathbf{1}^\perp$
+(not coordinatewise), and shares determine utilities uniquely. And symmetry plus positive definiteness make every
+reduced Newton system SPD, so conjugate gradients apply with the $O(QNL)$
+Jacobian--vector product of Proposition~\ref{prop:jvp} playing the role of
+a fast Laplacian multiply. Structurally, calibration is solving a diffusion
+on the photo-finish graph, and it is easy for the same reason resistor
+networks and heat equations are. None of this is specifically Gaussian:
+any conditionally independent additive random-utility race with
+everywhere-positive smooth densities has a weighted-Laplacian Jacobian and
+an interior-simplex diffeomorphism modulo translation; Gaussian factor
+probit is the computationally important specialization.
+\end{remark}
 \begin{remark}
 Social-surplus convex duality for discrete choice is classical
 \cite{chiong2016,norets2013}; what is new here is not well-posedness but its
@@ -359,8 +360,7 @@ D\tilde p[h]$ and $s = \mathbf{1}^\top \tilde p$,
 D p_{Q,L}[h] \;=\; \frac{v - p_{Q,L}\, (\mathbf{1}^\top v)}{s}.
 \]
 The correction vanishes for the continuum map and is numerically
-negligible at the production resolutions tested. One further distinction, raised by a careful
-reading: integration by parts is a continuum identity, so the Laplacian
+negligible at the production resolutions tested. A further distinction: integration by parts is a continuum identity, so the Laplacian
 formula of Proposition~\ref{prop:jvp} is the exact derivative of the
 \emph{continuum} map, not of the finite rectangle sum. The exact derivative
 of the frozen-grid sum replaces the own-term by $(x - m_i)/D_i$ (no
@@ -372,12 +372,10 @@ differences. So the Laplacian form is an extremely accurate symmetric surrogate 
 resolutions used, and exact differentiation of the normalized
 \emph{frozen-grid} map is available when needed; the returned adaptive map
 additionally moves its envelope with $\mu$, a tail effect measured below
-$10^{-8}$ at production resolution. Finally, the implemented inversion rebuilds
-the lattice envelope from the current utilities at each iteration, holds it
-fixed while the forward map and diagonal slopes are evaluated, and projects
-the utilities to mean zero after every update; the slopes ignore the moving
-envelope and the output normalization and are therefore Jacobi quasi-Newton
-preconditioners, not the exact diagonal of the adaptive map's Jacobian.
+$10^{-8}$ at production resolution. The implemented inversion rebuilds the lattice envelope from the current
+utilities at each iteration, holds it fixed within the iteration, and
+projects the utilities to mean zero after every update
+(Algorithm~\ref{alg:calibrate}).
 
 \paragraph{Tail-stable implementation.} Tail stability requires the log
 domain throughout: $\log \Phi$ evaluated directly (forming $1 - \Phi(z)$
@@ -485,13 +483,9 @@ Algorithm~\ref{alg:calibrate} ignore the moving envelope and the output
 normalization; they are Jacobi quasi-Newton preconditioners, not the exact
 diagonal of the adaptive map's Jacobian.
 
-\paragraph{Inversion.} Given target shares $\hat p$ and $(V, D)$, the inverse
-transform finds mean-zero $\mu$ with $p(\mu) = \hat p$ by a damped Jacobi
-quasi-Newton iteration: all coordinates updated simultaneously with
-own-location slopes of the unnormalized lattice map as the preconditioner
-(available from the same pass), the field refrozen each iteration, a warm
-start from the
-independent-field inverse using total variances, and a tail-aware tolerance
+\paragraph{Inversion.} Given target shares $\hat p$ and $(V, D)$, the
+inverse transform finds mean-zero $\mu$ with $p(\mu) = \hat p$ by
+Algorithm~\ref{alg:calibrate}. The tolerance is tail-aware
 (alternatives with target shares below $10^{-4}/N$ are matched best-effort;
 by Theorem~\ref{thm:inv} they remain uniquely determined, but they are
 statistically weakly resolved, which is also a conditioning caution for the
@@ -601,10 +595,12 @@ $2.0\times10^{-3}$ in 10.7 seconds ($R = 10^4$; over 8 seeds at $R = 10^3$
 its error spans $[3.9\times10^{-3}, 1.3\times10^{-2}]$), and QMC-GHK
 (scrambled-Sobol uniforms in the same kernel) at $4.2\times10^{-4}$ in 7.0
 seconds ($R = 8192$), a five-to-sevenfold error improvement over plain GHK
-at equal $R$ and still well off the lattice frontier. Below $10^{-3}$ the
-deterministic map separates decisively, consistent with $R^{-1/2}$ against
-a rapidly converging quadrature. One stronger stochastic baseline remains to
-be added: minimax tilting \cite{botev2017}.
+at equal $R$ and still well off the lattice frontier. Minimax tilting
+\cite{botev2017}, implemented and anchor-validated in the repository
+(experiment 22), reaches $5.0\times10^{-4}$ at $R = 10^4$ in 38 seconds:
+the accuracy class of QMC-GHK, at higher cost in this per-alternative
+implementation. Below $10^{-3}$ the deterministic map separates decisively,
+consistent with $R^{-1/2}$ against a rapidly converging quadrature.
 
 \begin{figure}[h]
 \centering
@@ -658,7 +654,11 @@ solver error. Alternatives with shares below the resolution floor are not
 chased, by design; their tier is reported separately. A robustness sweep of
 twenty problems varying utility spread, factor strength, $D$-heterogeneity,
 and rank converged in all twenty cases (6--31 iterations, recovery
-$0.004$--$0.024$). Self-convergence checks at large $N$ show stability below what the
+$0.004$--$0.024$). Numerical well-posedness matches
+Theorem~\ref{thm:inv}: the reduced Jacobian assembled from $N$ JVP calls
+at $N=50$ is symmetric to $1.7\times10^{-18}$, has row-sum defect
+$6.2\times10^{-17}$, and reduced eigenvalues in $[2.5\times10^{-5},
+0.22]$, positive definite as proved. Self-convergence checks at large $N$ show stability below what the
 simulation references can resolve: refining to $(L = 3001, \mathrm{GH}21)$
 moves the shares by $1.2\times10^{-8}$ at $N=1000$ and
 $5.7\times10^{-8}$ at $N=5000$ (a stability statement, not by itself an
@@ -683,15 +683,9 @@ Scaling is approximately linear in $N$ over the tested range (experiment
 range, $O(\sqrt{\log N})$ under Gaussian utilities): calibration takes 48, 120, 330,
 and 639 seconds at $N = 1000$, $2000$, $5000$, $10000$, a flat 11--15
 forward-pass equivalents throughout, with recovery quality unchanged
-(median error near $0.003$, 96--99\% of share mass identified). At
-$N=5000$ a single matched-accuracy forward evaluation by the per-alternative
-simulator extrapolates to roughly fifty hours and calibration needs about
-fifteen of them, so the same calibration through simulation extrapolates to
-weeks. Numerical well-posedness
-matches Theorem~\ref{thm:inv}: the reduced Jacobian assembled from $N$
-JVP calls at $N=50$ is symmetric to $1.7\times10^{-18}$, has row-sum defect
-$6.2\times10^{-17}$, and reduced eigenvalues in $[2.5\times10^{-5},
-0.22]$, positive definite as proved. The gap to simulation here is structural, and simple arithmetic shows why
+(median error near $0.003$, 96--99\% of share mass identified).
+
+The gap to simulation here is structural, and simple arithmetic shows why
 (arithmetic, not a lower bound). With common random numbers the simulated
 share map is a fixed deterministic function that can be inverted to any
 solver tolerance; the limitation is that it is the wrong map. Its
@@ -918,14 +912,13 @@ generalizations.
 Neither method class dominates the other. Simulation owns arbitrary
 $\Sigma$ and coarse accuracy; the shared field owns the factor form,
 tight accuracy, derivatives, and calibration; the boundary experiments draw
-the border at intermediate spectral decay. We leave to future work the
-minimax-tilting baseline, replication of the substitution factorial across
-truth designs, and a walk-forward calibration on real assortment data.
+the border at intermediate spectral decay. We leave to future work replication of the substitution factorial across
+truth designs and a walk-forward calibration on real assortment data.
 
 \section*{Reproducibility}
 
 All numbers come from committed, seeded scripts with correctness anchors run
-before any comparison (repository experiments 13--21; a single manifest,
+before any comparison (repository experiments 13--23; a single manifest,
 \texttt{experiments/run\_all\_paper.py}, regenerates every table and
 figure; the exact commit is recorded in the repository README and an
 immutable tag is pinned at circulation). The algorithm ships in the
