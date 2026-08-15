@@ -36,16 +36,11 @@ shares match observed shares with the factor covariance given and fixed,
 has been out of reach at scale. We give an
 algorithm that calibrates a two-factor probit model with a thousand
 alternatives in three seconds on a laptop, and five thousand in under
-twenty. Cost grows roughly linearly: ten thousand alternatives take minutes. For
-scale, one matched-accuracy evaluation of the five-thousand-share vector
-alone, extrapolated from our like-for-like implementation of the standard
-simulator, is a fifty-hour computation. Conditionally on the factors the
-alternatives are independent, so a single shared survival product yields
-every choice probability in one differentiable pass, and the inverse problem
-this solves is well posed, with shares determining utilities up to a common
-shift. Maximum observed share discrepancies stay below one part in a
-thousand from five to five thousand alternatives, and the experiments
-illustrate where the factor approximation becomes limiting.
+twenty. Cost grows roughly linearly: ten thousand alternatives take forty
+seconds. At equivalent log-odds accuracy on
+those five thousand shares, our transform is thirty times faster than
+direct utility simulation and twenty-five thousand times faster than the
+standard per-alternative simulator.
 \end{abstract}
 
 \section{Introduction}
@@ -149,11 +144,12 @@ BLP-side inversion \cite{berry1995,conlon2020} & --- & logit family only \\
 
 Figure~\ref{fig:scaling} shows the running-time consequence as the number
 of alternatives grows. The per-alternative simulator's cost crosses the
-lattice transform near $N \approx 200$, where its maximum-coordinate error
-is about 23 times larger (Table~\ref{tab:frontier}); matching the lattice
-error would take roughly 500 times as many draws under $R^{-1/2}$ scaling. By $N = 5000$ the
-lattice computes all shares in 7 seconds; the extrapolated matched-accuracy
-comparison is in Section~\ref{sec:benchmark}.
+lattice transform near $N \approx 200$; at equal running time its error is
+about 23 times larger (Table~\ref{tab:frontier}), so at equal error it is
+roughly 500 times slower. By $N = 5000$ the lattice computes all shares in
+7 seconds and the simulator needs about fifty hours at matched accuracy:
+the lattice is roughly twenty-five thousand times faster
+(Section~\ref{sec:benchmark}).
 
 \begin{figure}[t]
 \centering
@@ -656,13 +652,28 @@ power law to the reference implementation's timings over $N \in [20, 200]$
 cubic) and combining with $R^{-1/2}$ error scaling suggests that matching the
 lattice's $5\times10^{-4}$ at $N=5000$ would take this implementation on the
 order of fifty hours (0.27 h at $R=1000$, times
-$(6.8\times10^{-3}/5\times10^{-4})^2 \approx 185$), against 7 seconds.
+$(6.8\times10^{-3}/5\times10^{-4})^2 \approx 185$), against 7 seconds: at
+equivalent accuracy the lattice is roughly twenty-five thousand times
+faster.
 
 This is an order-of-magnitude illustration, not a forecast. It assumes the
 $N=200$ error constant, and GHK's $R=1000$ error measured directly at
 $N=1000$ is larger ($9.2\times10^{-3}$, 59 s), so the assumption favors
 the baseline; the seed-to-seed spread (Figure~\ref{fig:frontier}) adds a
 further factor-few uncertainty.
+
+The same exercise in log-odds, matched to the lattice's measured
+$3\times10^{-2}$ at $N=1000$ (itself reference-noise limited), spreads the
+alternatives out. At $N=5000$ direct utility simulation gets there in
+about four minutes (41\,s at $N=1000$ from the measured $7.1\times10^{-2}$
+at $10^6$ draws, times five), QMC-GHK in a few hours, and plain GHK in
+about fifty hours (its measured $R=1000$ log-odds error at $N=200$ is
+$4.6\times10^{-1}$, so $R^{-1/2}$ scaling costs a factor 212 before the
+$(5000/200)^2$ size scaling). Against the lattice's 7-second pass that
+makes the lattice thirty, eighteen hundred, and twenty-five thousand
+times faster respectively. Matching its certified tail behavior rather
+than its measured error would multiply every simulation entry by the
+$1/(p\epsilon^2)$ factor of the smallest share of interest.
 
 \paragraph{The baseline.} A plain single-threaded Python GHK:
 per-alternative Cholesky, plain pseudorandom uniforms, one realization per
@@ -824,7 +835,9 @@ $N = 10^4$.
 
 \paragraph{Compiled implementation.} The same pass in Rust (in the
 repository, with machine-precision parity and identical iteration counts)
-calibrates $N=1000$ in 3.1 seconds and $N=5000$ in 17.5 seconds.
+calibrates $N=1000$ in 3 seconds, $N=5000$ in 18 seconds, and
+$N=10000$ in 38 seconds (10, 11, and 13 iterations; independent
+$5\times10^6$-draw targets, experiment 19).
 
 Its Chebyshev-separated forward variant computes all 5000 shares in 77
 milliseconds at $6\times10^{-5}$ accuracy, a measured $93\times$ over the
