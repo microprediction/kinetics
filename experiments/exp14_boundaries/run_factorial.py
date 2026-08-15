@@ -154,7 +154,8 @@ def main():
     rows.append(f"n_blocks_skipped,{skipped}")
 
     # mass strata (populated by design now)
-    strata = [(">10%", 0.10, 10.0), ("2-10%", 0.02, 0.10), ("0.5-2%", 0.005, 0.02)]
+    strata = [(">10%", 0.10, 10.0), ("2-10%", 0.02, 0.10),
+              ("0.5-2%", 0.005, 0.02), ("0.05-0.5%", 0.0005, 0.005)]
     names = list(models)
     print(f"\n{'model':>22}", *[f"{s[0]:>10}" for s in strata], "   (mean TV/mass; n in header)")
     hdr_counts = {}

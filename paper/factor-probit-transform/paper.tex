@@ -36,9 +36,10 @@ shares match observed shares with the factor covariance given and fixed,
 has been out of reach at scale. We give an
 algorithm that calibrates a two-factor probit model with a thousand
 alternatives in three seconds on a laptop, and five thousand in under
-twenty. Cost grows roughly linearly: ten thousand alternatives take minutes.
-The standard simulation route, extrapolated from our own implementation,
-would take weeks at the same accuracy. Conditionally on the factors the
+twenty. Cost grows roughly linearly: ten thousand alternatives take minutes. For
+scale, one matched-accuracy evaluation of the five-thousand-share vector
+alone, extrapolated from our like-for-like implementation of the standard
+simulator, is a fifty-hour computation. Conditionally on the factors the
 alternatives are independent, so a single shared survival product yields
 every choice probability in one differentiable pass, and the inverse problem
 this solves is well posed, with shares determining utilities up to a common
@@ -81,14 +82,14 @@ from.
 
 The concession is not free. Logit-family substitution is structurally
 restricted, and the calibration apparatus that demand estimation is built
-on exists on the logit side only. One measure of the cost, from one deliberately misspecified synthetic
+on is routine only on the logit side. One measure of the cost, from one deliberately misspecified synthetic
 design with oracle factor loadings (Section~\ref{sec:boundary}): in the
 largest-deletion stratum, plain logit misallocates about 23\% of the demand
 released by a deleted alternative, against 5\% for factor probit, the
 closest of the four candidate structures.
 
-This paper's point is that the barrier is not real for the covariance
-structure applied work most often actually has, the factor model
+This paper's point is that the barrier is not real for an important
+class of covariance structures, the low-rank-plus-diagonal factor model
 $\Sigma = VV^\top + \mathrm{diag}(D)$. The goal is \textbf{calibration}: given
 observed shares and a fixed, known factor structure $(V, D)$, recover the
 utilities at which the probit model reproduces them. This is the probit
@@ -207,14 +208,16 @@ partition (ties are null for continuous laws), giving $\sum_i p_i = 1$.
 \end{proof}
 
 \begin{proposition}[Complexity]\label{prop:complexity}
-With $Q$ factor nodes and $L$ lattice points, the forward share vector costs
-$O(QNL)$; the full single-removal ensemble $\{P(j \text{ chosen} \mid i
+With $Q$ factor nodes and $L$ lattice points, the forward share vector
+costs $O(QN(k+L))$, which is $O(QNL)$ for $k \ll L$; the full
+single-removal ensemble $\{P(j \text{ chosen} \mid i
 \text{ removed})\}_{i,j}$ costs $O(QN^2L)$ arithmetic and $O(N^2)$ storage,
 reusing one conditional field construction.
 \end{proposition}
 \begin{proof}
-Per node: the field log-product costs $O(NL)$, each alternative's integral
-$O(L)$ after subtraction, giving $O(NL)$; the removal ensemble evaluates $N$
+Per node: the conditional locations cost $O(Nk)$, the field log-product
+$O(NL)$, and each alternative's integral $O(L)$ after subtraction, giving
+$O(N(k+L))$; the removal ensemble evaluates $N$
 survivor integrals for each of $N$ removals, $O(N^2L)$, over the same cached
 field.
 \end{proof}
@@ -349,12 +352,15 @@ gradient map is strictly monotone as an operator on $\mathbf{1}^\perp$
 (not coordinatewise), and shares determine utilities uniquely. And symmetry plus positive definiteness make every
 reduced Newton system SPD, so conjugate gradients apply with the $O(QNL)$
 Jacobian--vector product of Proposition~\ref{prop:jvp} playing the role of
-a fast Laplacian multiply. Structurally, calibration is solving a diffusion
-on the photo-finish graph, and it is easy for the same reason resistor
+a fast Laplacian multiply. Structurally, each linearization of the calibration solves a weighted
+graph-Laplacian system on the photo-finish graph (the weights themselves
+move with $\mu$), and such systems are easy for the same reason resistor
 networks and heat equations are. None of this is specifically Gaussian:
 any conditionally independent additive random-utility race with
-everywhere-positive smooth densities has a weighted-Laplacian Jacobian and
-an interior-simplex diffeomorphism modulo translation; Gaussian factor
+everywhere-positive smooth densities has, under the corresponding
+integrability and differentiability conditions (finite social surplus,
+differentiation under the integral), a weighted-Laplacian Jacobian and an
+interior-simplex diffeomorphism modulo translation; Gaussian factor
 probit is the computationally important specialization.
 \end{remark}
 \begin{remark}
@@ -584,9 +590,13 @@ $N$ & lattice transform & direct MC, matched time & GHK ($R=1000$) \\
 \caption{Full share vector, $k=2$ factors, one problem per size, generated
 as $\mu_i \sim N(0, s^2)$ with spread $s = 1$ through $N=200$ and $1.5$
 above, $v_{ir} \sim N(0, 0.25/k)$, $D_i \sim U[0.5, 1.5]$. Sub-second
-timings are warmed medians of three runs; the direct-MC column runs the
-draw-argmax simulator at wall time matched to the lattice call (experiment
-16). Reference: $2\times10^6$ MC draws
+timings are warmed medians of three runs. The direct-MC column runs the
+draw-argmax simulator at wall time matched to the lattice call and is scored
+against experiment 16's fresh $2\times10^6$-draw references, under which
+the lattice's own errors are $3.0$--$3.9\times10^{-4}$ at every size;
+cross-column comparisons should use that common reference (at $N=1000$:
+lattice $3.9\times10^{-4}$ versus direct MC $6.2\times10^{-4}$), not the
+noisier dagger entries. Reference: $2\times10^6$ MC draws
 through $N=200$; $5\times10^5$ draws at $N=1000$ and $5000$ ($\dagger$: there
 the reference's own maximum-coordinate noise is of comparable order, so
 these entries resolve the lattice error only to that order). A replication study at
@@ -619,9 +629,11 @@ field-wide impossibility.
 \emph{direct utility simulation}: draw utilities, take the argmax, average.
 It produces the whole share vector per draw and, unlike GHK, does not pay
 per alternative. We ran it at wall time matched to the lattice call (experiment
-16): its maximum-coordinate error was $1.5$--$4\times$ the lattice's at
-every tested $N$ ($6.2\times10^{-4}$ versus $3.9\times10^{-4}$ at $N=1000$,
-$0.5$M draws in the matched 4.1 seconds). At the $10^{-3}$ accuracy level,
+16, both methods scored against the same fresh $2\times10^6$-draw
+reference): its maximum-coordinate error was $1.5$--$4\times$ the
+lattice's at every tested $N$ ($6.2\times10^{-4}$ versus
+$3.9\times10^{-4}$ at $N=1000$, $0.5$M draws in the matched 4.1
+seconds). At the $10^{-3}$ accuracy level,
 then, raw forward speed does not by itself separate the methods.
 
 The separation is in error decay (experiment 17, $N=200$, $k=2$).
@@ -654,10 +666,11 @@ consistent with $R^{-1/2}$ against a rapidly converging quadrature.
 \centering
 \includegraphics[width=0.48\textwidth]{figs/frontier_full.png}\hfill
 \includegraphics[width=0.48\textwidth]{figs/refinement.png}
-\caption{Left: measured accuracy--time frontier at $N=200$, $k=2$ (experiment
-17); every method is timed on the same problem against twin
-$5\times10^7$-draw references, with direct simulation and QMC-GHK as
-first-class baselines. Right: factor-quadrature refinement at fixed $L$: Gauss--Hermite
+\caption{Left: each method at its most accurate tested setting, timed on
+the same $N=200$, $k=2$ problem against one common reference (twin
+$5\times10^7$-draw simulations; experiment 17). The shaded band is the
+reference's own noise: the lattice point sits at that floor, and its true
+error is $\sim10^{-8}$ by self-convergence. Right: factor-quadrature refinement at fixed $L$: Gauss--Hermite
 at $k=2$, and at $k=8$ the median and range over eight independent RQMC
 scrambles.}
 \label{fig:frontier}
@@ -738,20 +751,25 @@ forward-pass equivalents throughout, with recovery quality unchanged
 (median error near $0.003$, 96--99\% of share mass identified).
 
 The gap to simulation here is structural, and simple arithmetic shows why
-(arithmetic, not a lower bound). With common random numbers the simulated
-share map is a fixed deterministic function that can be inverted to any
-solver tolerance; the limitation is that it is the wrong map. Its
-coordinatewise integration error is of order $\sqrt{p_{\max}/R}$, so
-making the simulated map itself $\tau$-accurate costs $R \approx
-p_{\max}/\tau^2$ draws per evaluation, and inverting it exactly still
-leaves utilities whose true shares miss the target at scale $\tau$,
-amplified through $J^{-1}$. Under independent direct simulation at the
-measured $N = 5000$ throughput, this variance calculation prices a
-$\tau \sim 10^{-6}$ forward map in weeks per evaluation and the
-calibration in months to a year; variance reduction and common random
-numbers improve the constants but not the $\tau^{-2}$ scaling, and a
-maximum over $N$ coordinates adds a further $\log N$ factor in
-high-probability statements. At the crude $\tau = 10^{-4}$ where
+(a plain independent Monte Carlo sample-complexity calculation, not a
+lower bound on simulation methods generally). With common random numbers a
+smoothed simulator such as CRN-GHK is a fixed function that a solver can
+match to fine tolerance (a raw draw-and-argmax map is piecewise constant on
+the $1/R$ grid and cannot be); either way the limitation is that it is the
+wrong map. Its coordinatewise error against the exact map is of order
+$\sqrt{p_{\max}/R}$, so making the simulated map itself $\tau$-accurate
+costs $R \approx p_{\max}/\tau^2$ independent draws per evaluation, and
+inverting it exactly still leaves utilities whose true shares miss the
+target at scale $\tau$, amplified through $J^{-1}$. Under plain
+independent direct simulation at the measured $N = 5000$ throughput, this
+prices a forward map resolving the \emph{exact} MNP map to $\tau \sim
+10^{-6}$ (this solver's model-consistency level, well beyond the
+$2\times10^{-4}$ statistical accuracy of the noisy-target experiments) at
+weeks per evaluation and the calibration in months to a year. Common
+random numbers do not change the plain-MC rate; QMC and specialized
+Gaussian integration can (both are benchmarked in
+Section~\ref{sec:benchmark}), and a maximum over $N$ coordinates adds a
+further $\log N$ factor in high-probability statements. At the crude $\tau = 10^{-4}$ where
 simulation-in-the-loop first becomes feasible, the calibrated model's true
 shares miss the target at $10^{-4}$ and the answer moves with the draw
 set. The quadrature route's accuracy against the exact map is set by
@@ -791,9 +809,10 @@ $P\Sigma P - \mathrm{diag}(D)$, take the top $k$ directions, refit $D$ from
 the diagonal with a $10^{-3}$ floor, iterate to $10^{-10}$), followed by
 centering and SVD canonicalization of the loadings (ordered columns, fixed
 signs); it is not certified to minimize a projected norm ($P\,\mathrm{diag}(D)\,P$
-is not diagonal), so the repository also implements the certified
-alternating fit on the reduced quotient (top-$k$ PSD step for the loadings,
-nonnegative least squares for $D$): on the boundary matrices it changes the
+is not diagonal), so the repository also implements an alternating least-squares fit with
+exact block updates on the reduced quotient (top-$k$ PSD step for the
+loadings, nonnegative least squares for $D$; exact block minimization, not
+a global-optimality certificate): on the boundary matrices it changes the
 quotient residual by under 1\%, so the heuristic is not the binding
 constraint. The covariance-quotient residual $\|P(\Sigma -
 \hat\Sigma)P\|_F / \|P\Sigma P\|_F$ is reported alongside every share
@@ -847,8 +866,11 @@ standardized to mean zero and unit variance, homoskedastic, with $\mu^\star
 idiosyncratic scale fixed and vary $\{\text{Gumbel},
 \text{Gaussian}\}$ base $\times$ $\{V = 0, V = V^\star\}$; the Gumbel
 base is variance-standardized to one, so the family axis does not alter the
-factor-to-idiosyncratic variance ratio, and the candidate factor law is
-Gaussian in all cases (the truth's $t(5)$ factor law is misspecified for
+factor-to-idiosyncratic variance ratio; because the implementation is
+min-wins, the base is the \emph{reflected} (minimum) Gumbel corresponding
+to a standard maximum-Gumbel in utility coordinates, and the committed
+anchor verifies that its zero-loading case equals softmax at $N=12$ to
+$2.8\times10^{-17}$; the candidate factor law is Gaussian in all cases (the truth's $t(5)$ factor law is misspecified for
 every candidate). This is an \emph{oracle-loading} design: both factor
 candidates receive the true $V^\star$ rather than estimating it. All four
 are calibrated to the same full-menu shares (residuals $\le
@@ -859,9 +881,11 @@ the top three alternatives retained per draw, from which every
 single-deletion and pair-deletion truth follows with common random numbers.
 Of 150 deletion blocks (50 singles, 100 fixed-seed random pairs), 45 with
 deleted mass below 0.05\% are excluded as unresolvable; of the 105 scored
-blocks, 83 fall in the three reported strata (26/29/28 at $>$10\% /
-2--10\% / 0.5--2\%) and the remaining 22 have deleted mass between
-0.05\% and 0.5\%. The score per deletion block $B$ is the
+blocks, 83 fall in the three best-resolved strata (26/29/28 at $>$10\% /
+2--10\% / 0.5--2\%) and the remaining 22, with deleted mass between
+0.05\% and 0.5\%, appear in the final column (their truths sit closest to
+the common-draw resolution floor, so that column carries the widest error
+bars). The score per deletion block $B$ is the
 misallocated fraction of the redistributed mass,
 \[
 \mathrm{TV}\!\left(q^{(-B)}_{\mathrm{model}},\,
@@ -870,14 +894,14 @@ q^{(-B)}_{\mathrm{truth}}\right) \Big/ \textstyle\sum_{i \in B} p_i ,
 averaged within strata:
 
 \begin{center}
-\begin{tabular}{lccc}
+\begin{tabular}{lcccc}
 \toprule
- & mass $>10\%$ & 2--10\% & 0.5--2\% \\
+ & mass $>10\%$ & 2--10\% & 0.5--2\% & 0.05--0.5\% \\
 \midrule
-independent Luce (= plain logit) & 0.229 & 0.245 & 0.261 \\
-independent probit & 0.210 & 0.232 & 0.230 \\
-factor mixed logit & 0.114 & 0.146 & 0.199 \\
-factor probit & \textbf{0.045} & \textbf{0.062} & \textbf{0.094} \\
+independent Luce (= plain logit) & 0.229 & 0.245 & 0.261 & 0.305 \\
+independent probit & 0.210 & 0.232 & 0.230 & 0.267 \\
+factor mixed logit & 0.114 & 0.146 & 0.199 & 0.244 \\
+factor probit & \textbf{0.045} & \textbf{0.062} & \textbf{0.094} & \textbf{0.116} \\
 \bottomrule
 \end{tabular}
 \end{center}
