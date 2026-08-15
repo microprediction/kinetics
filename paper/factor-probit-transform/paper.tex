@@ -358,8 +358,8 @@ D\tilde p[h]$ and $s = \mathbf{1}^\top \tilde p$,
 \[
 D p_{Q,L}[h] \;=\; \frac{v - p_{Q,L}\, (\mathbf{1}^\top v)}{s}.
 \]
-Since $\mathbf{1}^\top v = 0$ analytically, the correction is of the order
-of the quadrature defect. One further distinction, raised by a careful
+The correction vanishes for the continuum map and is numerically
+negligible at the production resolutions tested. One further distinction, raised by a careful
 reading: integration by parts is a continuum identity, so the Laplacian
 formula of Proposition~\ref{prop:jvp} is the exact derivative of the
 \emph{continuum} map, not of the finite rectangle sum. The exact derivative
@@ -368,9 +368,11 @@ integration by parts), costs the same $O(QNL)$, and ships in the repository
 (\texttt{form="grid"}). Measured at production resolution ($L = 1501$) the
 two forms agree to $1.7\times10^{-14}$; at $L = 51$ the continuum form is
 off by $2.6\times10^{-5}$ while the grid form still matches finite
-differences. So the Laplacian form is an extremely accurate symmetric
-surrogate at the resolutions used, and exact differentiation of the returned
-map is available when needed. Finally, the implemented inversion rebuilds
+differences. So the Laplacian form is an extremely accurate symmetric surrogate at the
+resolutions used, and exact differentiation of the normalized
+\emph{frozen-grid} map is available when needed; the returned adaptive map
+additionally moves its envelope with $\mu$, a tail effect measured below
+$10^{-8}$ at production resolution. Finally, the implemented inversion rebuilds
 the lattice envelope from the current utilities at each iteration, holds it
 fixed while the forward map and diagonal slopes are evaluated, and projects
 the utilities to mean zero after every update; the slopes ignore the moving
@@ -544,8 +546,8 @@ timings are warmed medians of three runs; the direct-MC column runs the
 draw-argmax simulator at wall time matched to the lattice call (experiment
 16). Reference: $2\times10^6$ MC draws
 through $N=200$; $5\times10^5$ draws at $N=1000$ and $5000$ ($\dagger$: there
-the reference's own maximum-coordinate noise is of comparable order, so these
-entries bound the lattice error only to that order). A replication study at
+the reference's own maximum-coordinate noise is of comparable order, so
+these entries resolve the lattice error only to that order). A replication study at
 common spread 1.0 (experiment 16; ten problems per size at $N \le 200$, three
 at $N=1000$, twin independent $2\times10^6$-draw references per problem)
 gives worst-case lattice error $3.5$--$4.6\times10^{-4}$ at every size, at or
@@ -560,7 +562,12 @@ power law to the reference implementation's timings over $N \in [20, 200]$
 cubic) and combining with $R^{-1/2}$ error scaling suggests that matching the
 lattice's $5\times10^{-4}$ at $N=5000$ would take this implementation on the
 order of fifty hours (0.27 h at $R=1000$, times
-$(6.8\times10^{-3}/5\times10^{-4})^2 \approx 185$), against 21 seconds. The baseline is a straightforward
+$(6.8\times10^{-3}/5\times10^{-4})^2 \approx 185$), against 21 seconds
+--- an order-of-magnitude illustration, not a forecast: it assumes the
+$N=200$ error constant, and GHK's $R=1000$ error measured directly at
+$N=1000$ is larger ($9.2\times10^{-3}$, 59 s), so the assumption favors
+the baseline; the seed-to-seed spread (Figure~\ref{fig:frontier}) adds a
+further factor-few uncertainty. The baseline is a straightforward
 single-threaded Python GHK: per-alternative Cholesky, plain pseudorandom
 uniforms, one realization per problem, shares normalized by their sum. It
 establishes the scaling of the per-alternative simulation approach, not a
@@ -651,17 +658,26 @@ solver error. Alternatives with shares below the resolution floor are not
 chased, by design; their tier is reported separately. A robustness sweep of
 twenty problems varying utility spread, factor strength, $D$-heterogeneity,
 and rank converged in all twenty cases (6--31 iterations, recovery
-$0.004$--$0.024$). Self-convergence certificates at large $N$ bound the
-quadrature error the simulation references cannot resolve: refining to $(L
-= 3001, \mathrm{GH}21)$ moves the shares by $1.2\times10^{-8}$ at
-$N=1000$ and $5.7\times10^{-8}$ at $N=5000$.
+$0.004$--$0.024$). Self-convergence checks at large $N$ show stability below what the
+simulation references can resolve: refining to $(L = 3001, \mathrm{GH}21)$
+moves the shares by $1.2\times10^{-8}$ at $N=1000$ and
+$5.7\times10^{-8}$ at $N=5000$ (a stability statement, not by itself an
+error bound, since both resolutions could share bias). Two genuine bounds
+come free from the product structure: conditional probabilities lie in
+$[0,1]$, so pruning factor weight $\delta$ perturbs unnormalized shares by
+at most $\delta = 2.39\times10^{-8}$ in sup norm (measured:
+$6.2\times10^{-9}$); and the $\pm8\sigma_{\max}$ envelope omits
+conditional mass at most $N\Phi(-8) \approx 6\times10^{-12}$ even at
+$N = 10^4$.
 
 A compiled implementation of the same pass (Rust, in the repository, with
 machine-precision parity and identical iteration counts) calibrates
 $N=1000$ in 8 seconds and $N=5000$ in 45 seconds; the single-threaded NumPy
 timings above remain the reported baseline.
 
-Scaling is linear in $N$ (experiment 19): calibration takes 48, 120, 330,
+Scaling is approximately linear in $N$ over the tested range (experiment
+19; at fixed spatial resolution the lattice would grow with the utility
+range, $O(\sqrt{\log N})$ under Gaussian utilities): calibration takes 48, 120, 330,
 and 639 seconds at $N = 1000$, $2000$, $5000$, $10000$, a flat 11--15
 forward-pass equivalents throughout, with recovery quality unchanged
 (median error near $0.003$, 96--99\% of share mass identified). At
@@ -672,22 +688,26 @@ weeks. Numerical well-posedness
 matches Theorem~\ref{thm:inv}: the reduced Jacobian assembled from $N$
 JVP calls at $N=50$ is symmetric to $1.7\times10^{-18}$, has row-sum defect
 $6.2\times10^{-17}$, and reduced eigenvalues in $[2.5\times10^{-5},
-0.22]$, positive definite as proved. The gap to simulation here is structural, not incremental, and simple
-arithmetic shows why (labeled as arithmetic, not measurement). An iterative
-inversion evaluates the forward map $\sim$15 times and cannot drive its
-residual below the per-evaluation noise; simulation noise on shares scales
-as $\sqrt{p_{\max}/R}$, so a share-residual tolerance $\tau$ costs $R
-\approx p_{\max}/\tau^2$ draws per evaluation. Under independent direct
-simulation at the measured $N = 5000$ throughput, this variance calculation
-prices one forward evaluation at this solver's model-side consistency
-($\tau \sim 10^{-6}$) in weeks and the calibration in months to a year;
-variance reduction and common random numbers improve the constants but not
-the $\tau^{-2}$ scaling; even $\tau = 10^{-5}$ prices the
-calibration in days against our 330 seconds; and at the crude $\tau =
-10^{-4}$ where simulation-in-the-loop first becomes feasible, the calibrated
-model mismatches its own targets at $10^{-4}$ and the derivative noise
-forces stochastic-approximation methods. The quadrature route's cost is
-independent of $\tau$ until resolution binds. We are unaware of a reported
+0.22]$, positive definite as proved. The gap to simulation here is structural, and simple arithmetic shows why
+(arithmetic, not a lower bound). With common random numbers the simulated
+share map is a fixed deterministic function that can be inverted to any
+solver tolerance; the limitation is that it is the wrong map. Its
+coordinatewise integration error is of order $\sqrt{p_{\max}/R}$, so
+making the simulated map itself $\tau$-accurate costs $R \approx
+p_{\max}/\tau^2$ draws per evaluation, and inverting it exactly still
+leaves utilities whose true shares miss the target at scale $\tau$,
+amplified through $J^{-1}$. Under independent direct simulation at the
+measured $N = 5000$ throughput, this variance calculation prices a
+$\tau \sim 10^{-6}$ forward map in weeks per evaluation and the
+calibration in months to a year; variance reduction and common random
+numbers improve the constants but not the $\tau^{-2}$ scaling, and a
+maximum over $N$ coordinates adds a further $\log N$ factor in
+high-probability statements. At the crude $\tau = 10^{-4}$ where
+simulation-in-the-loop first becomes feasible, the calibrated model's true
+shares miss the target at $10^{-4}$ and the answer moves with the draw
+set. The quadrature route's accuracy against the exact map is set by
+resolution, not draws, at cost independent of $\tau$ until resolution
+binds. We are unaware of a reported
 probit share inversion at this scale in simulation-based practice, and this
 scaling is presumably why.
 
@@ -721,10 +741,14 @@ an iterative principal-factor heuristic applied to $P\Sigma P$ (eigendecompose
 $P\Sigma P - \mathrm{diag}(D)$, take the top $k$ directions, refit $D$ from
 the diagonal with a $10^{-3}$ floor, iterate to $10^{-10}$), followed by
 centering and SVD canonicalization of the loadings (ordered columns, fixed
-signs); it is not certified to minimize a projected norm, and the
-covariance-quotient residual $\|P(\Sigma - \hat\Sigma)P\|_F /
-\|P\Sigma P\|_F$ is reported alongside every share error in the committed
-output.
+signs); it is not certified to minimize a projected norm ($P\,\mathrm{diag}(D)\,P$
+is not diagonal), so the repository also implements the certified
+alternating fit on the reduced quotient (top-$k$ PSD step for the loadings,
+nonnegative least squares for $D$): on the boundary matrices it changes the
+quotient residual by under 1\%, so the heuristic is not the binding
+constraint. The covariance-quotient residual $\|P(\Sigma -
+\hat\Sigma)P\|_F / \|P\Sigma P\|_F$ is reported alongside every share
+error in the committed output.
 
 With this fit: correlation matrices at spectral decay $\lambda_m \propto
 m^{-\gamma}$, $\gamma \in \{0.5, 1.5, 3\}$, at $N=50$, sharing one

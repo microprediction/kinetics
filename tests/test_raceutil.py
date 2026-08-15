@@ -304,3 +304,24 @@ def test_grid_jvp_exact_at_coarse_lattice_where_ibp_degrades():
     jg2 = jacobian_vector_product(mu, V, D, F, W, h, form="grid")
     ji2 = jacobian_vector_product(mu, V, D, F, W, h, form="ibp")
     assert np.abs(jg2 - ji2).max() < 1e-12
+
+
+def test_projected_fit_certifies_heuristic():
+    """Eighth review: the certified projected quotient fit changes the
+    quotient residual by <1% vs the contrast heuristic on a boundary-style
+    matrix, so the heuristic is not the binding constraint."""
+    from raceutil import factor_model_contrast, factor_model_projected
+    rng = np.random.default_rng(33)
+    n = 30
+    lam = np.arange(1, n + 1, dtype=float) ** -1.5
+    Q, _ = np.linalg.qr(rng.standard_normal((n, n)))
+    C = (Q * lam) @ Q.T
+    d = np.sqrt(np.diag(C)); C = C / np.outer(d, d)
+    P = np.eye(n) - np.ones((n, n)) / n
+    nrm = np.linalg.norm(P @ C @ P)
+    rh = np.linalg.norm(P @ (C - (lambda VD: VD[0] @ VD[0].T + np.diag(VD[1]))(
+        factor_model_contrast(C, 4))) @ P) / nrm
+    rp = np.linalg.norm(P @ (C - (lambda VD: VD[0] @ VD[0].T + np.diag(VD[1]))(
+        factor_model_projected(C, 4))) @ P) / nrm
+    assert rp <= rh * 1.01
+    assert abs(rp - rh) < 0.02

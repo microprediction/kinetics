@@ -237,3 +237,35 @@ cannot find a substantive mathematical flaw." Punch list executed:
 - Substitution section retitled "factorial illustration".
 - Fixed-(V,D) scope now stated in abstract, intro goal, and model paragraph
   (user's request; earlier edit had silently failed on a stale match).
+
+---
+
+## Eighth review — executed 2026-08-15 (user flagged "not sure about it";
+## assessment: points 1-4, 6-7 correct; 5 tested and resolved; 8-9 already done)
+
+1. tau^-2 paragraph REWRITTEN around the correct mechanism: CRN simulated
+   maps are deterministic and exactly invertible; the cost is that they are
+   the WRONG map (tau-accuracy of the map itself costs p_max/tau^2 draws,
+   and exact inversion still misses the true calibration at scale tau,
+   amplified by J^{-1}). "Derivative noise forces SA" clash removed. log N
+   factor noted. Same conclusion, sound mechanism.
+2. "certificates/bound" -> "checks/stability" + TWO GENUINE BOUNDS added
+   (both verified numerically): pruning sup-norm bound delta = 2.39e-8
+   (measured effect 6.2e-9 <= delta), envelope tail N*Phi(-8) ~ 6e-12 at
+   N=1e4. Table wording "resolve only to that order".
+3. Normalization-derivative non sequitur replaced by the empirical
+   statement (continuum-exact; negligible at production resolution).
+4. "exact differentiation of the returned map" -> "of the normalized
+   frozen-grid map"; adaptive-envelope motion labeled a measured <1e-8
+   tail effect.
+5. Projected quotient fit (reviewer's alternating PSD+NNLS construction)
+   IMPLEMENTED (raceutil.factor_model_projected + test) and TESTED on the
+   boundary matrices: quotient residual changes by <1% vs the heuristic at
+   every gamma — Figure 3 does not move; heuristic certified adequate.
+6. GHK R=1000 error constant MEASURED at N=1000 (9.2e-3, 59s; committed
+   script run_ghk_n1000.py): grows with N, so the N=200 constant favored
+   the baseline; 50h reframed as order-of-magnitude illustration with
+   seed-spread caveat.
+7. "linear" -> "approximately linear over the tested range" with the
+   O(sqrt(log N)) fixed-resolution caveat.
+8-9. Coercivity line and distributional remark were already in from round 7.
