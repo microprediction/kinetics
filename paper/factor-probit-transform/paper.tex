@@ -601,8 +601,14 @@ a $10^7$-draw Monte Carlo reference, and the shipped
 \texttt{thurstone.FactorRace} agrees with the benchmark kernel to
 $1.1\times10^{-5}$.
 
-\paragraph{Error metric.} Throughout, $\max_i |\hat p_i - p_i|$ against a simulation
-reference. A maximum over $N$ coordinates tends to grow with $N$ at fixed
+\paragraph{Error metric.} Throughout, $\max_i |\hat p_i - p_i|$ against a
+simulation reference. Absolute error is not always the decision-relevant
+scale: in betting, moving a 100-to-1 chance to 150-to-1 is an enormous
+change carried by $|\Delta p| \approx 0.003$, so log-odds error matters,
+and there the log-domain lattice is at its strongest (deep-tail shares
+resolve to genuine small positives) while a simulation reference can
+measure relative error only for shares above roughly $50/R$; committed
+records therefore carry both metrics. A maximum over $N$ coordinates tends to grow with $N$ at fixed
 per-coordinate accuracy, and the reference's own maximum-coordinate noise
 behaves likewise; mean-absolute and total-variation summaries are committed
 alongside (experiment 16): at $N=1000$ the lattice's mean absolute error is
