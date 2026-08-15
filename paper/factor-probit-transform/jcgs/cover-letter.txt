@@ -1,0 +1,29 @@
+Dear Editors,
+
+Please consider the enclosed manuscript, "Scalable Probit Share
+Calibration," for publication in the Journal of Computational and
+Graphical Statistics.
+
+The paper gives an algorithm that calibrates a factor-structured
+multinomial probit model -- recovering the utilities at which model
+shares match observed shares, with the factor covariance fixed -- at a
+thousand alternatives in three seconds on a laptop, with cost growing
+linearly in the number of alternatives. The construction computes every
+choice probability from one shared survival field in O(QNL) operations,
+yields resampling-free Jacobian-vector products from the same pass, and
+is certified to log-odds accuracy of a few parts in a hundred thousand
+down to deep-tail shares. The well-posedness theory it relies on is
+classical and attributed; the contribution is the algorithm, its
+implementation, and its validation.
+
+Every number in the paper is produced by committed, seeded scripts, and
+a single manifest regenerates every table and figure; code and the
+experiment suite are supplied as supplementary material. Given the
+journal's lineage in this area (Genz, 1992, appeared in Volume 1), we
+believe JCGS is the natural home for this work.
+
+This manuscript is not under consideration elsewhere. The author reports
+no conflicts of interest.
+
+Sincerely,
+Peter Cotton
