@@ -41,7 +41,12 @@ def newton_cg_calibrate(target, V, D, F, W, tol=1e-6, max_newton=25,
     increase."""
     n = len(target)
     logp = np.log(target)
-    mu = np.zeros(n)
+    # same warm start as the Jacobi solver: exact independent inverse with
+    # total variances (cold starts stall: the share-scale residual
+    # under-weights small-share coordinates far from the solution)
+    sd_tot2 = D + np.sum(np.atleast_2d(V)**2, axis=1)
+    mu = abilities_from_probabilities_factor(
+        target, np.zeros((n, 1)), sd_tot2, np.zeros((1, 1)), np.ones(1))
     n_jvp = 0
     prev = np.inf
     for it in range(max_newton):
