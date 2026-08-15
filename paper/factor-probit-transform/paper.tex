@@ -35,10 +35,11 @@ time, and calibration, meaning the recovery of the utilities at which model
 shares match observed shares with the factor covariance given and fixed,
 has been out of reach at scale. We give an
 algorithm that calibrates a two-factor probit model with a thousand
-alternatives in under a minute on a laptop. Its cost grows linearly from
-there, reaching ten thousand alternatives in eleven minutes, where extrapolation
-from our plain per-alternative simulator implementation puts
-matched-accuracy simulation-based calibration on a weeks scale. Conditionally on the factors the
+alternatives in eight seconds on a laptop, and five thousand in under a
+minute. Its cost grows approximately linearly, reaching ten thousand
+alternatives in minutes, where extrapolation from our plain per-alternative
+simulator implementation puts matched-accuracy simulation-based calibration
+on a weeks scale. Conditionally on the factors the
 alternatives are independent, so a single shared survival product yields
 every choice probability in one differentiable pass, and the inverse problem
 this solves is well posed, with shares determining utilities up to a common
@@ -672,8 +673,11 @@ $N = 10^4$.
 
 A compiled implementation of the same pass (Rust, in the repository, with
 machine-precision parity and identical iteration counts) calibrates
-$N=1000$ in 8 seconds and $N=5000$ in 45 seconds; the single-threaded NumPy
-timings above remain the reported baseline.
+$N=1000$ in 8 seconds and $N=5000$ in 45 seconds, and its
+Chebyshev-separated forward variant computes all 5000 shares in 83
+milliseconds at $6\times10^{-5}$ accuracy, a measured $255\times$ over
+the reference pass; the single-threaded NumPy timings above remain the
+reported baseline.
 
 Scaling is approximately linear in $N$ over the tested range (experiment
 19; at fixed spatial resolution the lattice would grow with the utility
@@ -901,9 +905,10 @@ that only difference covariances are identified.
 The pass itself can be accelerated further: its two stages are smooth-kernel
 sums whose matrices are numerically low-rank, and a Chebyshev-separated
 evaluation (in the spirit of black-box fast multipole methods) reduces each
-node's cost from $O(NL)$ to $O(r(N+L))$; a committed prototype (experiment
-20) reproduces the exact pass to $6\times10^{-5}$ at $45\times$ speed for
-$N=5000$, with exponential convergence in $r$. Development to full
+node's cost from $O(NL)$ to $O(r(N+L))$; a committed prototype (experiment 20) reproduces the exact pass to
+$6\times10^{-5}$ at $45\times$ speed for $N=5000$ in NumPy, and the
+compiled version of the same construction measures $255\times$ (83 ms for
+all 5000 shares), with exponential convergence in $r$. Development to full
 generality is left to a companion note.
 
 Beyond the Gaussian family, the same machinery computes races with arbitrary

@@ -17,6 +17,17 @@ Build: `pip install maturin && maturin develop --release` (needs Rust
 toolchain). Exposes `fastrace.win_probabilities_factor(mu, V, D, F, W,
 points=1501) -> (p, total)`.
 
-Not yet ported: inversion slopes, JVP, deletion ensemble, and the
-Chebyshev-separated low-rank pass (projected further ~15-29x; see
-paper/fast-kernel-notes.md).
+Also implemented and measured (quiet machine, medians of 3):
+
+- forward_and_slopes: the calibration pass; drop-in solver `rustcal.py`
+  calibrates N=1000 in 8s, N=5000 in 45s (identical iterations/residuals).
+- jacobian_vector_product (ibp + grid forms): parity 2e-14, 5.5x.
+- win_probabilities_factor_separated (Chebyshev low-rank pass):
+
+| N | exact numpy | rust exact | rust separated r=384 | err |
+|---|---|---|---|---|
+| 1000 | 4.12 s | 703 ms (6x) | 34 ms (121x) | 2.7e-5 |
+| 5000 | 21.3 s | 3.78 s (6x) | 83 ms (255x) | 6.1e-5 |
+
+Not yet ported: deletion ensemble; separated-pass slopes (would take
+calibration to ~1s at N=5000); SIMD transcendentals (~4x further).
