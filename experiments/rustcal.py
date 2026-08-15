@@ -17,7 +17,7 @@ _PFLOOR = 1e-300
 
 
 def calibrate_rust(p, V, D, F, W, n_iter: int = 50, tol: float = 1e-6,
-                   return_info: bool = False):
+                   return_info: bool = False, points: int = 1501):
     p = np.asarray(p, dtype=float)
     if np.any(p <= 0):
         raise ValueError("all target probabilities must be positive")
@@ -44,7 +44,7 @@ def calibrate_rust(p, V, D, F, W, n_iter: int = 50, tol: float = 1e-6,
     res = np.inf
     it = 0
     for it in range(n_iter):
-        phat_n, slope, total = fastrace.forward_and_slopes(mu, V, D, F, W)
+        phat_n, slope, total = fastrace.forward_and_slopes(mu, V, D, F, W, points)
         phat = np.maximum(phat_n, _PFLOOR)
         resid = np.log(phat) - logp
         res = np.abs(resid[ident]).max() if np.any(ident) else np.abs(resid).max()

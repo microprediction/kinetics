@@ -35,8 +35,8 @@ time, and calibration, meaning the recovery of the utilities at which model
 shares match observed shares with the factor covariance given and fixed,
 has been out of reach at scale. We give an
 algorithm that calibrates a two-factor probit model with a thousand
-alternatives in eight seconds on a laptop, and five thousand in under a
-minute. Cost grows roughly linearly: ten thousand alternatives take minutes.
+alternatives in three seconds on a laptop, and five thousand in under
+twenty. Cost grows roughly linearly: ten thousand alternatives take minutes.
 The standard simulation route, extrapolated from our own implementation,
 would take weeks at the same accuracy. Conditionally on the factors the
 alternatives are independent, so a single shared survival product yields
@@ -134,7 +134,7 @@ factor quadrature \cite{butler1982,elrod1995} & still per-alternative & no \\
 Bayesian factor MNP \cite{loaiza2022} & simulation inside estimation & posterior, not a share map \\
 neural amortization \cite{huch2026} & fast, uncontrolled error & no \\
 BLP-side inversion \cite{berry1995,conlon2020} & --- & logit family only \\
-\textbf{this paper} & one $O(QNL)$ pass & Thm.~\ref{thm:inv}; 8 s at $N{=}1000$ \\
+\textbf{this paper} & one $O(QNL)$ pass & Thm.~\ref{thm:inv}; 3 s at $N{=}1000$ \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -720,10 +720,14 @@ $N = 10^4$.
 
 A compiled implementation of the same pass (Rust, in the repository, with
 machine-precision parity and identical iteration counts) calibrates
-$N=1000$ in 8 seconds and $N=5000$ in 45 seconds, and its
+$N=1000$ in 8 seconds and $N=5000$ in 45 seconds at the conservative $L =
+1501$. The lattice is overkill there: $L = 501$ is machine-precision
+identical ($3\times10^{-17}$, consistent with the $L$-sweep of experiment
+17) and brings calibration to 3.1 seconds at $N=1000$ and 17.5 seconds at
+$N=5000$, with identical iteration counts, residuals, and recovery. The
 Chebyshev-separated forward variant computes all 5000 shares in 83
 milliseconds at $6\times10^{-5}$ accuracy, a measured $255\times$ over
-the reference pass; the single-threaded NumPy timings above remain the
+the reference pass. The single-threaded NumPy timings above remain the
 reported baseline.
 
 Scaling is approximately linear in $N$ over the tested range (experiment

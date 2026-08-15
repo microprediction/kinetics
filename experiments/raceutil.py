@@ -265,7 +265,8 @@ def abilities_from_probabilities_factor(p: np.ndarray, V: np.ndarray,
                                         D: np.ndarray, F: np.ndarray,
                                         W: np.ndarray, n_iter: int = 50,
                                         tol: float = 1e-6,
-                                        return_info: bool = False):
+                                        return_info: bool = False,
+                                        points: int = 1501):
     """Inverse transform under the factor model, by coordinate-wise Newton.
 
     Design synthesis (credit where due): the coordinate-Newton-against-a-frozen-
@@ -308,7 +309,7 @@ def abilities_from_probabilities_factor(p: np.ndarray, V: np.ndarray,
         M_all = mu[None, :] + F @ V.T
         lo = M_all.min() - 8.0 * sd.max()
         hi = M_all.max() + 8.0 * sd.max()
-        x = np.linspace(lo, hi, 1501)
+        x = np.linspace(lo, hi, points)
         dx = x[1] - x[0]
         phat = np.zeros(N)
         slope = np.zeros(N)
