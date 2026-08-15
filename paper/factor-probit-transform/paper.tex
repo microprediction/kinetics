@@ -37,10 +37,11 @@ has been out of reach at scale. We give an
 algorithm that calibrates a two-factor probit model with a thousand
 alternatives in three seconds on a laptop, and five thousand in under
 twenty. Cost grows roughly linearly: ten thousand alternatives take forty
-seconds. At equivalent log-odds accuracy on
-those five thousand shares, our transform is thirty times faster than
-direct utility simulation and twenty-five thousand times faster than the
-standard per-alternative simulator.
+seconds. The computed shares carry log-odds
+errors of a few parts in a hundred thousand, hundred-to-one tails
+included; matching that on a single hundred-to-one share would take
+direct utility simulation about forty billion draws, or weeks, with the
+cost growing in inverse proportion to the share toward the tail.
 \end{abstract}
 
 \section{Introduction}
@@ -669,18 +670,20 @@ $N=1000$ is larger ($9.2\times10^{-3}$, 59 s), so the assumption favors
 the baseline; the seed-to-seed spread (Figure~\ref{fig:frontier}) adds a
 further factor-few uncertainty.
 
-The same exercise in log-odds, matched to the lattice's measured
-$3\times10^{-2}$ at $N=1000$ (itself reference-noise limited), spreads the
-alternatives out. At $N=5000$ direct utility simulation gets there in
-about four minutes (41\,s at $N=1000$ from the measured $7.1\times10^{-2}$
-at $10^6$ draws, times five), QMC-GHK in a few hours, and plain GHK in
-about fifty hours (its measured $R=1000$ log-odds error at $N=200$ is
-$4.6\times10^{-1}$, so $R^{-1/2}$ scaling costs a factor 212 before the
-$(5000/200)^2$ size scaling). Against the lattice's 7-second pass that
-makes the lattice thirty, eighteen hundred, and twenty-five thousand
-times faster respectively. Matching its certified tail behavior rather
-than its measured error would multiply every simulation entry by the
-$1/(p\epsilon^2)$ factor of the smallest share of interest.
+In log-odds the comparison must name its target, and the two natural
+targets give opposite verdicts. Matched to the coarsest level our own
+simulation reference can certify ($3\times10^{-2}$, its noise floor, on
+shares above $10^{-3}$), direct utility simulation gets there in minutes:
+at coarse accuracy on head shares, simulation is competitive and the
+lattice's factor-thirty advantage there is not the story. The story is
+the lattice's actual accuracy. Against a super-converged reference
+(Gauss--Hermite $60^2$, $L=5001$; experiment 25) the production lattice's
+log-odds error is at most $5\times10^{-5}$ on every share from $10^{-9}$
+to one. Simulation needs $1/(p\epsilon^2)$ draws to match relative error
+$\epsilon$ on a share $p$: matching $5\times10^{-5}$ on a single
+hundred-to-one share costs $4\times10^{10}$ draws, about three weeks at
+the measured $N=5000$ draw rate, and every decade further into the tail
+multiplies that by ten.
 
 \paragraph{The baseline.} A plain single-threaded Python GHK:
 per-alternative Cholesky, plain pseudorandom uniforms, one realization per
@@ -1164,7 +1167,7 @@ truth designs and a walk-forward calibration on real assortment data.
 \section*{Reproducibility}
 
 All numbers come from committed, seeded scripts with correctness anchors run
-before any comparison (repository experiments 13--24; a single manifest,
+before any comparison (repository experiments 13--25; a single manifest,
 \texttt{experiments/run\_all\_paper.py}, regenerates every table and
 figure; the exact commit is recorded in the repository README and an
 immutable tag is pinned at circulation). The algorithm ships in the
