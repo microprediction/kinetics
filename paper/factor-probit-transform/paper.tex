@@ -282,11 +282,37 @@ probability simplex: every strictly positive target $\hat p$ has exactly one
 mean-zero utility vector.
 \end{theorem}
 \begin{proof}
-Differentiating \eqref{eq:forward} in $\mu_j$ and integrating by parts gives
-$J_{ij} = -w_{ij}$ for $i \ne j$; the diagonal follows from $J\mathbf{1} = 0$
-(Proposition~\ref{prop:ident}), and positivity of $w_{ij}$ from positivity of
-Gaussian densities. The quadratic form is then immediate, and it vanishes only
-for constant $h$. For inversion, minimize $H(\mu) = G(\mu) - \hat p^\top
+Start from \eqref{eq:forward}. For $j \ne i$, the parameter $\mu_j$
+enters $p_i$ only through the factor $F_j(x \mid f) = \Phi\big((x - \mu_j
+- v_j^\top f)/\sqrt{D_j}\big)$, whose $\mu_j$-derivative is $-g_j(x \mid
+f)$. Differentiating under the integral (dominated convergence: the
+integrand is bounded by integrable Gaussian tails uniformly in a
+neighborhood of $\mu$) gives
+\[
+J_{ij} \;=\; \frac{\partial p_i}{\partial \mu_j}
+\;=\; -\,\E_f \int g_i(x \mid f)\, g_j(x \mid f)
+\prod_{\ell \ne i,j} F_\ell(x \mid f)\, dx \;=\; -\,w_{ij},
+\]
+and the integrand is symmetric in $(i, j)$, so $J_{ij} = J_{ji}$. For the
+diagonal, row sums vanish: differentiating $\mathbf{1}^\top p = 1$ in
+$\mu_i$ gives $\sum_j J_{ji} = 0$, hence $J_{ii} = \sum_{j \ne i}
+w_{ij}$. (The same diagonal follows directly: $\partial_{\mu_i} g_i =
+-g_i'$, and integrating by parts, $\int (-g_i') \prod_{j \ne i} F_j\,dx
+= \int g_i \sum_{j \ne i} g_j \prod_{\ell \ne i,j} F_\ell\,dx$, the
+boundary terms vanishing because $g_i \to 0$ at $\pm\infty$ while the
+product stays bounded.) Positivity of the weights: for every $f$ and $x$
+the Gaussian densities $g_i, g_j$ are strictly positive, and each
+$F_\ell(x \mid f)$ is strictly positive for finite $x$, so the integrand
+is strictly positive on all of $\mathbb{R}$ and $w_{ij} > 0$.
+
+With $J_{ij} = -w_{ij}$ off the diagonal and $J_{ii} = \sum_{j \ne i}
+w_{ij}$, expanding $\sum_{i<j} w_{ij}(e_i - e_j)(e_i - e_j)^\top$ entry by
+entry reproduces $J$, and therefore $h^\top J h = \sum_{i<j}
+w_{ij}(h_i - h_j)^2 \ge 0$. Because every $w_{ij}$ is strictly positive,
+the form vanishes only when $h_i = h_j$ for all pairs, i.e.\ for constant
+$h$: $J$ is positive semidefinite with null space exactly
+$\mathrm{span}\{\mathbf{1}\}$, hence positive definite on
+$\mathbf{1}^\perp$. For inversion, minimize $H(\mu) = G(\mu) - \hat p^\top
 \mu$ over $\mathbf{1}^\perp$: $H$ is strictly convex there (its Hessian is
 the reduced $J$), and since the shocks have zero mean, $G(\mu) \ge \max_i
 \mu_i$, so
