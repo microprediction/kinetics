@@ -30,12 +30,13 @@ machine learning runs on the same latent-utility family. Yet the
 many-alternative form sees little use beyond small menus: its probabilities
 have no closed form, the standard simulator prices one alternative at a
 time, and calibration, meaning the recovery of the utilities at which model
-shares match observed shares, has been out of reach at scale. We give an
+shares match observed shares with the factor covariance given and fixed,
+has been out of reach at scale. We give an
 algorithm that calibrates a two-factor probit model with a thousand
 alternatives in under a minute on a laptop. Its cost grows linearly from
-there, reaching ten thousand alternatives in eleven minutes, where the same
-calibration through our implementation of the standard simulator
-extrapolates to weeks at matched accuracy. Conditionally on the factors the
+there, reaching ten thousand alternatives in eleven minutes, where extrapolation
+from our plain per-alternative simulator implementation puts
+matched-accuracy simulation-based calibration on a weeks scale. Conditionally on the factors the
 alternatives are independent, so a single shared survival product yields
 every choice probability in one differentiable pass, and the inverse problem
 this solves is well posed, with shares determining utilities up to a common
@@ -87,9 +88,11 @@ closest of the four candidate structures.
 This paper's point is that the barrier is not real for the covariance
 structure applied work most often actually has, the factor model
 $\Sigma = VV^\top + \mathrm{diag}(D)$. The goal is \textbf{calibration}: given
-observed shares, recover the utilities at which the probit model reproduces
-them, the probit analogue of the inversions demand estimation runs on the
-logit side every day \cite{berry1995,conlon2020}. We solve it at $N = 1000$
+observed shares and a fixed, known factor structure $(V, D)$, recover the
+utilities at which the probit model reproduces them. This is the probit
+analogue of the inversions demand estimation runs on the logit side every
+day \cite{berry1995,conlon2020}; estimating $(V, D)$ is the outer problem,
+discussed in Section~\ref{sec:discussion}. We solve it at $N = 1000$
 in under a minute, and the inverse problem is globally well-posed
 (Theorem~\ref{thm:inv}: shares determine utilities uniquely up to
 location). Three ingredients make it work:
@@ -139,9 +142,8 @@ of alternatives grows. The per-alternative simulator's cost crosses the
 lattice transform near $N \approx 200$, where its maximum-coordinate error
 is about 23 times larger (Table~\ref{tab:frontier}); matching the lattice
 error would take roughly 500 times as many draws under $R^{-1/2}$ scaling. By $N = 5000$ the
-lattice computes all shares in 21 seconds; our GHK baseline at matched
-accuracy extrapolates, doubly (wall time in $N$, draws by $R^{-1/2}$), to
-roughly fifty hours.
+lattice computes all shares in 21 seconds; the extrapolated matched-accuracy
+comparison is in Section~\ref{sec:benchmark}.
 
 \begin{figure}[t]
 \centering
@@ -177,7 +179,9 @@ U_i \;=\; \mu_i + v_i^\top f + \sqrt{D_i}\,\varepsilon_i,
 \label{eq:model}
 \end{equation}
 i.e.\ $\Sigma = VV^\top + \mathrm{diag}(D)$; the chosen alternative is the
-argmax of $U$. Factor dimension reduction for probit is classical:
+argmax of $U$. Throughout, $(V, D)$ is supplied and held fixed;
+calibration solves for $\mu$ alone. Factor dimension reduction for probit
+is classical:
 one-factor quadrature goes back to Butler and Moffitt \cite{butler1982},
 and factor-analytic probit to Elrod and Keane \cite{elrod1995}. The
 contribution is the all-alternatives assembly, the inverse transform, the
@@ -258,13 +262,17 @@ $\sum_{i<j} w_{ij}(h_i - h_j)^2$ sees only differences: shares cannot
 identify the overall utility level, only gaps, which is economically
 obvious and here algebraically automatic. Positive weights make the graph
 connected, so the constant vector is the \emph{only} null direction, the
-share map is strictly monotone on the quotient, and shares determine
-utilities uniquely. And symmetry plus positive definiteness make every
+gradient map is strictly monotone as an operator on $\mathbf{1}^\perp$
+(not coordinatewise), and shares determine utilities uniquely. And symmetry plus positive definiteness make every
 reduced Newton system SPD, so conjugate gradients apply with the $O(QNL)$
 Jacobian--vector product of Proposition~\ref{prop:jvp} playing the role of
 a fast Laplacian multiply. Structurally, calibration is solving a diffusion
 on the photo-finish graph, and it is easy for the same reason resistor
-networks and heat equations are.
+networks and heat equations are. None of this is specifically Gaussian:
+any conditionally independent additive random-utility race with
+everywhere-positive smooth densities has a weighted-Laplacian Jacobian and
+an interior-simplex diffeomorphism modulo translation; Gaussian factor
+probit is the computationally important specialization.
 Moreover $p = \nabla G$ for the social-surplus function
 $G(\mu) = \E \max_i \{\mu_i + \xi_i\}$ (the Williams--Daly--Zachary /
 McFadden identity \cite{mcfadden1981}), and the restriction of $p$ to
@@ -285,9 +293,11 @@ the reduced $J$), and since the shocks have zero mean, $G(\mu) \ge \max_i
 H(\mu) \;\ge\; \max_i \mu_i - \hat p^\top \mu
 \;=\; \textstyle\sum_i \hat p_i (\max_j \mu_j - \mu_i)
 \;\ge\; \hat p_{\min} \,(\max_i \mu_i - \min_i \mu_i)
-\;\to\; \infty
+\;\ge\; \hat p_{\min}\, \|\mu\|_2 / \sqrt{N}
 \]
-as $\|\mu\| \to \infty$ on $\mathbf{1}^\perp$. Since $D_i > 0$ the
+on $\mathbf{1}^\perp$, where the last step uses that a zero-sum vector has
+$\max_i \mu_i \ge 0 \ge \min_i \mu_i$, so the range dominates
+$\|\mu\|_\infty \ge \|\mu\|_2/\sqrt{N}$; hence $H$ is coercive. Since $D_i > 0$ the
 utilities have a smooth full-support joint density and ties are null, so
 differentiating under the expectation gives $\nabla G = p$. At the unique
 constrained minimizer, $B^\top(p(\mu) - \hat p) = 0$, so $p(\mu) - \hat
@@ -525,8 +535,8 @@ The separation is in error decay (experiment 17, $N=200$, $k=2$).
 Holding the factor rule fixed, lattice self-convergence is
 $2.7\times10^{-8}$ at $L=101$ and at machine precision from $L \approx
 200$; the convergence observed over the tested range is near-exponential,
-as expected for analytic, rapidly decaying integrands under a uniform rule,
-and the $L$-error is subdominant. Holding $L$
+and for these analytic, rapidly decaying integrands the lattice error
+becomes negligible very quickly, leaving the $L$-error subdominant. Holding $L$
 fixed, the Gauss--Hermite sweep decays from $5.3\times10^{-4}$ (order 3) to
 $5.9\times10^{-9}$ (order 15). The pre-normalization defect
 $|1 - \mathbf{1}^\top \tilde p\,|$ is $2.4\times10^{-8}$.
@@ -623,10 +633,12 @@ arithmetic shows why (labeled as arithmetic, not measurement). An iterative
 inversion evaluates the forward map $\sim$15 times and cannot drive its
 residual below the per-evaluation noise; simulation noise on shares scales
 as $\sqrt{p_{\max}/R}$, so a share-residual tolerance $\tau$ costs $R
-\approx p_{\max}/\tau^2$ draws per evaluation. At $N = 5000$ and the
-measured direct-simulation rate, matching this solver's model-side
-consistency ($\tau \sim 10^{-6}$) prices one forward evaluation in weeks
-and the calibration in months to a year; even $\tau = 10^{-5}$ prices the
+\approx p_{\max}/\tau^2$ draws per evaluation. Under independent direct
+simulation at the measured $N = 5000$ throughput, this variance calculation
+prices one forward evaluation at this solver's model-side consistency
+($\tau \sim 10^{-6}$) in weeks and the calibration in months to a year;
+variance reduction and common random numbers improve the constants but not
+the $\tau^{-2}$ scaling; even $\tau = 10^{-5}$ prices the
 calibration in days against our 330 seconds; and at the crude $\tau =
 10^{-4}$ where simulation-in-the-loop first becomes feasible, the calibrated
 model mismatches its own targets at $10^{-4}$ and the derivative noise
@@ -648,7 +660,8 @@ side capability, not the paper's case.
 \paragraph{General covariance through the factor approximation.} The method
 requires $\Sigma \approx VV^\top + \mathrm{diag}(D)$; GHK does not. Choices depend on
 $(\mu, \Sigma)$ only through $P\mu$ and $P\Sigma P$, $P = I -
-\mathbf{1}\mathbf{1}^\top/N$: a common factor loading $V \to V +
+\mathbf{1}\mathbf{1}^\top/N$, because the argmax is determined by
+pairwise differences: a common factor loading $V \to V +
 \mathbf{1}c^\top$ shifts every conditional location equally and cannot move
 the argmax (a machine-precision identity), so the factor fit must be run in
 this choice-relevant quotient space. Fitting raw $\Sigma$ can spend
@@ -701,7 +714,7 @@ cheaper route to $3$--$4\times10^{-3}$; the lattice's advantage is large
 $N$ at small $k$. Where accuracy demands exceed the achievable rank-$k$
 error, GHK's arbitrary-$\Sigma$ generality is the right tool.
 
-\paragraph{Substitution: a $2\times2$ factorial.} The design varies factor
+\paragraph{Substitution: a $2\times2$ factorial illustration.} The design varies factor
 structure and noise family one axis at a time, holding the idiosyncratic
 scale common. Coupling either axis with alternative-specific scales would
 confound the comparison: an alternative-specific-scale Gumbel race is not
