@@ -228,11 +228,33 @@ $d\eta/d\theta = -(B^\top J B)^{-1} B^\top \partial p/\partial\theta$,
 provided $B^\top J B$ is nonsingular.
 \end{proposition}
 \begin{proof}
-Invariance holds because a common location shift does not change the argmax;
-differentiating $p(\mu + c\mathbf{1}) = p(\mu)$ in $c$ gives $J\mathbf{1} =
-0$. Differentiating $p(B\eta(\theta), \theta) = \hat p$ in $\theta$ and
-projecting with $B^\top$ gives the reduced formula under the stated
-regularity.
+For the invariance, write $U_i = \mu_i + \xi_i$ with $\xi_i = v_i^\top f
++ \sqrt{D_i}\,\varepsilon_i$. For every realization of the shocks,
+$\arg\max_i (\mu_i + c + \xi_i) = \arg\max_i (\mu_i + \xi_i)$, since
+adding $c$ to every coordinate changes no pairwise comparison. The choice
+events therefore coincide realization by realization, so $p(\mu +
+c\mathbf{1}) = p(\mu)$ for all $c$. Differentiating this identity in $c$
+at $c = 0$ gives $J\mathbf{1} = 0$: the ones vector lies in the null space
+of $J$, and two utility vectors differing by a common shift produce
+identical shares, so $\mu$ is identified at most up to location.
+
+For the reduced formula, suppose $\eta(\theta)$ satisfies the calibration
+identity $p(B\eta(\theta), \theta) = \hat p$ on an open set of
+$\theta$. Total differentiation gives the $N$-equation system
+\[
+J B \,\frac{d\eta}{d\theta} + \frac{\partial p}{\partial \theta}
+= 0 .
+\]
+Only $N - 1$ of these equations are independent, but none are lost by
+projecting: shares sum to one identically, so $\mathbf{1}^\top
+(\partial p / \partial \theta) = 0$, and $\mathbf{1}^\top J = 0$ by
+symmetry of $J$ (Theorem~\ref{thm:inv}) with $J\mathbf{1} = 0$; both terms
+already lie in $\mathbf{1}^\perp$, so the system is equivalent to its
+image under $B^\top$. That image is $(B^\top J B)\, d\eta/d\theta =
+-B^\top \partial p/\partial\theta$, and when $B^\top J B$ is
+nonsingular (established for this model in Theorem~\ref{thm:inv}) it
+inverts to the displayed formula, with local existence and smoothness of
+$\theta \mapsto \eta(\theta)$ supplied by the implicit function theorem.
 \end{proof}
 \begin{theorem}[Shares determine utilities]\label{thm:inv}
 For model \eqref{eq:model} with $D_i > 0$ and fixed known $(V, D)$, in
