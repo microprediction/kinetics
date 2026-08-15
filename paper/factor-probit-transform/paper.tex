@@ -107,7 +107,7 @@ location). Three ingredients make it work:
 \begin{enumerate}
 \item \textbf{A fast forward map} (utilities $\to$ shares): all $N$
 probabilities at once in $O(QNL)$ for $Q$ factor nodes and $L$ lattice
-points. All 5000 shares of an $N = 5000$ problem take 21 seconds, where our
+points. All 5000 shares of an $N = 5000$ problem take 7 seconds, where our
 plain pseudorandom per-alternative GHK baseline extrapolates (in $N$ and in
 draws) to roughly fifty hours at matched accuracy. Calibration needs many forward evaluations; this is what makes them
 affordable.
@@ -149,7 +149,7 @@ of alternatives grows. The per-alternative simulator's cost crosses the
 lattice transform near $N \approx 200$, where its maximum-coordinate error
 is about 23 times larger (Table~\ref{tab:frontier}); matching the lattice
 error would take roughly 500 times as many draws under $R^{-1/2}$ scaling. By $N = 5000$ the
-lattice computes all shares in 21 seconds; the extrapolated matched-accuracy
+lattice computes all shares in 7 seconds; the extrapolated matched-accuracy
 comparison is in Section~\ref{sec:benchmark}.
 
 \begin{figure}[t]
@@ -474,8 +474,10 @@ race, and $-U$ has the same distribution as the reflected model only when the
 factor and base laws are symmetric; for asymmetric laws the reflected
 distributions must be used explicitly.
 
-\paragraph{Numerical method.} The benchmarks use $L = 1501$
-lattice points on the adaptive interval
+\paragraph{Numerical method.} The benchmarks use $L = 501$ lattice
+points, chosen from the measured lattice sweep (experiment 17 spans $L =
+101$ to $6001$; self-convergence reaches machine precision by $L \approx
+200$), on the adaptive interval
 $[\min_{i,q} m_i(f_q) - 8\max_i\sqrt{D_i},\,
 \max_{i,q} m_i(f_q) + 8\max_i\sqrt{D_i}]$, where $q = 1, \dots, Q$ indexes
 the retained factor nodes.
@@ -610,12 +612,12 @@ $2\times10^6$-draw reference.
 \toprule
 $N$ & lattice transform & direct MC, matched time & GHK ($R=1000$) \\
 \midrule
-5 & 20 ms, err $5.7\times10^{-4}$ & err $4.9\times10^{-4}$ & 1 ms, err $3.1\times10^{-3}$ \\
-20 & 86 ms, err $4.4\times10^{-4}$ & err $1.4\times10^{-3}$ & 12 ms, err $4.4\times10^{-3}$ \\
-50 & 217 ms, err $2.7\times10^{-4}$ & err $8.4\times10^{-4}$ & 77 ms, err $7.9\times10^{-3}$ \\
-200 & 860 ms, err $3.0\times10^{-4}$ & err $6.2\times10^{-4}$ & 1323 ms, err $6.8\times10^{-3}$ \\
-1000 & 4.3 s, err $6.8\times10^{-4}$\,$\dagger$ & err $6.2\times10^{-4}$ & --- \\
-5000 & 21.5 s, err $5.0\times10^{-4}$\,$\dagger$ & --- & --- \\
+5 & 7 ms, err $5.7\times10^{-4}$ & err $1.8\times10^{-3}$ & 1 ms, err $3.1\times10^{-3}$ \\
+20 & 29 ms, err $4.4\times10^{-4}$ & err $6.5\times10^{-4}$ & 12 ms, err $4.4\times10^{-3}$ \\
+50 & 71 ms, err $2.7\times10^{-4}$ & err $1.0\times10^{-3}$ & 74 ms, err $7.9\times10^{-3}$ \\
+200 & 290 ms, err $3.0\times10^{-4}$ & err $1.1\times10^{-3}$ & 1300 ms, err $6.8\times10^{-3}$ \\
+1000 & 1.4 s, err $6.8\times10^{-4}$\,$\dagger$ & err $1.1\times10^{-3}$ & --- \\
+5000 & 7.0 s, err $5.0\times10^{-4}$\,$\dagger$ & --- & --- \\
 \bottomrule
 \end{tabular}
 \caption{Full share vector, $k=2$ factors, one problem per size, generated
@@ -626,7 +628,7 @@ draw-argmax simulator at wall time matched to the lattice call and is scored
 against experiment 16's fresh $2\times10^6$-draw references, under which
 the lattice's own errors are $3.0$--$3.9\times10^{-4}$ at every size;
 cross-column comparisons should use that common reference (at $N=1000$:
-lattice $3.9\times10^{-4}$ versus direct MC $6.2\times10^{-4}$), not the
+lattice $3.9\times10^{-4}$ versus direct MC $1.1\times10^{-3}$), not the
 noisier dagger entries. Reference: $2\times10^6$ MC draws
 through $N=200$; $5\times10^5$ draws at $N=1000$ and $5000$ ($\dagger$: there
 the reference's own maximum-coordinate noise is of comparable order, so
@@ -645,7 +647,7 @@ power law to the reference implementation's timings over $N \in [20, 200]$
 cubic) and combining with $R^{-1/2}$ error scaling suggests that matching the
 lattice's $5\times10^{-4}$ at $N=5000$ would take this implementation on the
 order of fifty hours (0.27 h at $R=1000$, times
-$(6.8\times10^{-3}/5\times10^{-4})^2 \approx 185$), against 21 seconds.
+$(6.8\times10^{-3}/5\times10^{-4})^2 \approx 185$), against 7 seconds.
 
 This is an order-of-magnitude illustration, not a forecast. It assumes the
 $N=200$ error constant, and GHK's $R=1000$ error measured directly at
@@ -664,9 +666,9 @@ per alternative.
 
 We ran it at wall time matched to the lattice call (experiment
 16, both methods scored against the same fresh $2\times10^6$-draw
-reference): its maximum-coordinate error was $1.5$--$4\times$ the
-lattice's at every tested $N$ ($6.2\times10^{-4}$ versus
-$3.9\times10^{-4}$ at $N=1000$, $0.5$M draws in the matched 4.1
+reference): its maximum-coordinate error was $1.8$--$5.6\times$ the
+lattice's at every tested $N$ ($1.1\times10^{-3}$ versus
+$3.9\times10^{-4}$ at $N=1000$, $0.2$M draws in the matched 1.4
 seconds). At the $10^{-3}$ accuracy level,
 then, raw forward speed does not by itself separate the methods.
 
@@ -737,7 +739,7 @@ possibility of differentiation.
 
 At $N=1000$, $k=2$, with targets from
 $5\times10^6$ MC draws floored at $10^{-7}$ and renormalized: the inversion
-completes in 57 seconds. The iteration solves its own equations to
+completes in 19 seconds. The iteration solves its own equations to
 $6.4\times10^{-9}$ (a statement about the solver, not statistical accuracy,
 since the target carries sampling noise near $2\times10^{-4}$) and
 recovers the utilities of the well-resolved alternatives (target share
@@ -745,7 +747,7 @@ above $3\times10^{-4}$) to maximum error $0.017$.
 
 A replication study (experiment
 16) repeats the inversion on a second $N=1000$ problem against three
-independent $5\times10^6$-draw targets: 57 seconds each, 161--162
+independent $5\times10^6$-draw targets: 18 seconds each, 161--162
 alternatives well-resolved (98.1\% of share mass), recovery error maximum
 $0.015$--$0.023$ and median $\approx 0.0027$ across replicates, with the
 recovery-versus-share curve committed alongside.
@@ -786,25 +788,20 @@ conditional mass at most $N\Phi(-8) \approx 6\times10^{-12}$ even at
 $N = 10^4$.
 
 \paragraph{Compiled implementation.} The same pass in Rust (in the
-repository, with
-machine-precision parity and identical iteration counts) calibrates
-$N=1000$ in 8 seconds and $N=5000$ in 45 seconds at the conservative $L =
-1501$. The lattice is overkill there: $L = 501$ is machine-precision
-identical ($3\times10^{-17}$, consistent with the $L$-sweep of experiment
-17) and brings calibration to 3.1 seconds at $N=1000$ and 17.5 seconds at
-$N=5000$, with identical iteration counts, residuals, and recovery.
+repository, with machine-precision parity and identical iteration counts)
+calibrates $N=1000$ in 3.1 seconds and $N=5000$ in 17.5 seconds.
 
-The
-Chebyshev-separated forward variant computes all 5000 shares in 83
-milliseconds at $6\times10^{-5}$ accuracy, a measured $255\times$ over
-the reference pass. The single-threaded NumPy timings above remain the
+Its Chebyshev-separated forward variant computes all 5000 shares in 77
+milliseconds at $6\times10^{-5}$ accuracy, a measured $93\times$ over the
+reference pass. The single-threaded NumPy timings above remain the
 reported baseline.
 
 \paragraph{Scaling.} Approximately linear in $N$ over the tested range
 (experiment
 19; at fixed spatial resolution the lattice would grow with the utility
-range, $O(\sqrt{\log N})$ under Gaussian utilities): calibration takes 48, 120, 330,
-and 639 seconds at $N = 1000$, $2000$, $5000$, $10000$, a flat 11--15
+range, $O(\sqrt{\log N})$ under Gaussian utilities): calibration takes
+16, 41, 110, and 201 seconds at $N = 1000$, $2000$, $5000$, $10000$, a
+flat 11--15
 forward-pass equivalents throughout, with recovery quality unchanged
 (median error near $0.003$, 96--99\% of share mass identified).
 
@@ -847,12 +844,15 @@ binds. We are unaware of a reported
 probit share inversion at this scale in simulation-based practice, and this
 scaling is presumably why.
 
-\paragraph{Removal ensemble (by-product).} The cached field also yields all
-$N$ single-removal share vectors in $O(QN^2L)$. Against the strongest simulation comparator, which reuses each draw's
+\paragraph{Removal ensemble (by-product).} The cached field also yields
+all $N$ single-removal share vectors in $O(QN^2L)$: 15.9 seconds for all
+200 removals at $N=200$, against 56.8 seconds recomputing.
+
+Against the strongest simulation comparator, which reuses each draw's
 winner and runner-up to answer every removal at once in $O(RN + N^2)$, the
-deterministic ensemble is about
-$3\times$ more accurate at matched wall time at $N=200$
-($4.2\times10^{-5}$ versus $1.2\times10^{-4}$; experiment 18). This is a
+deterministic ensemble is about $4.5\times$ more accurate at matched wall
+time at $N=200$ ($4.2\times10^{-5}$ versus $1.9\times10^{-4}$;
+experiment 18). This is a
 side capability, not the paper's case.
 
 \section{Boundary experiments}\label{sec:boundary}
@@ -1074,8 +1074,8 @@ The pass itself can be accelerated further: its two stages are smooth-kernel
 sums whose matrices are numerically low-rank, and a Chebyshev-separated
 evaluation (in the spirit of black-box fast multipole methods) reduces each
 node's cost from $O(NL)$ to $O(r(N+L))$; a committed prototype (experiment 20) reproduces the exact pass to
-$6\times10^{-5}$ at $45\times$ speed for $N=5000$ in NumPy, and the
-compiled version of the same construction measures $255\times$ (83 ms for
+$6\times10^{-5}$ at $23\times$ speed for $N=5000$ in NumPy, and the
+compiled version of the same construction measures $93\times$ (77 ms for
 all 5000 shares), with exponential convergence in $r$. Development to full
 generality is left to a companion note.
 

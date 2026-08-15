@@ -203,7 +203,8 @@ def main():
     print("  real dense-Sigma residuals (MC truth 4e6):")
     real_ratios = []
     for gamma in (1.5, 3.0):
-        C = spectral_corr(N, gamma, rng)
+        basis, _ = np.linalg.qr(rng.standard_normal((N, N)))
+        C, _ = spectral_corr(N, gamma, basis)
         Vf, Df = factor_model(C, kf)
         Ff, Wf = hermite_nodes(kf)
         p_hat = win_probabilities_factor(mu, Vf, Df, Ff, Wf)

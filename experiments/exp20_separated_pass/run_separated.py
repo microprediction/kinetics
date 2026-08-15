@@ -57,7 +57,7 @@ def interp_matrix(nodes, w, q):
     return M
 
 
-def separated_shares(mu, V, D, F, W, rm, rs, points=1501):
+def separated_shares(mu, V, D, F, W, rm, rs, points=501):
     sd = np.sqrt(D)
     n = len(mu)
     M_all = mu[None, :] + F @ V.T
