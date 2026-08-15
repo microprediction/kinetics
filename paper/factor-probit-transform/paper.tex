@@ -98,7 +98,7 @@ day \cite{berry1995,conlon2020}; estimating $(V, D)$ is the outer problem,
 discussed in Section~\ref{sec:discussion}.
 
 We solve it at $N = 1000$
-in under a minute, and the inverse problem is globally well-posed
+in three seconds, and the inverse problem is globally well-posed
 (Proposition~\ref{thm:inv}: shares determine utilities uniquely up to
 location). Three ingredients make it work:
 
@@ -654,7 +654,8 @@ possibility of differentiation.
 
 At $N=1000$, $k=2$, with targets from
 $5\times10^6$ MC draws floored at $10^{-7}$ and renormalized: the inversion
-completes in 19 seconds. The iteration solves its own equations to
+completes in 3 seconds compiled, 19 in the reference NumPy implementation
+(all subsequent unlabeled timings are NumPy). The iteration solves its own equations to
 $6.4\times10^{-9}$ (a statement about the solver, not statistical accuracy,
 since the target carries sampling noise near $2\times10^{-4}$) and
 recovers the utilities of the well-resolved alternatives (target share
@@ -662,7 +663,7 @@ above $3\times10^{-4}$) to maximum error $0.017$.
 
 A replication study (experiment
 16) repeats the inversion on a second $N=1000$ problem against three
-independent $5\times10^6$-draw targets: 18 seconds each, 161--162
+independent $5\times10^6$-draw targets: 18 NumPy seconds each, 161--162
 alternatives well-resolved (98.1\% of share mass), recovery error maximum
 $0.015$--$0.023$ and median $\approx 0.0027$ across replicates, with the
 recovery-versus-share curve committed alongside.
@@ -711,8 +712,9 @@ $5\times10^6$-draw targets, experiment 19).
 \paragraph{Scaling.} Approximately linear in $N$ over the tested range
 (experiment
 19; at fixed spatial resolution the lattice would grow with the utility
-range, $O(\sqrt{\log N})$ under Gaussian utilities): calibration takes
-16, 41, 110, and 201 seconds at $N = 1000$, $2000$, $5000$, $10000$, a
+range, $O(\sqrt{\log N})$ under Gaussian utilities): NumPy calibration
+takes 16, 41, 110, and 201 seconds at $N = 1000$, $2000$, $5000$,
+$10000$, a
 flat 11--15
 forward-pass equivalents throughout, with recovery quality unchanged
 (median error near $0.003$, 96--99\% of share mass identified).
