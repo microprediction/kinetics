@@ -36,7 +36,9 @@ shares match observed shares with the factor covariance given and fixed,
 has been out of reach at scale. We give an
 algorithm that calibrates a two-factor probit model with a thousand
 alternatives in three seconds on a laptop, with cost growing linearly in
-the number of alternatives. The computed shares carry log-odds
+the number of alternatives: roughly a million times faster than
+calibrating through the best simulation alternative at equivalent
+accuracy. The computed shares carry log-odds
 errors of a few parts in a hundred thousand, hundred-to-one tails
 included.
 \end{abstract}
@@ -735,7 +737,9 @@ independent direct simulation at the measured $N = 5000$ throughput, this
 prices a forward map resolving the \emph{exact} MNP map to $\tau \sim
 10^{-6}$ (this solver's model-consistency level, well beyond the
 $2\times10^{-4}$ statistical accuracy of the noisy-target experiments) at
-weeks per evaluation and the calibration in months to a year.
+weeks per evaluation and the calibration in months to a year,
+against seconds here: roughly a million times slower at equivalent
+accuracy.
 
 Common
 random numbers do not change the plain-MC rate; QMC and specialized
