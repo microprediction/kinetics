@@ -213,3 +213,27 @@ certificates); exp14 run_basis_replication (3 eigenbases x 3 gammas: rank-8
 beats GHK R=1e4 in 8/9, single loss at intermediate decay — the
 single-basis GHK-wins finding was basis-dependent); factorial rerun with
 singles/pairs split.
+
+---
+
+## Seventh review — executed 2026-08-15
+
+Verdict: "a real paper rather than an interesting computational note...
+cannot find a substantive mathematical flaw." Punch list executed:
+- Coercivity proof: range-vs-norm step added (zero-sum => range >=
+  ||mu||_inf >= ||mu||_2/sqrt(N)).
+- "strictly monotone" -> "gradient map strictly monotone as an operator on
+  the quotient (not coordinatewise)".
+- "near-exponential, as expected" quadrature-theorem implication removed.
+- tau^-2 paragraph made explicitly conditional (independent direct
+  simulation at measured throughput; variance reduction improves constants
+  not scaling) — arithmetic, not a lower bound.
+- Abstract weeks-sentence recast as extrapolation; 50-hour figure deduped
+  (intro item + benchmark section + caption only).
+- Distributional generality remark added: Laplacian/diffeomorphism result
+  holds for any conditionally independent race with positive smooth
+  densities; Gaussian factor probit is the computational specialization.
+- Quotient-space "because the argmax is determined by pairwise differences".
+- Substitution section retitled "factorial illustration".
+- Fixed-(V,D) scope now stated in abstract, intro goal, and model paragraph
+  (user's request; earlier edit had silently failed on a stale match).
