@@ -99,7 +99,7 @@ discussed in Section~\ref{sec:discussion}.
 
 We solve it at $N = 1000$
 in under a minute, and the inverse problem is globally well-posed
-(Theorem~\ref{thm:inv}: shares determine utilities uniquely up to
+(Proposition~\ref{thm:inv}: shares determine utilities uniquely up to
 location). Three ingredients make it work:
 
 \begin{enumerate}
@@ -260,11 +260,11 @@ and $\mathbf{1}^\top (\partial p / \partial \theta) = 0$; both terms
 already lie in $\mathbf{1}^\perp$, so the system is equivalent to its
 image under $B^\top$. That image is $(B^\top J B)\, d\eta/d\theta =
 -B^\top \partial p/\partial\theta$, and when $B^\top J B$ is
-nonsingular (established for this model in Theorem~\ref{thm:inv}) it
+nonsingular (established for this model in Proposition~\ref{thm:inv}) it
 inverts to the displayed formula, with local existence and smoothness of
 $\theta \mapsto \eta(\theta)$ supplied by the implicit function theorem.
 \end{proof}
-\begin{theorem}[Shares determine utilities]\label{thm:inv}
+\begin{proposition}[Shares determine utilities]\label{thm:inv}
 For model \eqref{eq:model} with $D_i > 0$ and fixed known $(V, D)$, in
 max-wins coordinates, define
 for $i \ne j$
@@ -288,7 +288,7 @@ McFadden identity \cite{mcfadden1981}), and the restriction of $p$ to
 $\mathbf{1}^\perp$ is a smooth bijection onto the interior of the
 probability simplex: every strictly positive target $\hat p$ has exactly one
 mean-zero utility vector.
-\end{theorem}
+\end{proposition}
 \begin{proof}
 Start from \eqref{eq:forward}. For $j \ne i$, the parameter $\mu_j$
 enters $p_i$ only through the factor $F_j(x \mid f) = \Phi\big((x - \mu_j
@@ -347,7 +347,7 @@ $i$ and $j$, a tie for the win with everyone else behind, and moving
 utility from $j$ to $i$ moves share along every photo-finish edge at
 exactly that rate. The alternatives form a \emph{photo-finish graph}:
 complete, with strictly positive weights, because Gaussian utilities give
-every pair some chance of a dead heat. The theorem's conclusions are then
+every pair some chance of a dead heat. The proposition's conclusions are then
 graph facts. Constants span the null space because the quadratic form
 $\sum_{i<j} w_{ij}(h_i - h_j)^2$ sees only differences: shares cannot
 identify the overall utility level, only gaps, which is economically
@@ -377,7 +377,14 @@ probit is the computationally important specialization.
 \begin{remark}
 Social-surplus convex duality for discrete choice is classical
 \cite{chiong2016,norets2013}; what is new here is not well-posedness but its
-scalable realization. Each identity in the theorem is also checked
+scalable realization. The bijection itself is essentially known:
+injectivity up to a common shift is the Hotz--Miller inversion
+\cite{hotz1993}, surjectivity is Norets--Takahashi \cite{norets2013}, and
+Berry, Gandhi and Haile \cite{bgh2013} derive demand invertibility from
+connectivity of the substitution structure, the same mechanism as the
+photo-finish graph; the compact proof above keeps the Gaussian factor
+case self-contained and exhibits the weights the algorithm uses. Each
+identity in the proposition is also checked
 numerically in the repository: the $w_{ij}$ representation against finite
 differences to $6\times10^{-9}$, symmetry to $4\times10^{-12}$, and
 positive definiteness of the reduced numerical Jacobian.
@@ -396,7 +403,7 @@ point, so all $N$ components cost $O(NL)$ per node. In English: a direction
 $h$ perturbs alternative $i$'s share only through the gap between its own
 hazard weight $h_i \Lambda$ and the field average $A$. Translation
 invariance is visible ($h = \mathbf{1}$ gives $A = \Lambda$, hence $Jh =
-0$), and the weighted-Laplacian form of Theorem~\ref{thm:inv} follows by
+0$), and the weighted-Laplacian form of Proposition~\ref{thm:inv} follows by
 expanding $A$.
 This enables Krylov solves of the reduced system in
 Proposition~\ref{prop:ident} without forming $J$ densely at $O(QN^2L)$.
@@ -569,11 +576,11 @@ diagonal of the adaptive map's Jacobian.
 inverse transform finds mean-zero $\mu$ with $p(\mu) = \hat p$ by
 Algorithm~\ref{alg:calibrate}. The tolerance is tail-aware
 (alternatives with target shares below $10^{-4}/N$ are matched best-effort;
-by Theorem~\ref{thm:inv} they remain uniquely determined, but they are
+by Proposition~\ref{thm:inv} they remain uniquely determined, but they are
 statistically weakly resolved, which is also a conditioning caution for the
 reduced Jacobian when shares are tiny or alternatives nearly collinear).
 
-Strictly zero observed shares lie outside the theorem: boundary targets
+Strictly zero observed shares lie outside the proposition: boundary targets
 correspond to utilities diverging to $-\infty$, so real assortment data
 requires pseudocounts or regularization, not merely the implementation
 floor.
@@ -813,7 +820,7 @@ strength, $D$-heterogeneity, and rank all converged (6--31 iterations, recovery
 $0.004$--$0.024$).
 
 Numerical well-posedness matches
-Theorem~\ref{thm:inv}: the reduced Jacobian assembled from $N$ JVP calls
+Proposition~\ref{thm:inv}: the reduced Jacobian assembled from $N$ JVP calls
 at $N=50$ is symmetric to $1.7\times10^{-18}$, has row-sum defect
 $6.2\times10^{-17}$, and reduced eigenvalues in $[2.5\times10^{-5},
 0.22]$, positive definite as proved.
@@ -1105,8 +1112,11 @@ Loaiza-Maya and Nibbering \cite{loaiza2022} pursue large choice sets by
 Bayesian estimation. The lattice survival-product identity and its inverse
 transform come from racing \cite{cotton2021}.
 
-Inversion theory is likewise established. Norets and Takahashi
+Inversion theory is likewise established. Hotz and Miller \cite{hotz1993}
+inverted choice probabilities to utility differences; Norets and Takahashi
 \cite{norets2013} prove surjectivity of the utility-to-probability map;
+Berry, Gandhi and Haile \cite{bgh2013} obtain demand invertibility from
+connected substitution;
 Chiong, Galichon and Shum \cite{chiong2016} invert through the convex
 conjugate; Berry, Levinsohn and Pakes \cite{berry1995} built demand
 estimation on the logit-side inversion, and Conlon and Gortmaker
@@ -1198,6 +1208,13 @@ simulation and estimation via minimax tilting. \emph{JRSS-B} 79 (2017)
 \bibitem{cotton2021} P.~Cotton. Inferring relative ability from winning
 probability in multientrant contests. \emph{SIAM J.\ Financial Mathematics}
 12 (2021) 295--317.
+\bibitem{hotz1993} V.~J. Hotz, R.~A. Miller. Conditional choice
+probabilities and the estimation of dynamic models. \emph{Review of
+Economic Studies} 60(3):497--529, 1993.
+
+\bibitem{bgh2013} S.~Berry, A.~Gandhi, P.~Haile. Connected substitutes
+and invertibility of demand. \emph{Econometrica} 81(5):2087--2111, 2013.
+
 \bibitem{berry1995} S.~Berry, J.~Levinsohn, A.~Pakes. Automobile prices in
 market equilibrium. \emph{Econometrica} 63 (1995) 841--890.
 \bibitem{conlon2020} C.~Conlon, J.~Gortmaker. Best practices for
