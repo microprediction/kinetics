@@ -200,20 +200,31 @@ def main():
 
     (HERE / "results_factorial.csv").write_text("\n".join(rows) + "\n")
 
-    fig, ax = plt.subplots(figsize=(6.6, 4.4))
-    cols = {"independent Luce": "#9a9a9a", "independent probit": "#5b7c99",
-            "factor mixed logit": "#e8a87c", "factor probit": "#c2410c"}
-    for nm in names:
-        xs = [m for n_, sz, m, r_ in per_obs if n_ == nm and sz == 1]
-        ys = [r_ for n_, sz, m, r_ in per_obs if n_ == nm and sz == 1]
-        ax.loglog(xs, ys, "o", ms=4, alpha=0.65, color=cols[nm], label=nm)
-    ax.set_xlabel("deleted share mass")
-    ax.set_ylabel("TV / deleted mass (misallocated fraction)")
-    ax.set_title("2x2 factorial substitution study: all 50 single deletions\n"
-                 "(t(5) factors + left-skew utility noise truth, common draws)",
-                 fontsize=9.5)
-    ax.legend(fontsize=8)
-    ax.grid(True, which="both", alpha=0.25)
+    fig, ax = plt.subplots(figsize=(5.6, 5.2))
+    lx = [r_ for n_, sz, m, r_ in per_obs
+          if n_ == "independent Luce" and sz == 1]
+    py = [r_ for n_, sz, m, r_ in per_obs
+          if n_ == "factor probit" and sz == 1]
+    ms = [m for n_, sz, m, r_ in per_obs
+          if n_ == "independent Luce" and sz == 1]
+    sc = ax.scatter(lx, py, c=np.log10(ms), cmap="copper_r", s=42,
+                    zorder=3, edgecolors="white", linewidths=0.5)
+    lim = [min(min(lx), min(py)) * 0.7, max(max(lx), max(py)) * 1.4]
+    ax.plot(lim, lim, "--", color="#999999", lw=1)
+    ax.set_xscale("log"); ax.set_yscale("log")
+    ax.set_xlim(lim); ax.set_ylim(lim)
+    wins = sum(1 for a_, b_ in zip(lx, py) if b_ < a_)
+    med = float(np.median(np.array(lx) / np.array(py)))
+    ax.text(0.04, 0.93, f"below the line: factor probit better\n"
+            f"({wins}/{len(lx)} deletions, median {med:.1f}x less "
+            f"misallocation)", transform=ax.transAxes, fontsize=9)
+    cb = fig.colorbar(sc, ax=ax, shrink=0.8)
+    cb.set_label("log10 deleted share mass", fontsize=8)
+    ax.set_xlabel("plain logit: misallocated fraction of deleted mass")
+    ax.set_ylabel("factor probit: misallocated fraction")
+    ax.set_title("Same deletion, two models (all scored single deletions)",
+                 fontsize=10)
+    ax.grid(True, which="both", alpha=0.2)
     fig.tight_layout()
     (HERE / "figures").mkdir(exist_ok=True)
     fig.savefig(HERE / "figures" / "factorial.png", dpi=150)

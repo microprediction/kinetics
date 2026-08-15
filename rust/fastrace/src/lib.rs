@@ -147,7 +147,7 @@ fn forward_kernel(
 /// slopes of the unnormalized map (the inversion preconditioner), and the
 /// pre-normalization total. slope_i = d p_raw_i / d mu_i.
 #[pyfunction]
-#[pyo3(signature = (mu, v, d, f, w, points=1501))]
+#[pyo3(signature = (mu, v, d, f, w, points=501))]
 fn forward_and_slopes<'py>(
     py: Python<'py>,
     mu: PyReadonlyArray1<f64>,
@@ -171,7 +171,7 @@ fn forward_and_slopes<'py>(
 
 /// Back-compatible forward-only entry point: (normalized p, total).
 #[pyfunction]
-#[pyo3(signature = (mu, v, d, f, w, points=1501))]
+#[pyo3(signature = (mu, v, d, f, w, points=501))]
 fn win_probabilities_factor<'py>(
     py: Python<'py>,
     mu: PyReadonlyArray1<f64>,

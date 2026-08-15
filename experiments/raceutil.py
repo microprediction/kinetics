@@ -195,7 +195,7 @@ def hermite_nodes(k: int, Q: int = 15, prune: float = 1e-7):
 def win_probabilities_factor(mu: np.ndarray, V: np.ndarray, D: np.ndarray,
                              F: np.ndarray, W: np.ndarray,
                              keep: np.ndarray | None = None,
-                             points: int = 1501,
+                             points: int = 501,
                              return_deletions: bool = False,
                              per_node_interval: bool = False,
                              return_total: bool = False):
@@ -266,7 +266,7 @@ def abilities_from_probabilities_factor(p: np.ndarray, V: np.ndarray,
                                         W: np.ndarray, n_iter: int = 50,
                                         tol: float = 1e-6,
                                         return_info: bool = False,
-                                        points: int = 1501):
+                                        points: int = 501):
     """Inverse transform under the factor model, by coordinate-wise Newton.
 
     Design synthesis (credit where due): the coordinate-Newton-against-a-frozen-

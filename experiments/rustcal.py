@@ -17,7 +17,7 @@ _PFLOOR = 1e-300
 
 
 def calibrate_rust(p, V, D, F, W, n_iter: int = 50, tol: float = 1e-6,
-                   return_info: bool = False, points: int = 1501):
+                   return_info: bool = False, points: int = 501):
     p = np.asarray(p, dtype=float)
     if np.any(p <= 0):
         raise ValueError("all target probabilities must be positive")
