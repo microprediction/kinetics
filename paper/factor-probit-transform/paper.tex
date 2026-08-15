@@ -972,11 +972,42 @@ highly accurate precisely for rectangular regions, and \citet{fasano2025} evalua
 model, deterministically and sampling-free. Every one of these prices one
 orthant at a time; none couples the $N$ winner probabilities.
 
-Factor dimension reduction for probit is old. \citet{butler1982} integrated one factor by quadrature; \citet{elrod1995}
+Factor dimension reduction for probit is old, and older than
+econometrics: \citet{curnow1962} showed that product correlation
+collapses the multivariate normal integral to a one-dimensional integral
+of products of univariate CDFs, the reduction this paper conditions on,
+and \citet{dunnett1989} is its standard algorithm. The ranking-and-selection
+tradition built on the same integrals from the 1950s
+\citep{bechhofer1954,gupta1963}, always evaluating one designated
+candidate per integral: assembling all $N$ that way costs $N$ separate
+integrals where the shared field gives all $N$ in one pass. In
+econometrics, \citet{butler1982} integrated one factor by quadrature;
+\citet{elrod1995}
 estimated factor-analytic probit for panel data;
 \citet{loaiza2022} pursue large choice sets by
-Bayesian estimation. The lattice survival-product identity and its inverse
-transform come from racing \citep{cotton2021}.
+Bayesian estimation, with variational follow-ups \citep{loaiza2023};
+\citet{kim2026} reach twenty alternatives at a million observations by
+neural variational inference, and \citet{ding2024} exceed a hundred with
+expectation-propagation E-steps. All are approximate forward maps for
+estimation; none inverts shares. \citet{girolami2006} use the
+one-dimensional product identity in its diagonal-covariance form,
+per class. The racing literature posed both
+ingredients first: \citet{henery1981} wrote the survival-product win
+integral for normal running times and gave its first-order analytic
+inversion, \citet{ali1998} inverted market odds to abilities numerically
+at eight-runner fields, and betting practice otherwise approximated the
+inversion away \citep{lo1994}. The lattice survival-product identity and
+its fast inverse transform come from racing \citep{cotton2021}, which
+names the common-factor extension developed here as an open problem.
+
+The shared-product assembly itself also appears in competing-risks
+computation: \citet{mahani2019} compute all cause-specific cumulative
+incidences on one shared grid by forming the product of every survival
+function once and dividing out each cause's own factor (software since
+2015), and the Aalen--Johansen estimator \citep{aalen1978} reads all
+causes off a single survival product nonparametrically. Neither embeds
+the assembly in factor quadrature, differentiates it, nor inverts it;
+racing arrived at it independently.
 
 Conditioning on the factors and the alternative's own shock makes each
 probability a $(k{+}1)$-dimensional integral,
@@ -997,15 +1028,18 @@ prove surjectivity of the utility-to-probability map;
 \citet{bgh2013} obtain demand invertibility from
 connected substitution;
 \citet{chiong2016} invert through the convex
-conjugate; \citet{berry1995} built demand
+conjugate; \citet{fosgerau2020} show the probit inverse exists by
+generalized-entropy duality, without an algorithm; \citet{berry1995} built demand
 estimation on the logit-side inversion, and \citet{conlon2020}
 maintain its modern practice. \citet{chia2021}
 differentiates logit BLP automatically; \citet{huch2026}
 amortize correlated-choice probabilities with neural networks, evidence of
 current demand for this computation.
 
-The novelty here is accordingly none of: dimension reduction, the
-order-statistic integral, or well-posedness of inversion. It is the
+The novelty here is accordingly none of: dimension reduction
+\citep{curnow1962}, the order-statistic integral, the shared-product
+assembly in isolation \citep{mahani2019,cotton2021}, or well-posedness of
+inversion. It is the
 all-alternatives assembly in $O(QNL)$, its large-$N$ implementation, the
 $O(QNL)$ Jacobian--vector product, and the shared-field reuse for
 calibration and counterfactuals.
@@ -1081,6 +1115,68 @@ simulated scores for the estimation of LDV models. \emph{Econometrica} 66
 (1998) 863--896.
 \bibitem[Train(2009)]{train2009} K.~Train. \emph{Discrete Choice Methods with Simulation},
 2nd ed. Cambridge, 2009.
+\bibitem[Henery(1981)]{henery1981} R.~J. Henery. Permutation
+probabilities as models for horse races. \emph{Journal of the Royal
+Statistical Society B} 43 (1981) 86--91.
+
+\bibitem[Ali(1998)]{ali1998} M.~M. Ali. Probability models on horse-race
+outcomes. \emph{Journal of Applied Statistics} 25 (1998) 221--229.
+
+\bibitem[Lo and Bacon-Shone(1994)]{lo1994} V.~S.~Y. Lo, J.~Bacon-Shone.
+A comparison between two models for predicting ordering probabilities in
+multiple-entry competitions. \emph{The Statistician} 43 (1994) 317--327.
+
+\bibitem[Loaiza-Maya and Nibbering(2023)]{loaiza2023} R.~Loaiza-Maya,
+D.~Nibbering. Fast variational Bayes methods for multinomial probit
+models. \emph{Journal of Business \& Economic Statistics} 41 (2023)
+1352--1363.
+
+\bibitem[Kim et~al.(2026)Kim, Kang, Kock, Bansal, and Sohn]{kim2026}
+G.~Kim, Y.~Kang, L.~Kock, P.~Bansal, K.~Sohn. Scalable variational
+inference for multinomial probit models under large choice sets and
+sample sizes. \emph{Statistics and Computing} (2026).
+
+\bibitem[Ding et~al.(2024)Ding, Imbens, Qu, and Ye]{ding2024} P.~Ding,
+G.~Imbens, Z.~Qu, Y.~Ye. Computationally efficient estimation of large
+probit models. arXiv:2407.09371 (2024).
+
+\bibitem[Girolami and Rogers(2006)]{girolami2006} M.~Girolami,
+S.~Rogers. Variational Bayesian multinomial probit regression with
+Gaussian process priors. \emph{Neural Computation} 18 (2006) 1790--1817.
+
+\bibitem[Fosgerau et~al.(2020)Fosgerau, Melo, de~Palma, and
+Shum]{fosgerau2020} M.~Fosgerau, E.~Melo, A.~de~Palma, M.~Shum. Discrete
+choice and rational inattention: a general equivalence result.
+\emph{International Economic Review} 61 (2020) 1569--1589.
+
+\bibitem[Mahani and Sharabiani(2019)]{mahani2019} A.~S. Mahani,
+M.~T.~A. Sharabiani. Bayesian, and non-Bayesian, cause-specific
+competing-risk analysis for parametric and nonparametric survival
+functions: the R package CFC. \emph{Journal of Statistical Software} 89
+(2019) 1--29.
+
+\bibitem[Aalen and Johansen(1978)]{aalen1978} O.~O. Aalen, S.~Johansen.
+An empirical transition matrix for non-homogeneous Markov chains based on
+censored observations. \emph{Scandinavian Journal of Statistics} 5
+(1978) 141--150.
+
+\bibitem[Curnow and Dunnett(1962)]{curnow1962} R.~N. Curnow, C.~W.
+Dunnett. The numerical evaluation of certain multivariate normal
+integrals. \emph{Annals of Mathematical Statistics} 33 (1962) 571--579.
+
+\bibitem[Dunnett(1989)]{dunnett1989} C.~W. Dunnett. Algorithm AS 251:
+multivariate normal probability integrals with product correlation
+structure. \emph{Applied Statistics} 38 (1989) 564--579.
+
+\bibitem[Bechhofer(1954)]{bechhofer1954} R.~E. Bechhofer. A single-sample
+multiple decision procedure for ranking means of normal populations with
+known variances. \emph{Annals of Mathematical Statistics} 25 (1954)
+16--39.
+
+\bibitem[Gupta(1963)]{gupta1963} S.~S. Gupta. Probability integrals of
+multivariate normal and multivariate $t$. \emph{Annals of Mathematical
+Statistics} 34 (1963) 792--828.
+
 \bibitem[Butler and Moffitt(1982)]{butler1982} J.~S. Butler, R.~Moffitt. A computationally efficient
 quadrature procedure for the one-factor multinomial probit model.
 \emph{Econometrica} 50 (1982) 761--764.
