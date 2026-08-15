@@ -3,6 +3,8 @@
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 \usepackage[hidelinks]{hyperref}
 \hypersetup{pdftitle={Scalable Probit Calibration},
 pdfauthor={Peter Cotton}}
@@ -417,27 +419,69 @@ approximation of \eqref{eq:forward}; statements about derivatives refer to
 derivatives of this approximation, whose fidelity to exact MNP derivatives is
 governed by $L$ and $Q$.
 
-\paragraph{Algorithm.} Orientation: the implementation
-computes the reflected min-wins race on $a = -\mu$. Per retained factor node
-$q$: form conditional locations $m_i(f_q) = a_i + v_i^\top f_q$; on the
-uniform lattice evaluate $\log S_i = \log\Phi(-(x - m_i)/\sqrt{D_i})$;
-accumulate the field sum $\log S_{\mathrm{field}} = \sum_j \log S_j$;
-recover each alternative's integrand as $g_i \exp(\log S_{\mathrm{field}}
-- \log S_i)$; integrate by the rectangle rule with $\Delta x$ weights and no endpoint
-modification (differing from the trapezoidal rule only by negligible
-endpoint terms). Pruned factor weights are not renormalized explicitly; the
-final normalization conditions the quadrature on the retained node set. The
+\begin{algorithm}[t]
+\caption{All-share forward pass (min-wins; reflected from argmax by $a = -\mu$)}
+\label{alg:forward}
+\begin{algorithmic}[1]
+\Require abilities $a$, loadings $V$, idiosyncratic variances $D$, factor
+nodes $\{f_q, w_q\}_{q=1}^{Q}$, lattice size $L$
+\State $m_{iq} \gets a_i + v_i^\top f_q$ for all $i, q$
+\State $[x_1, x_L] \gets [\min_{i,q} m_{iq} - 8\max_i \sqrt{D_i},\;
+\max_{i,q} m_{iq} + 8\max_i \sqrt{D_i}]$, uniform spacing $\Delta x$
+\For{$q = 1, \dots, Q$}
+  \State $\log S_i(x_\ell) \gets \log\Phi\big({-(x_\ell -
+  m_{iq})}/{\sqrt{D_i}}\big)$ for all $i, \ell$
+  \Comment{never $1 - \Phi$}
+  \State $\log S_{\mathrm{field}}(x_\ell) \gets \sum_j \log
+  S_j(x_\ell)$
+  \Comment{one shared field}
+  \State $\tilde p_i \mathrel{+}= w_q \sum_\ell g_i(x_\ell)\,
+  \exp\{\log S_{\mathrm{field}}(x_\ell) - \log S_i(x_\ell)\}\,
+  \Delta x$ \Comment{divide one out}
+\EndFor
+\State \Return $p = \tilde p / (\mathbf{1}^\top \tilde p)$ and the
+diagnostic $|1 - \mathbf{1}^\top \tilde p|$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+\caption{Calibration (damped Jacobi quasi-Newton)}
+\label{alg:calibrate}
+\begin{algorithmic}[1]
+\Require strictly positive target shares $\hat p$ (normalized), $V$, $D$,
+factor rule, tolerance $10^{-6}$, cap 50 iterations
+\State $a \gets$ exact independent inverse using total variances $D_i +
+\|v_i\|^2$ \Comment{warm start}
+\Repeat
+  \State run Algorithm~\ref{alg:forward} at $a$, collecting $\tilde p$
+  and the analytic own-location slopes $\partial_i = \partial \tilde
+  p_i / \partial a_i$ from the same pass
+  \State $r_i \gets \log(\tilde p_i / \mathbf{1}^\top \tilde p) -
+  \log \hat p_i$; residual $\gets \max\{|r_i| : \hat p_i >
+  10^{-4}/N\}$
+  \State halve the damping (floor $0.25$) if the residual grew by more
+  than 20\%
+  \State $a_i \gets a_i - \mathrm{damp} \cdot r_i / (\partial_i /
+  \tilde p_i)$, steps capped at $\sqrt{D_i + \|v_i\|^2}$
+  \State $a \gets a - \bar a$ \Comment{project to mean zero every
+  update}
+\Until{residual $< 10^{-6}$}
+\end{algorithmic}
+\end{algorithm}
+
+The rectangle rule uses $\Delta x$ weights with no endpoint modification
+(differing from the trapezoidal rule only by negligible endpoint terms).
+Pruned factor weights are not renormalized explicitly; the final
+normalization conditions the quadrature on the retained node set, and the
 two contributions to the pre-normalization defect separate cleanly: the
-pruned factor weight is $\delta_{\mathrm{factor}} = 2.39\times10^{-8}$ at
-$k=2$ (analytic), and the measured $|1 - \mathbf{1}^\top \tilde p| =
+pruned factor weight is $\delta_{\mathrm{factor}} = 2.39\times10^{-8}$
+at $k=2$ (analytic), and the measured $|1 - \mathbf{1}^\top \tilde p| =
 2.4\times10^{-8}$ equals it, so lattice truncation contributes below that
 level. Including the conditional-location build, the complete forward cost
-is $O(QN(k+L))$, which reduces to $O(QNL)$ for $k \ll L$. Inversion: Newton step $\mu \leftarrow \mu -
-\mathrm{damp} \cdot r / \partial_i$, with $r$ the log-share residual on
-well-resolved alternatives, $\partial_i$ the analytic own-location log-slope,
-steps capped at $\sqrt{D_i + \|v_i\|^2}$, damping halved (floor $0.25$)
-whenever the residual grows by more than 20\%, tolerance $10^{-6}$ on the
-identified set, at most 50 iterations, followed by mean removal.
+is $O(QN(k+L))$, reducing to $O(QNL)$ for $k \ll L$. The slopes in
+Algorithm~\ref{alg:calibrate} ignore the moving envelope and the output
+normalization; they are Jacobi quasi-Newton preconditioners, not the exact
+diagonal of the adaptive map's Jacobian.
 
 \paragraph{Inversion.} Given target shares $\hat p$ and $(V, D)$, the inverse
 transform finds mean-zero $\mu$ with $p(\mu) = \hat p$ by a damped Jacobi
