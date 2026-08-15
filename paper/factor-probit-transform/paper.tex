@@ -36,10 +36,9 @@ shares match observed shares with the factor covariance given and fixed,
 has been out of reach at scale. We give an
 algorithm that calibrates a two-factor probit model with a thousand
 alternatives in eight seconds on a laptop, and five thousand in under a
-minute. Its cost grows approximately linearly, reaching ten thousand
-alternatives in minutes, where extrapolation from our plain per-alternative
-simulator implementation puts matched-accuracy simulation-based calibration
-on a weeks scale. Conditionally on the factors the
+minute. Cost grows roughly linearly: ten thousand alternatives take minutes.
+The standard simulation route, extrapolated from our own implementation,
+would take weeks at the same accuracy. Conditionally on the factors the
 alternatives are independent, so a single shared survival product yields
 every choice probability in one differentiable pass, and the inverse problem
 this solves is well posed, with shares determining utilities up to a common
