@@ -247,9 +247,24 @@ h^\top J h \;=\; \sum_{i<j} w_{ij} (h_i - h_j)^2 ,
 a weighted graph Laplacian with everywhere-positive weights: $J$ is symmetric,
 positive semidefinite, has $\mathbf{1}$ as its only null direction, and
 $B^\top J B \succ 0$ for every full-rank basis $B$ of $\mathbf{1}^\perp$.
-In English: $w_{ij}$ is the probability density of a photo-finish between $i$
-and $j$, and moving utility from $j$ to $i$ moves share along every
-photo-finish edge at exactly that rate.
+In English: $w_{ij}$ is the probability density of a photo-finish between
+$i$ and $j$, a tie for the win with everyone else behind, and moving
+utility from $j$ to $i$ moves share along every photo-finish edge at
+exactly that rate. The alternatives form a \emph{photo-finish graph}:
+complete, with strictly positive weights, because Gaussian utilities give
+every pair some chance of a dead heat. The theorem's conclusions are then
+graph facts. Constants span the null space because the quadratic form
+$\sum_{i<j} w_{ij}(h_i - h_j)^2$ sees only differences: shares cannot
+identify the overall utility level, only gaps, which is economically
+obvious and here algebraically automatic. Positive weights make the graph
+connected, so the constant vector is the \emph{only} null direction, the
+share map is strictly monotone on the quotient, and shares determine
+utilities uniquely. And symmetry plus positive definiteness make every
+reduced Newton system SPD, so conjugate gradients apply with the $O(QNL)$
+Jacobian--vector product of Proposition~\ref{prop:jvp} playing the role of
+a fast Laplacian multiply. Structurally, calibration is solving a diffusion
+on the photo-finish graph, and it is easy for the same reason resistor
+networks and heat equations are.
 Moreover $p = \nabla G$ for the social-surplus function
 $G(\mu) = \E \max_i \{\mu_i + \xi_i\}$ (the Williams--Daly--Zachary /
 McFadden identity \cite{mcfadden1981}), and the restriction of $p$ to
