@@ -179,6 +179,13 @@ from win probabilities in multi-entrant races \citep{cotton2021}. That is
 perhaps why it has not been assembled for probit before, despite each
 ingredient being classical.
 
+The factor structure is not a convenience grafted onto probit: it is
+the original econometric model. \citet{hausman1978} induced correlation
+through random taste coefficients, giving a covariance that is exactly
+low-rank plus diagonal with observed attributes as loadings; freeing the
+loadings is the factor-analytic MNP that \citet{mcfadden1984} proposed
+precisely to reduce the dimension of the integral.
+
 \paragraph{Model.} Throughout,
 \begin{equation}
 U_i \;=\; \mu_i + v_i^\top f + \sqrt{D_i}\,\varepsilon_i,
@@ -985,7 +992,11 @@ tradition built on the same integrals from the 1950s
 candidate per integral: assembling all $N$ that way costs $N$ separate
 integrals where the shared field gives all $N$ in one pass. In
 econometrics, \citet{butler1982} integrated one factor by quadrature;
-\citet{elrod1995}
+\citet{mcfadden1984} proposed factor-analytic MNP expressly as dimension
+reduction; \citet{stern1992} used the same conditional-independence
+product of normal CDFs with Monte Carlo over the residual;
+\citet{bolduc1999} handled large choice sets with parsimonious
+covariances but simulated probabilities; \citet{elrod1995}
 estimated factor-analytic probit for panel data;
 \citet{loaiza2022} pursue large choice sets by
 Bayesian estimation, with variational follow-ups \citep{loaiza2023};
@@ -1025,7 +1036,9 @@ still prices $N$ separate integrals, $O(RN^2)$ in total, where the shared
 field couples them into one $O(QN(k+L))$ pass; experiment 24 measures the
 gap.
 
-Inversion theory is likewise established. \citet{hotz1993}
+Inversion theory is likewise established. \citet{berry1994} made
+share-to-utility inversion the workhorse of demand estimation;
+\citet{hotz1993}
 inverted choice probabilities to utility differences; \citet{norets2013}
 prove surjectivity of the utility-to-probability map;
 \citet{bgh2013} obtain demand invertibility from
@@ -1080,7 +1093,7 @@ walk-forward calibration on real assortment data.
 
 For fifty years, computability decided which choice models get used. For
 the factor form of probit, the form in which correlated utilities entered
-econometrics, that constraint is gone: all shares, their derivatives, and
+econometrics \citep{hausman1978}, that constraint is gone: all shares, their derivatives, and
 the inverse map cost seconds at ten thousand alternatives. Estimating the
 factors themselves remains open, and with $(V, D)$ in hand the choice
 between logit and probit families becomes one of fit, not tractability.
@@ -1116,6 +1129,23 @@ The author reports no conflicts of interest. No external funding was
 received for this work.
 
 \begin{thebibliography}{9}
+\bibitem[McFadden(1984)]{mcfadden1984} D.~McFadden. Econometric
+analysis of qualitative response models. In Z.~Griliches,
+M.~Intriligator (eds.), \emph{Handbook of Econometrics}, vol.~II,
+North-Holland, 1984, 1395--1457.
+
+\bibitem[Stern(1992)]{stern1992} S.~Stern. A method for smoothing
+simulated moments of discrete probabilities in multinomial probit
+models. \emph{Econometrica} 60 (1992) 943--952.
+
+\bibitem[Berry(1994)]{berry1994} S.~Berry. Estimating discrete-choice
+models of product differentiation. \emph{RAND Journal of Economics} 25
+(1994) 242--262.
+
+\bibitem[Bolduc(1999)]{bolduc1999} D.~Bolduc. A practical technique to
+estimate multinomial probit models in transportation. \emph{Transportation
+Research B} 33 (1999) 63--79.
+
 \bibitem[Hausman and Wise(1978)]{hausman1978} J.~A. Hausman, D.~A.
 Wise. A conditional probit model for qualitative choice: discrete
 decisions recognizing interdependence and heterogeneous preferences.
