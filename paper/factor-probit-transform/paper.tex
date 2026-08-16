@@ -74,7 +74,12 @@ They can be computed.
 Choice modeling did not start there: it started with Thurstone's 1927 model
 \citep{thurstone1927} of jointly Gaussian utilities with unrestricted
 correlation, brought into econometrics as the conditional (multinomial)
-probit model by \citet{hausman1978} and known since as MNP.
+probit model by \citet{hausman1978} and known since as MNP. The same
+object has re-emerged in machine learning: heteroscedastic image
+classifiers place exactly the factor-Gaussian utility of this paper on
+their final layer and take the argmax, approximating the winner
+probabilities by Monte Carlo over a softmax relaxation
+\citep{collier2021}.
 
 Probit probabilities are $(N-1)$-dimensional Gaussian integrals with no
 closed form. The standard evaluator is the Geweke--Hajivassiliou--Keane
@@ -1037,7 +1042,13 @@ neural variational inference, and \citet{ding2024} exceed a hundred with
 expectation-propagation E-steps. All are approximate forward maps for
 estimation; none inverts shares. \citet{girolami2006} use the
 one-dimensional product identity in its diagonal-covariance form,
-per class. The racing literature posed both
+per class. \citet{collier2021} place the factor-Gaussian race with
+low-rank-plus-diagonal covariance on the last layer of large-scale image
+classifiers, including thousand-class ImageNet, and approximate the
+winner probabilities by Monte Carlo over a temperature-softmax
+relaxation; \citet{berthet2020} differentiate general perturbed-argmax
+layers by Monte Carlo, with $p = \nabla G$ as the organizing identity.
+Both simulate the map this paper evaluates deterministically. The racing literature posed both
 ingredients first: \citet{henery1981} wrote the survival-product win
 integral for normal running times and gave its first-order analytic
 inversion, \citet{ali1998} inverted market odds to abilities numerically
@@ -1219,6 +1230,18 @@ sample sizes. \emph{Statistics and Computing} (2026).
 \bibitem[Ding et~al.(2024)Ding, Imbens, Qu, and Ye]{ding2024} P.~Ding,
 G.~Imbens, Z.~Qu, Y.~Ye. Computationally efficient estimation of large
 probit models. arXiv:2407.09371 (2024).
+
+\bibitem[Collier et~al.(2021)Collier, Mustafa, Kokiopoulou, Jenatton,
+and Berent]{collier2021} M.~Collier, B.~Mustafa, E.~Kokiopoulou,
+R.~Jenatton, J.~Berent. Correlated input-dependent label noise in
+large-scale image classification. \emph{Proceedings of CVPR} (2021)
+1551--1560.
+
+\bibitem[Berthet et~al.(2020)Berthet, Blondel, Teboul, Cuturi, Vert, and
+Bach]{berthet2020} Q.~Berthet, M.~Blondel, O.~Teboul, M.~Cuturi,
+J.-P.~Vert, F.~Bach. Learning with differentiable perturbed optimizers.
+\emph{Advances in Neural Information Processing Systems} 33 (2020)
+9508--9519.
 
 \bibitem[Girolami and Rogers(2006)]{girolami2006} M.~Girolami,
 S.~Rogers. Variational Bayesian multinomial probit regression with
