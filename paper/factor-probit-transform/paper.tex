@@ -392,7 +392,19 @@ probit is the computationally important specialization.
 \begin{remark}
 Social-surplus convex duality for discrete choice is classical
 \citep{chiong2016,norets2013}; what is new here is not well-posedness but its
-scalable realization. The bijection itself is essentially known:
+scalable realization. The conjugate view makes that precise. $G$ is
+convex with $p = \nabla G$, so $\Omega = G^*$ is a convex regularizer on
+the simplex and $p(\mu) = \arg\max_{q \in \Delta}\{\mu^\top q -
+\Omega(q)\}$. For iid Gumbel noise $\Omega$ is Shannon negentropy and
+the maximizer is softmax; in general it is the generalized entropy of
+\citet{fosgerau2020}, with the perturbation--regularization duality
+developed for machine learning by \citet{berthet2020}. Factor probit
+carries a covariance-dependent, nonseparable entropy that couples
+alternatives through the factor structure, and this paper's three
+algorithms are the three faces of that dual pair: the transform
+evaluates $\nabla G$, calibration evaluates the mirror map $\mu =
+\nabla\Omega(p)$ on the mean-zero quotient, and the Jacobian--vector
+product applies the Hessian $\nabla^2 G$, all in $O(QN(k+L))$. The bijection itself is essentially known:
 injectivity up to a common shift is the Hotz--Miller inversion
 \citep{hotz1993}, surjectivity is \citet{norets2013}, and
 \citet{bgh2013} derive demand invertibility from
