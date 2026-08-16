@@ -376,12 +376,12 @@ graph-Laplacian system on the photo-finish graph (the weights themselves
 move with $\mu$), and such systems are easy for the same reason resistor
 networks and heat equations are.
 
-None of this is specifically Gaussian:
-any conditionally independent additive random-utility race with
+None of this is specifically Gaussian.
+Any conditionally independent additive random-utility race with
 everywhere-positive smooth densities has, under the corresponding
 integrability and differentiability conditions (finite social surplus,
 differentiation under the integral), a weighted-Laplacian Jacobian and an
-interior-simplex diffeomorphism modulo translation; Gaussian factor
+interior-simplex diffeomorphism modulo translation. Gaussian factor
 probit is the computationally important specialization.
 \end{remark}
 \begin{remark}
@@ -608,9 +608,8 @@ anchor, useful for code validation rather than as evidence about the hard
 regime).
 
 At $N=5$ both methods sit within the noise of
-a $10^7$-draw Monte Carlo reference, and the shipped
-\texttt{thurstone.FactorRace} agrees with the benchmark kernel to
-$1.1\times10^{-5}$.
+a $10^7$-draw Monte Carlo reference, and the shipped package
+implementation agrees with the benchmark kernel to $1.1\times10^{-5}$.
 
 \paragraph{Error metric.} Throughout, $\max_i |\hat p_i - p_i|$ against a
 simulation reference. Absolute error is not always the decision-relevant
@@ -654,6 +653,16 @@ $5.9\times10^{-9}$ (order 15).
 
 The pre-normalization defect
 $|1 - \mathbf{1}^\top \tilde p\,|$ is $2.4\times10^{-8}$.
+
+\paragraph{The price of smoothness.} Smoothness was never a side
+issue in this literature; it shaped it. The raw frequency simulator is a
+step function of the parameters, so \citet{stern1992} accepted a large
+per-draw cost purely to smooth it, and GHK's adoption owed as much to
+producing smooth, positive, differentiable estimates
+\citep{hajivassiliou1998} as to its variance reduction. The lattice ends
+that trade: it is smooth to resolution, and its derivatives are exact
+integrals of the same pass, so the property the simulation literature
+paid variance and wall time for costs nothing here.
 
 \paragraph{Derivatives.} For fixed factor nodes and a fixed
 lattice, the transform is a reproducible, (piecewise-)differentiable function
@@ -990,13 +999,17 @@ and \citet{dunnett1989} is its standard algorithm. The ranking-and-selection
 tradition built on the same integrals from the 1950s
 \citep{bechhofer1954,gupta1963}, always evaluating one designated
 candidate per integral: assembling all $N$ that way costs $N$ separate
-integrals where the shared field gives all $N$ in one pass. In
+integrals where the shared field gives all $N$ in one pass.
+
+In
 econometrics, \citet{butler1982} integrated one factor by quadrature;
 \citet{mcfadden1984} proposed factor-analytic MNP expressly as dimension
 reduction; \citet{stern1992} used the same conditional-independence
 product of normal CDFs with Monte Carlo over the residual;
 \citet{bolduc1999} handled large choice sets with parsimonious
-covariances but simulated probabilities; \citet{elrod1995}
+covariances but simulated probabilities.
+
+\citet{elrod1995}
 estimated factor-analytic probit for panel data;
 \citet{loaiza2022} pursue large choice sets by
 Bayesian estimation, with variational follow-ups \citep{loaiza2023};
@@ -1045,7 +1058,9 @@ prove surjectivity of the utility-to-probability map;
 connected substitution;
 \citet{chiong2016} invert through the convex
 conjugate; \citet{fosgerau2020} show the probit inverse exists by
-generalized-entropy duality, without an algorithm; \citet{berry1995} built demand
+generalized-entropy duality, without an algorithm.
+
+ \citet{berry1995} built demand
 estimation on the logit-side inversion, and \citet{conlon2020}
 maintain its modern practice. \citet{chia2021}
 differentiates logit BLP automatically; \citet{huch2026}

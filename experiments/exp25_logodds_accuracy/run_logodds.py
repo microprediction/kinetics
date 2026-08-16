@@ -36,23 +36,31 @@ def dense_hermite(order=60):
 
 
 def main():
-    rng = np.random.default_rng(SEED)
     Fd, Wd = dense_hermite()
-    rows = ["N,bucket_lo,bucket_hi,count,max_log_odds_err"]
-    for n in (20, 100):
+    # at N=1000 use GH 40^2 pruned + L=3001 (cheaper, still far beyond
+    # production resolution; pruning at 1e-12 of max weight)
+    Fd2, Wd2 = dense_hermite(40)
+    keep = Wd2 > 1e-12 * Wd2.max()
+    Fd2, Wd2 = Fd2[keep], Wd2[keep] / Wd2[keep].sum()
+    rows = ["N,seed,bucket_lo,bucket_hi,count,max_log_odds_err"]
+    for n, seeds in ((20, (3,)), (100, (3,)), (1000, (3, 4, 5))):
+      for seed in seeds:
+        rng = np.random.default_rng(seed)
         mu = rng.normal(0, 1.5, n)
         V = rng.normal(0, 0.5 / np.sqrt(2), (n, 2))
         D = rng.uniform(0.5, 1.5, n)
         p_prod = win_probabilities_factor(mu, V, D, *hermite_nodes(2),
                                           points=501)
-        p_true = win_probabilities_factor(mu, V, D, Fd, Wd, points=5001)
+        Fr, Wr = (Fd, Wd) if n <= 100 else (Fd2, Wd2)
+        Lr = 5001 if n <= 100 else 3001
+        p_true = win_probabilities_factor(mu, V, D, Fr, Wr, points=Lr)
         rel = np.abs(np.log(p_prod) - np.log(p_true))
         for lo, hi in BUCKETS:
             m = (p_true >= lo) & (p_true < hi)
             if m.any():
-                print(f"N={n}: shares in [{lo:.0e},{hi:.0e}): {m.sum():>3} "
-                      f"max log-odds err {rel[m].max():.2e}")
-                rows.append(f"{n},{lo:.0e},{hi:.0e},{int(m.sum())},"
+                print(f"N={n} seed {seed}: shares in [{lo:.0e},{hi:.0e}): "
+                      f"{m.sum():>4} max log-odds err {rel[m].max():.2e}")
+                rows.append(f"{n},{seed},{lo:.0e},{hi:.0e},{int(m.sum())},"
                             f"{rel[m].max():.3e}")
     (HERE / "results.csv").write_text("\n".join(rows) + "\n")
     print("wrote results.csv")
