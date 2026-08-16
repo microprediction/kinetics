@@ -42,9 +42,8 @@ shares match observed shares with the factor covariance given and fixed,
 has been out of reach at scale. We give an
 algorithm that calibrates a two-factor probit model with a thousand
 alternatives in three seconds on a laptop, with cost growing linearly in
-the number of alternatives: roughly a million times faster than
-calibrating through the best simulation alternative at equivalent
-accuracy. The computed shares carry log-odds
+the number of alternatives: roughly a million times faster than plain
+simulation-in-the-loop calibration at matched accuracy. The computed shares carry log-odds
 errors of a few parts in a hundred thousand, hundred-to-one tails
 included.
 \end{abstract}
@@ -98,7 +97,8 @@ The concession is not free. Logit-family substitution is structurally
 restricted, and the calibration apparatus that demand estimation is built
 on is routine only on the logit side. One measure of the cost, from one deliberately misspecified synthetic
 design with oracle factor loadings (Section~\ref{sec:boundary}): in the
-largest-deletion stratum, plain logit misallocates about 23\% of the demand
+largest-deletion stratum of one test design, plain logit misallocates
+about 23\% of the demand
 released by a deleted alternative, against 5\% for factor probit, the
 closest of the four candidate structures.
 
@@ -142,18 +142,18 @@ single-removal counterfactuals.
 \begin{center}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{lll}
+\begin{tabular}{p{4.4cm} p{4.4cm} p{4.6cm}}
 \toprule
 approach & all $N$ shares & calibration \\
 \midrule
-GHK simulation \citep{geweke1994,hajivassiliou1998} & $N$ separate runs, $R^{-1/2}$ error & not attempted at scale \\
-direct utility simulation & whole vector per draw, $R^{-1/2}$ & no derivatives, no inversion \\
+GHK simulation \citep{geweke1994,hajivassiliou1998} & $N$ separate runs, $R^{-1/2}$ error & no reported large-$N$ share inversion known to us \\
+direct utility simulation & whole vector per draw, $R^{-1/2}$ & raw frequency map is nonsmooth \\
 analytic approximations \citep{bhat2011,connors2014} & per-alternative & no \\
 factor quadrature \citep{butler1982,elrod1995} & $N$ separate $(k{+}1)$-dim integrals & no \\
 Bayesian factor MNP \citep{loaiza2022} & simulation inside estimation & posterior, not a share map \\
-neural amortization \citep{huch2026} & fast, uncontrolled error & no \\
+neural amortization \citep{huch2026} & learned approximation, no prescribed tolerance & no \\
 BLP-side inversion \citep{berry1995,conlon2020} & --- & logit family only \\
-\textbf{this paper} & one $O(QNL)$ pass & Prop.~\ref{thm:inv}; 3 s at $N{=}1000$ \\
+\textbf{this paper} & one $O(QNL)$ pass & Prop.~\ref{thm:inv}; 3\,s at $N{=}1000$ \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -308,18 +308,22 @@ mean-zero utility vector.
 Start from \eqref{eq:forward}. For $j \ne i$, the parameter $\mu_j$
 enters $p_i$ only through the factor $F_j(x \mid f) = \Phi\big((x - \mu_j
 - v_j^\top f)/\sqrt{D_j}\big)$, whose $\mu_j$-derivative is $-g_j(x \mid
-f)$. Differentiating under the integral (dominated convergence: the
-integrand is bounded by integrable Gaussian tails uniformly in a
-neighborhood of $\mu$) gives
+f)$. Differentiating under the integral is justified by a uniform bound:
+$\int g_i(x \mid f)\, g_j(x \mid f)\, dx = \exp[-(m_i(f) -
+m_j(f))^2 / (2(D_i + D_j))] / \sqrt{2\pi(D_i + D_j)} \le 1 /
+\sqrt{2\pi(D_i + D_j)}$, uniform in $f$ and $\mu$, so dominated
+convergence applies and gives
 \[
 J_{ij} \;=\; \frac{\partial p_i}{\partial \mu_j}
 \;=\; -\,\E_f \int g_i(x \mid f)\, g_j(x \mid f)
 \prod_{\ell \ne i,j} F_\ell(x \mid f)\, dx \;=\; -\,w_{ij},
 \]
 and the integrand is symmetric in $(i, j)$, so $J_{ij} = J_{ji}$. For the
-diagonal, row sums vanish: differentiating $\mathbf{1}^\top p = 1$ in
-$\mu_i$ gives $\sum_j J_{ji} = 0$, hence $J_{ii} = \sum_{j \ne i}
-w_{ij}$. (The same diagonal follows directly: $\partial_{\mu_i} g_i =
+diagonal, translation invariance ($p(\mu + c\mathbf{1}) = p(\mu)$,
+Proposition~\ref{prop:ident}) gives $J\mathbf{1} = 0$, hence $J_{ii} =
+-\sum_{j \ne i} J_{ij} = \sum_{j \ne i} w_{ij}$; the adding-up
+identity $\mathbf{1}^\top J = 0$ follows separately from
+$\mathbf{1}^\top p = 1$, or from symmetry. (The same diagonal follows directly: $\partial_{\mu_i} g_i =
 -g_i'$, and integrating by parts, $\int (-g_i') \prod_{j \ne i} F_j\,dx
 = \int g_i \sum_{j \ne i} g_j \prod_{\ell \ne i,j} F_\ell\,dx$, the
 boundary terms vanishing because $g_i \to 0$ at $\pm\infty$ while the
@@ -362,7 +366,7 @@ $i$ and $j$, a tie for the win with everyone else behind, and moving
 utility from $j$ to $i$ moves share along every photo-finish edge at
 exactly that rate. The alternatives form a \emph{photo-finish graph}:
 complete, with strictly positive weights, because Gaussian utilities give
-every pair some chance of a dead heat. The proposition's conclusions are then
+every pair a strictly positive tie density at the winning frontier. The proposition's conclusions are then
 graph facts. Constants span the null space because the quadratic form
 $\sum_{i<j} w_{ij}(h_i - h_j)^2$ sees only differences: shares cannot
 identify the overall utility level, only gaps, which is economically
@@ -404,7 +408,13 @@ alternatives through the factor structure, and this paper's three
 algorithms are the three faces of that dual pair: the transform
 evaluates $\nabla G$, calibration evaluates the mirror map $\mu =
 \nabla\Omega(p)$ on the mean-zero quotient, and the Jacobian--vector
-product applies the Hessian $\nabla^2 G$, all in $O(QN(k+L))$. The bijection itself is essentially known:
+product applies the Hessian $\nabla^2 G$. Each is built from the same
+$O(QN(k+L))$ primitive: the forward map is one pass, each
+Jacobian--vector product is one pass, and each calibration iteration is
+one pass (total calibration cost multiplies by the iteration count,
+typically 10--15). On the simplex, $\nabla\Omega(p)$ is an equivalence
+class modulo constants; its mean-zero representative is the calibrated
+utility. The bijection itself is essentially known:
 injectivity up to a common shift is the Hotz--Miller inversion
 \citep{hotz1993}, surjectivity is \citet{norets2013}, and
 \citet{bgh2013} derive demand invertibility from
@@ -459,7 +469,7 @@ D\tilde p[h]$ and $s = \mathbf{1}^\top \tilde p$,
 D p_{Q,L}[h] \;=\; \frac{v - p_{Q,L}\, (\mathbf{1}^\top v)}{s}.
 \]
 The correction vanishes for the continuum map and is numerically
-negligible at the production resolutions tested. A further distinction: integration by parts is a continuum identity, so the Laplacian
+negligible at the resolutions tested. A further distinction: integration by parts is a continuum identity, so the Laplacian
 formula of Proposition~\ref{prop:jvp} is the exact derivative of the
 \emph{continuum} map, not of the finite rectangle sum.
 
@@ -468,7 +478,7 @@ of the frozen-grid sum replaces the own-term by $(x - m_i)/D_i$ (no
 integration by parts), costs the same $O(QNL)$, and ships in the repository
 (\texttt{form="grid"}).
 
-Measured at production resolution ($L = 1501$) the
+Measured at $L = 1501$ (the derivative-comparison resolution) the
 two forms agree to $1.7\times10^{-14}$; at $L = 51$ the continuum form is
 off by $2.6\times10^{-5}$ while the grid form still matches finite
 differences.
@@ -477,7 +487,7 @@ So the Laplacian form is an extremely accurate symmetric surrogate at the
 resolutions used, and exact differentiation of the normalized
 \emph{frozen-grid} map is available when needed; the returned adaptive map
 additionally moves its envelope with $\mu$, a tail effect measured below
-$10^{-8}$ at production resolution.
+$10^{-8}$ at $L = 1501$.
 
 The implemented inversion rebuilds the lattice envelope from the current
 utilities at each iteration, holds it fixed within the iteration, and
@@ -507,10 +517,13 @@ race, and $-U$ has the same distribution as the reflected model only when the
 factor and base laws are symmetric; for asymmetric laws the reflected
 distributions must be used explicitly.
 
-\paragraph{Numerical method.} All experiments use $L = 501$ lattice
-points, chosen from the measured lattice sweep (experiment 17 spans $L =
-101$ to $6001$; self-convergence reaches machine precision by $L \approx
-200$), on the adaptive interval
+\paragraph{Numerical method.} Unless otherwise stated, forward and
+calibration runs use $L = 501$ lattice points, chosen from the measured
+lattice sweep (experiment 17 spans $L = 101$ to $6001$;
+self-convergence reaches machine precision by $L \approx 200$). The
+derivative comparison below uses $L = 1501$, and higher-resolution
+reference calculations use $L = 3001$ or $5001$. The lattice sits on
+the adaptive interval
 $[\min_{i,q} m_i(f_q) - 8\max_i\sqrt{D_i},\,
 \max_{i,q} m_i(f_q) + 8\max_i\sqrt{D_i}]$, where $q = 1, \dots, Q$ indexes
 the retained factor nodes.
@@ -530,7 +543,7 @@ approximation of \eqref{eq:forward}; statements about derivatives refer to
 derivatives of this approximation, whose fidelity to exact MNP derivatives is
 governed by $L$ and $Q$.
 
-\begin{algorithm}[t]
+\begin{algorithm}[H]
 \caption{All-share forward pass (min-wins; reflected from argmax by $a = -\mu$)}
 \label{alg:forward}
 \begin{algorithmic}[1]
@@ -555,14 +568,16 @@ diagnostic $|1 - \mathbf{1}^\top \tilde p|$
 \end{algorithmic}
 \end{algorithm}
 
-\begin{algorithm}[t]
+\begin{algorithm}[H]
 \caption{Calibration (damped Jacobi quasi-Newton)}
 \label{alg:calibrate}
 \begin{algorithmic}[1]
 \Require strictly positive target shares $\hat p$ (normalized), $V$, $D$,
 factor rule, tolerance $10^{-6}$, cap 50 iterations
-\State $a \gets$ exact independent inverse using total variances $D_i +
-\|v_i\|^2$ \Comment{warm start}
+\State $a \gets$ high-accuracy independent-race inversion using
+marginal variances $D_i + \|v_i\|^2$ (this same algorithm with a
+single zero factor node) \Comment{warm start}
+\State $\mathrm{damp} \gets 1$
 \Repeat
   \State run Algorithm~\ref{alg:forward} at $a$, collecting $\tilde p$
   and the analytic own-location slopes $\partial_i = \partial \tilde
@@ -631,10 +646,12 @@ implementation agrees with the benchmark kernel to $1.1\times10^{-5}$.
 \paragraph{Error metric.} Throughout, $\max_i |\hat p_i - p_i|$ against a
 simulation reference. Absolute error is not always the decision-relevant
 scale: in betting, moving a 100-to-1 chance to 150-to-1 is an enormous
-change carried by $|\Delta p| \approx 0.003$, so log-odds error matters,
-and there the log-domain lattice is at its strongest (deep-tail shares
-resolve to genuine small positives) while a simulation reference
-certifies relative error $\epsilon$ only for shares above roughly
+change carried by $|\Delta p| \approx 0.003$, so log-odds error matters
+(we report $\max_i |\log \hat p_i - \log p_i^{\mathrm{ref}}|$ over
+resolvable shares, which agrees with log-odds error to $O(p)$ on small
+shares), and there the log-domain lattice is at its strongest (deep-tail shares
+resolve to genuine small positives) while a direct simulation reference resolves
+relative error $\epsilon$ only for shares above roughly
 $1/(R\epsilon^2)$; committed records therefore carry both metrics. A maximum over $N$ coordinates tends to grow with $N$ at fixed
 per-coordinate accuracy, and the reference's own maximum-coordinate noise
 behaves likewise; mean-absolute and total-variation summaries are committed
@@ -646,20 +663,20 @@ $2\times10^6$-draw reference.
 $N=1000$, each scored against twin independent $2\times10^6$-draw
 references (experiment 16): worst-case lattice error
 $3.5$--$4.6\times10^{-4}$ at every size, at or below the references' own
-replicate-to-replicate noise. The lattice's true accuracy is far below
-this measurement floor, as the resolution sweeps and log-odds
-certification show.
+replicate-to-replicate noise. The convergence evidence indicates accuracy far
+below this measurement floor (the resolution sweeps and the log-odds
+assessment below).
 
-\paragraph{Log-odds accuracy.} Against super-converged references
+\paragraph{Log-odds assessment.} Against super-converged references
 (Gauss--Hermite $60^2$ with $L=5001$ through $N=100$; $40^2$ with
 $L=3001$ at $N=1000$, three problems; experiment 25) the production
 settings' log-odds error is at most $5\times10^{-5}$ on every share from
 $10^{-9}$ to one at $N \le 100$. At $N=1000$ it is at most
 $2\times10^{-6}$ on shares above one percent, $9\times10^{-5}$ down to
 $10^{-4}$, and $2.3\times10^{-4}$ on the deepest tails (shares to
-$10^{-9}$). No simulation reference could certify any of this: pinning
-relative error $\epsilon$ on a share $p$ takes about $1/(p\epsilon^2)$
-draws.
+$10^{-9}$). A plain winner-frequency simulation could not resolve these
+relative tail errors at practical draw counts: it needs about
+$1/(p\epsilon^2)$ draws for relative error $\epsilon$ on a share $p$.
 
 \paragraph{Resolution sweeps.} Experiment 17 sweeps
 each resolution knob separately at $N=200$, $k=2$.
@@ -739,6 +756,26 @@ at $N=50$ is symmetric to $1.7\times10^{-18}$, has row-sum defect
 $6.2\times10^{-17}$, and reduced eigenvalues in $[2.5\times10^{-5},
 0.22]$, positive definite as proved.
 
+\paragraph{The error budget, by status.} Rigorous bounds and empirical
+convergence evidence are different things, and the sources separate
+cleanly:
+
+\begin{center}
+\footnotesize
+\begin{tabular}{lp{6.2cm}}
+\toprule
+error source & status \\
+\midrule
+factor-node pruning & rigorous bound ($\delta$ sup-norm) \\
+finite envelope & rigorous bound ($N\Phi(-8)$) \\
+covariance approximation & rigorous KL/Pinsker bound (Section~\ref{sec:boundary}) \\
+$x$-grid discretization & empirical convergence assessment \\
+factor quadrature & empirical higher-order comparison \\
+calibration residual & directly measured solver consistency \\
+\bottomrule
+\end{tabular}
+\end{center}
+
 \paragraph{Stability checks and two genuine bounds.} Self-convergence
 checks at large $N$ show stability below what the
 simulation references can resolve: refining to $(L = 3001, \mathrm{GH}21)$
@@ -791,14 +828,18 @@ prices a forward map resolving the \emph{exact} MNP map to $\tau \sim
 10^{-6}$ (this solver's model-consistency level, well beyond the
 $2\times10^{-4}$ statistical accuracy of the noisy-target experiments) at
 weeks per evaluation and the calibration in months to a year,
-against seconds here: roughly a million times slower at equivalent
-accuracy.
+against seconds here: roughly six orders of magnitude, for this plain
+direct-Monte-Carlo benchmark at the stated accuracy and measured
+throughput.
 
 Common
-random numbers do not change the plain-MC rate; QMC and specialized
-Gaussian integration improve the constants without changing the
-structure, and a maximum over $N$ coordinates adds a further $\log N$
-factor in high-probability statements.
+random numbers do not change the plain-MC rate, and randomized QMC and
+specialized Gaussian integration can improve rates as well as
+constants. The structural gap is different: per-alternative
+formulations price $N$ separate integrals whose integrands each carry
+$O(N)$ factors, and the shared field removes that factor of $N$. A
+maximum over $N$ coordinates adds a further $\log N$ factor in
+high-probability statements.
 
 At the crude $\tau = 10^{-4}$ where
 simulation-in-the-loop first becomes feasible, the calibrated model's true
@@ -908,10 +949,12 @@ error, GHK's arbitrary-$\Sigma$ generality is the right tool.
 contrasts, so for any basis $B$ of $\mathbf{1}^\perp$, Pinsker's
 inequality bounds every share discrepancy by the Kullback--Leibler
 divergence between the contrast Gaussians:
-$|p_i(\Sigma) - p_i(\hat\Sigma)| \le
-\sqrt{\mathrm{KL}\big(\mathcal{N}(B^\top\mu, B^\top\Sigma B)\,\|\,
-\mathcal{N}(B^\top\mu, B^\top\hat\Sigma B)\big)/2}$, with the Gaussian
-KL in closed form. Measured (experiment 26), the bound is roughly two
+\[
+|p_i(\Sigma) - p_i(\hat\Sigma)| \le
+\sqrt{\tfrac12\,\mathrm{KL}\big(\mathcal{N}(B^\top\mu, B^\top\Sigma B)\,\|\,
+\mathcal{N}(B^\top\mu, B^\top\hat\Sigma B)\big)},
+\]
+with the Gaussian KL in closed form. Measured (experiment 26), the bound is roughly two
 orders of magnitude conservative but informative exactly where
 certification matters: fitting two factors to a fast-decaying
 four-factor truth certifies share error below $5.3\times10^{-2}$
@@ -921,11 +964,18 @@ covariance-fit residual into a hard share-error guarantee before any
 transform is run.
 
 \paragraph{Substitution: a $2\times2$ factorial illustration.} The design varies factor
-structure and noise family one axis at a time, holding the idiosyncratic
+structure and noise family one axis at a time (with a caveat below),
+holding the idiosyncratic
 scale common. Coupling either axis with alternative-specific scales would
 confound the comparison: an alternative-specific-scale Gumbel race is not
-mixed logit, and heteroskedasticity alone already breaks IIA. A separate
-heteroskedasticity axis is left to future replication.
+mixed logit, and heteroskedasticity alone already breaks IIA. One
+confound must be named: the factor loadings $v_{ir} \sim N(0, 0.36/k)$
+add $\|v_i\|^2$ to each marginal variance, unevenly across
+alternatives, so the factor axis changes marginal scales as well as
+covariance; it is more precisely a \emph{full factor covariance} axis.
+An equal-marginal-variance replication (normalized loadings
+$\|v_i\|^2 = \rho$, idiosyncratic variance $1 - \rho$, multiple
+seeds) is experiment 29.
 
 Ground truth ($N = 50$) is misspecified for every candidate: $t(5)$ factors
 (unit variance) and skew-normal idiosyncratic noise (shape $a = 3$),
@@ -1104,8 +1154,11 @@ p_i = \E_{f,z} \prod_{j \ne i}
 evaluable per alternative by modern randomized quasi-Monte Carlo: the
 natural competitor that uses exactly the structure this paper assumes. It
 still prices $N$ separate integrals, $O(RN^2)$ in total, where the shared
-field couples them into one $O(QN(k+L))$ pass; experiment 24 measures the
-gap.
+field couples them into one $O(QN(k+L))$ pass. Measured at matched
+$4\times10^{-4}$ accuracy (experiment 24; the two implementations first
+verified against each other to $1.7\times10^{-5}$), the per-alternative
+route needs 215 seconds at $N = 1000$ against the shared field's 1.5,
+a gap of $140\times$ that widens linearly in $N$.
 
 Inversion theory is likewise established. \citet{berry1994} made
 share-to-utility inversion the workhorse of demand estimation;
@@ -1159,16 +1212,19 @@ generalizations.
 
 Neither method class dominates the other. Simulation owns arbitrary
 $\Sigma$ and coarse accuracy; the shared field owns the factor form,
-tight accuracy, derivatives, and calibration; the boundary experiments draw
-the border at intermediate spectral decay. We leave to future work
+tight accuracy, derivatives, and calibration; the boundary experiments
+illustrate that covariance approximation, rather than quadrature,
+becomes the binding limitation when the choice-relevant covariance is
+not well represented at modest rank. We leave to future work
 replication of the substitution factorial across truth designs and a
 walk-forward calibration on real assortment data.
 
 For fifty years, computability decided which choice models get used. For
 the factor form of probit, the form in which correlated utilities entered
-econometrics \citep{hausman1978}, that constraint is gone: all shares, their derivatives, and
-the inverse map cost seconds at ten thousand alternatives. Estimating the
-factors themselves remains open, and with $(V, D)$ in hand the choice
+econometrics \citep{hausman1978}, that constraint is gone: all shares, Jacobian--vector products, and
+the inverse map cost seconds at ten thousand alternatives. Integrating
+factor estimation with this inner solver is outside the present paper,
+and with $(V, D)$ in hand the choice
 between logit and probit families becomes one of fit, not tractability.
 
 \section*{Supplementary Materials}
@@ -1178,8 +1234,8 @@ between logit and probit families becomes one of fit, not tractability.
 scripts with correctness anchors run before any comparison (repository
 experiments 13--26). A single manifest,
 \texttt{experiments/run\_all\_paper.py}, regenerates every table and
-figure; the exact commit is recorded in the repository README and an
-immutable tag is pinned at submission. (Archive supplied as a zip with
+figure; this draft is built from commit \texttt{9efd63d} (an
+immutable tag is pinned at submission). (Archive supplied as a zip with
 the submission; development repository at
 \url{https://github.com/microprediction/kinetics}.)
 \item[Software:] the algorithm ships in an open-source Python package
@@ -1405,8 +1461,9 @@ Gaussian probabilities and expectation propagation. arXiv:1111.6832 (2011).
 \bibitem[Fasano and Denti(2025)]{fasano2025} A.~Fasano, F.~Denti. Expectation propagation for
 multivariate Gaussian cumulative distribution functions.
 \emph{Biometrika} (2025).
-\bibitem[Cotton(2024)]{allocationpkg} The \texttt{allocation} package: Thurstone-tilt
-portfolio construction. \url{https://github.com/microprediction/allocation}.
+\bibitem[Cotton(2024)]{allocationpkg} P.~Cotton. The
+\texttt{allocation} package: Thurstone-tilt portfolio construction,
+2024. \url{https://github.com/microprediction/allocation}.
 \end{thebibliography}
 
 \end{document}
