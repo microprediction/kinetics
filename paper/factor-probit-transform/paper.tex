@@ -97,9 +97,10 @@ The concession is not free. Logit-family substitution is structurally
 restricted, and the calibration apparatus that demand estimation is built
 on is routine only on the logit side. One measure of the cost, from one deliberately misspecified synthetic
 design with oracle factor loadings (Section~\ref{sec:boundary}): in the
-largest-deletion stratum of one test design, plain logit misallocates
-about 23\% of the demand
-released by a deleted alternative, against 5\% for factor probit, the
+largest-deletion stratum, across twenty designs with every marginal
+variance held at one, plain logit misallocates a median 25\% of the
+demand released by a deleted alternative, against 1\% for factor probit
+(experiment 29), the
 closest of the four candidate structures.
 
 This paper's point is that the barrier is not real for an important
@@ -973,9 +974,17 @@ confound must be named: the factor loadings $v_{ir} \sim N(0, 0.36/k)$
 add $\|v_i\|^2$ to each marginal variance, unevenly across
 alternatives, so the factor axis changes marginal scales as well as
 covariance; it is more precisely a \emph{full factor covariance} axis.
-An equal-marginal-variance replication (normalized loadings
-$\|v_i\|^2 = \rho$, idiosyncratic variance $1 - \rho$, multiple
-seeds) is experiment 29.
+The equal-marginal-variance replication (experiment 29) repairs this:
+loadings normalized to $\|v_i\|^2 = 0.36$, idiosyncratic variance
+$0.64$, so every marginal is exactly one and the axis moves only the
+off-diagonal covariance; twenty seeds, independent $5\times10^6$-draw
+targets. The pure-covariance effect is larger, not smaller: median
+misallocation of released demand (logit against factor probit) is
+$0.245$ against $0.009$ for deleted shares above ten percent,
+$0.275$ against $0.031$ at 2--10\%, and $0.325$ against $0.113$ at
+0.5--2\%, with factor probit winning all twenty paired seeds in each of
+those strata; below $0.5\%$ both degrade ($0.78$ against $0.68$, 17 of
+20) as the targets' resolution binds.
 
 Ground truth ($N = 50$) is misspecified for every candidate: $t(5)$ factors
 (unit variance) and skew-normal idiosyncratic noise (shape $a = 3$),
