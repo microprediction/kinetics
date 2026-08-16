@@ -680,7 +680,7 @@ the committed smoothness figure shows the curves.
 These are derivatives of the numerical
 approximation, not exact MNP derivatives, and GHK-based practice likewise
 differentiates its approximation, analytically or with fixed draws
-\citep{hajivassiliou1998,train2009}. The practical distinction is the character and controllability of the
+\citep{hmr1996,hajivassiliou1998,train2009}. The practical distinction is the character and controllability of the
 approximation error, quadrature resolution versus draw count, not the
 possibility of differentiation.
 
@@ -981,12 +981,26 @@ the dashed line is parity.}
 \section{Related work}\label{sec:related}
 
 GHK and simulated likelihood are standard in econometrics
-\citep{geweke1994,hajivassiliou1998,train2009}; \citet{genz1992}
+\citep{geweke1994,hajivassiliou1998,train2009}, with
+\citet{hmr1996} the standard treatment of simulated MVN probabilities
+and their derivatives; \citet{genz1992}
 developed the same separation-of-variables construction in numerical
-statistics, where its RQMC form is the default MVN evaluator. \citet{ridgway2016} reads GHK as sequential importance sampling, proves its
-variance can deteriorate exponentially, and builds SMC alternatives; \citet{botev2017} sharpened the family with minimax tilting; \citet{cao2021} push MVN probabilities to thousands of
+statistics, where its RQMC form is the default MVN evaluator, anchored
+by the Genz--Bretz book \citep{genzbretz2009} and the \texttt{mvtnorm}
+package \citep{mi2009}.
+
+Deterministic grid recursions exist within that ecosystem: \citet{miwa2003}
+evaluate orthant probabilities by recursion on one-dimensional lattices,
+at factorial cost in the dimension for general correlation, and
+\citet{craig2008} accelerates the Markov case; both price one
+probability per run. \citet{ridgway2016} reads GHK as sequential importance sampling, proves its
+variance can deteriorate exponentially, and builds SMC alternatives; \citet{botev2017} sharpened the family with minimax tilting;
+\citet{genton2018} began the hierarchical line in this journal;
+\citet{cao2021} push MVN probabilities to thousands of
 dimensions with tile-low-rank QMC, machinery pointed almost exactly at our
-difference covariances, which are diagonal plus rank $k+1$.
+difference covariances, which are diagonal plus rank $k+1$; and
+\citet{cao2025} reach linear per-probability cost past twenty thousand
+dimensions with Vecchia approximations.
 
 Deterministic approximations run from Mendell--Elston \citep{mendell1974}
 (surprisingly competitive when optimally ordered \citep{connors2014})
@@ -1289,6 +1303,39 @@ Economics} 4 (2013) 149--155.
 \bibitem[Loaiza-Maya and Nibbering(2022)]{loaiza2022} R.~Loaiza-Maya, D.~Nibbering. Scalable Bayesian
 estimation in the multinomial probit model. \emph{Journal of Business \&
 Economic Statistics} 40 (2022) 1678--1690.
+\bibitem[Hajivassiliou et~al.(1996)Hajivassiliou, McFadden, and
+Ruud]{hmr1996} V.~Hajivassiliou, D.~McFadden, P.~Ruud. Simulation of
+multivariate normal rectangle probabilities and their derivatives:
+theoretical and computational results. \emph{Journal of Econometrics} 72
+(1996) 85--134.
+
+\bibitem[Genz and Bretz(2009)]{genzbretz2009} A.~Genz, F.~Bretz.
+\emph{Computation of Multivariate Normal and $t$ Probabilities}. Lecture
+Notes in Statistics 195, Springer, 2009.
+
+\bibitem[Mi et~al.(2009)Mi, Miwa, and Hothorn]{mi2009} X.~Mi, T.~Miwa,
+T.~Hothorn. mvtnorm: new numerical algorithm for multivariate normal
+probabilities. \emph{The R Journal} 1 (2009) 37--39.
+
+\bibitem[Miwa et~al.(2003)Miwa, Hayter, and Kuriki]{miwa2003} T.~Miwa,
+A.~J. Hayter, S.~Kuriki. The evaluation of general non-centred orthant
+probabilities. \emph{Journal of the Royal Statistical Society B} 65
+(2003) 223--234.
+
+\bibitem[Craig(2008)]{craig2008} P.~Craig. A new reconstruction of
+multivariate normal orthant probabilities. \emph{Journal of the Royal
+Statistical Society B} 70 (2008) 227--243.
+
+\bibitem[Genton et~al.(2018)Genton, Keyes, and Turkiyyah]{genton2018}
+M.~G. Genton, D.~E. Keyes, G.~Turkiyyah. Hierarchical decompositions for
+the computation of high-dimensional multivariate normal probabilities.
+\emph{Journal of Computational and Graphical Statistics} 27 (2018)
+268--277.
+
+\bibitem[Cao and Katzfuss(2025)]{cao2025} J.~Cao, M.~Katzfuss.
+Linear-cost Vecchia approximation of multivariate normal probabilities.
+\emph{Journal of the American Statistical Association} (2025).
+
 \bibitem[Genz(1992)]{genz1992} A.~Genz. Numerical computation of multivariate normal
 probabilities. \emph{J.\ Computational and Graphical Statistics} 1 (1992)
 141--149.
