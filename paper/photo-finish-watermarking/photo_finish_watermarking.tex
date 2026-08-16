@@ -646,6 +646,14 @@ the Monte-Carlo drift of $S_a$ matches $\sqrt{\rho}\,a^\trans Ma$
 across random directions and the principal eigendirection attains the
 largest drift among all sampled directions.
 
+The theorem's role is design under constraint, not detector
+projection: when all $k$ coordinates are available, the aggregate score
+\eqref{eq:linear-score} dominates any single direction (in the
+simulations below, power $0.96$ against $0.49$ at thirty tokens), and
+the eigenbasis instead ranks \emph{channels} --- for multi-bit
+attribution, or when only one direction can be exposed, the top
+eigendirections carry the most evidence, in eigenvalue order.
+
 \subsection{An exact Gaussian null test}
 
 The continuous key also gives an exact finite-sample null, under the same idealized seed-independence condition used to justify exact frequentist scores for other watermarks.
@@ -816,6 +824,38 @@ Nominal one-percent upper tail & $10^5$ keys & $1.002\%$ empirical \\
 \bottomrule
 \end{tabularx}
 \end{table}
+
+\subsection{Edit robustness, attribution, and short texts}
+
+A synthetic vocabulary of 64 tokens in 16 synonym clusters (embeddings
+in $\R^6$, loadings the leading four principal directions, so semantic
+neighbors share loadings) was watermarked at $\rho=0.6$ and attacked by
+token substitution, against a single-tournament baseline with
+independent binary colors; the honest metric is the retention ratio of
+the detection $z$-score, so baseline strengths cannot flatter either
+scheme (seed 33, three hundred trials per condition).
+
+Substituting sixty percent of tokens by \emph{synonyms} leaves the
+Gaussian detector at $0.99$ of its clean signal, while the coloring
+baseline retains $0.53$: with embedding-derived loadings, a
+within-cluster swap barely moves $v_y$, while every substituted
+position costs an independent-color scheme its full contribution.
+Substituting \emph{random} tokens degrades both schemes together
+($0.43$ against $0.41$ at rate $0.6$): removing this watermark requires
+semantic damage, roughly eight times the embedding distortion at
+matched signal loss.
+
+Keying single eigendirections of $M$ as attribution channels
+identifies the keyed channel with accuracy $0.945$ at thirty tokens
+and $1.00$ at one hundred twenty, with top-eigenvalue channels beating
+bottom ones at every length ($0.945$ against $0.900$; $1.000$ against
+$0.988$), confirming the capacity ranking of \cref{thm:eigen}. At
+thirty tokens and the one-percent exact-null threshold, the aggregate
+score has power $0.96$ against $0.49$ for the best single direction:
+aggregation dominates projection for pure detection, as noted after
+\cref{thm:eigen}. The unwatermarked null is calibrated: empirical mean
+$0.011$, standard deviation $0.984$, and $1.10\%$ exceedances at the
+one-percent threshold over two thousand sequences.
 
 \section{Computation and deployment paths}
 \label{sec:computation}
