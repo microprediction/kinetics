@@ -82,3 +82,37 @@ problem.
 - Escape routes unchanged: amortized inverse + certified correction;
   native Gaussian head (companion neural layer) makes the watermark
   free.
+
+## High-value positioning (2026-08-16): where compute cost is irrelevant
+
+Not "SynthID competitor pending a faster kernel" but the HIGH-ASSURANCE
+TIER:
+
+1. EDIT ROBUSTNESS WITH A MECHANISM: independent-color schemes lose the
+   position's entire signal to a synonym swap (fresh coin flip); with
+   embedding-derived loadings, v_{y'} ~ v_y for semantic neighbors, so
+   drift degradation is BOUNDED BY SEMANTIC DISTANCE of the edit. An
+   editor must damage meaning in proportion to watermark removed.
+   Extends (speculatively) to translation via multilingual embedding
+   loadings. Hypotheses -- but with a theorem-shaped mechanism that
+   token-coloring schemes cannot formulate.
+2. MULTI-BIT ATTRIBUTION VIA THE EIGENBASIS: k orthogonal wind
+   directions = k channels, capacity-ranked by eigendecomposition of M;
+   key directions to customers/tenants/versions; detection identifies
+   WHICH wind. Per-user provenance.
+3. FORENSIC-GRADE EXACT NULL: false-positive rate is a theorem, not an
+   asymptotic or simulation -- survives hostile expert scrutiny (legal,
+   misconduct, disputes). Requires the seed-independence idealization.
+4. SHORT-TEXT EVIDENCE BUDGETING: rho-dial + eigen-direction maximize
+   per-token evidence with marginal provably untouched -- exactly what
+   30-token outputs need.
+5. LOW-VOLUME HIGH-STAKES GENERATION: legal drafts, official statements,
+   audited agentic actions, and TRAINING-DATA CANARIES (watermark
+   benchmark answers / proprietary corpora; detect contamination when a
+   trained model reproduces the drift). All tolerate 100ms-s/token.
+
+Counterweights (honest): all robustness unexperimented; strong LLM
+paraphrase attacks degrade everything and must be measured; public
+loading rule lets adversaries attempt semantically-costly scrubbing --
+the quality-vs-scrubbing frontier is itself quantifiable in this
+geometry and is a natural experiment.
