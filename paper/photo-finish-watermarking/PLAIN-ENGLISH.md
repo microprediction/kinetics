@@ -66,3 +66,19 @@ Watermarking, privacy, controlled randomness, steganography, keyed
 communication protocols: all become "choose a different hidden Gaussian
 factor." Calibration turned watermarking into a general coupling
 problem.
+
+## Computational efficiency (measured 2026-08-16)
+
+- Eigen-direction M: offline, k JVPs per key draw + k x k eigenproblem;
+  free at deployment. Detection: dot product per token (microseconds).
+- Generation, deployment regime (top-k support, k=2, Q=49, L=129, warm
+  start): NumPy measures 59 ms/token at N=64 and 256 ms/token at N=256
+  vs a 1-10 ms LLM budget -- roughly 100x short. But the flop count
+  (~4e5/pass at N=64) says NumPy small-array overhead dominates: a
+  fused compiled kernel prices the pass at ~10-50 us, i.e. ~0.1-0.3
+  ms/token at 2-7 warm iterations -- inside budget, unmeasured. The
+  synthetic drift used here (0.15/logit/step) is adversarial; real
+  decoding is smoother, so the iteration count should drop.
+- Escape routes unchanged: amortized inverse + certified correction;
+  native Gaussian head (companion neural layer) makes the watermark
+  free.
