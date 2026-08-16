@@ -124,7 +124,11 @@ def main():
         step = np.linalg.solve(H, G)
         th_hat = th_hat - np.clip(step, -0.5, 0.5)
         print(f"iter {it}: L {L:.3e} theta {th_hat}")
+    gauge = th_hat[0]**2 * np.exp(-th_hat[1])
     print(f"recovered theta {th_hat} (truth [1, 0])")
+    print(f"gauge-invariant ratio theta1^2 exp(-theta2) = {gauge:.6f} "
+          f"(truth 1; overall covariance scale is not identified from "
+          f"shares, the classical probit normalization)")
     (HERE / "results.txt").write_text(
         f"grad_rel_err {np.abs(G0 - Gfd).max() / np.abs(Gfd).max():.3e}\n"
         f"theta_hat {th_hat.tolist()}\n")

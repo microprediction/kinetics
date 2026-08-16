@@ -944,6 +944,20 @@ binds. We are unaware of a reported
 probit share inversion at this scale in simulation-based practice, and this
 scaling is presumably why.
 
+\paragraph{Estimation gradients (by-product).} Experiment 30
+parameterizes the covariance, $V(\theta) = \theta_1 V_0$ and
+$D(\theta) = e^{\theta_2} D_0$, across four markets with known factor
+scales, and differentiates a cross-market outer objective through the
+calibration fixed point by the implicit function theorem, with the
+reduced Newton solve built from Proposition~\ref{prop:jvp}'s
+Jacobian--vector products. The implicit gradient matches central finite
+differences to $1.2\times10^{-7}$, and a damped Newton outer loop
+converges in three iterations --- to the truth up to the probit scale
+gauge (recovered $\theta_1^2 e^{-\theta_2} = 1.000002$ against $1$),
+which shares cannot identify. The scale ambiguity emerges from the
+experiment rather than being imposed, and the machinery for the
+differentiable estimation route of the discussion is thereby validated.
+
 \paragraph{Removal ensemble (by-product).} The cached field also yields
 all $N$ single-removal share vectors in $O(QN^2L)$: 15.9 seconds for all
 200 removals at $N=200$, against 56.8 seconds recomputing.
