@@ -116,3 +116,31 @@ paraphrase attacks degrade everything and must be measured; public
 loading rule lets adversaries attempt semantically-costly scrubbing --
 the quality-vs-scrubbing frontier is itself quantifiable in this
 geometry and is a natural experiment.
+
+## Images and video (2026-08-16)
+
+Two constructions:
+
+1. TOKEN-BASED GENERATION (VQ/autoregressive/discrete diffusion): the
+   text construction verbatim -- each patch's codeword selection is a
+   categorical race; loadings = codebook vectors themselves (visual
+   similarity IS loading similarity). Edit robustness is stronger than
+   text: JPEG/resize/filter perturb re-tokenized codes to NEARBY
+   codewords (small ||dv||, drift retained) where coloring schemes lose
+   every flipped position. Video: temporal redundancy = clone
+   robustness; smooth temporal key modes survive frame drops.
+2. DIFFUSION: rho-split the initial noise z_T = sqrt(rho) K +
+   sqrt(1-rho) Z -- marginal EXACTLY N(0,I) for all rho, output
+   distribution untouched by construction (cleaner than fixed-pattern
+   Tree-Ring). Detection via DDIM inversion + correlation. Factor V =
+   smooth/low-frequency spatial modes; eigen-direction theorem picks
+   detection-optimal modes. NO SHARE INVERSION NEEDED -- the compute
+   objection vanishes for this branch.
+
+Obstacles: geometric sync (as for all image watermarks); VQ
+re-tokenization stability under heavy edits; DDIM inversion error;
+dense prior art (Tree-Ring, Gaussian Shading claims
+distribution-preserving noise keying, Stable Signature) -- novelty pass
+REQUIRED before claiming the diffusion variant. Distinctive regardless:
+continuous rho-dial with exactness, correlated factor keying with
+capacity-ranked channels, eigen-optimal direction, exact null.
