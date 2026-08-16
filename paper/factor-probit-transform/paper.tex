@@ -633,11 +633,16 @@ replicate-to-replicate noise. The lattice's true accuracy is far below
 this measurement floor, as the resolution sweeps and log-odds
 certification show.
 
-\paragraph{Log-odds accuracy.} Against a super-converged reference
-(Gauss--Hermite $60^2$, $L=5001$; experiment 25) the production settings'
-log-odds error is at most $5\times10^{-5}$ on every share from $10^{-9}$
-to one. No simulation reference could certify this: pinning relative
-error $\epsilon$ on a share $p$ takes about $1/(p\epsilon^2)$ draws.
+\paragraph{Log-odds accuracy.} Against super-converged references
+(Gauss--Hermite $60^2$ with $L=5001$ through $N=100$; $40^2$ with
+$L=3001$ at $N=1000$, three problems; experiment 25) the production
+settings' log-odds error is at most $5\times10^{-5}$ on every share from
+$10^{-9}$ to one at $N \le 100$. At $N=1000$ it is at most
+$2\times10^{-6}$ on shares above one percent, $9\times10^{-5}$ down to
+$10^{-4}$, and $2.3\times10^{-4}$ on the deepest tails (shares to
+$10^{-9}$). No simulation reference could certify any of this: pinning
+relative error $\epsilon$ on a share $p$ takes about $1/(p\epsilon^2)$
+draws.
 
 \paragraph{Resolution sweeps.} Experiment 17 sweeps
 each resolution knob separately at $N=200$, $k=2$.
