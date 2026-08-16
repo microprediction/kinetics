@@ -4,7 +4,7 @@
 \usepackage{booktabs}
 \usepackage[round]{natbib}
 \usepackage[hidelinks]{hyperref}
-\hypersetup{pdftitle={Gaussian Perturbed Maxima Without Sampling},
+\hypersetup{pdftitle={Structured Gaussian Argmax Layers},
 pdfauthor={Peter Cotton}}
 
 \newtheorem{proposition}{Proposition}
@@ -14,9 +14,9 @@ pdfauthor={Peter Cotton}}
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\Prob}{\mathbb{P}}
 
-\title{Gaussian Perturbed Maxima Without Sampling}
+\title{Structured Gaussian Argmax Layers}
 \author{Peter Cotton\thanks{Working draft. Every identity below is
-verified numerically (experiment 27 of the companion repository,
+numerically checked (experiment 27 of the companion repository,
 \url{https://github.com/microprediction/kinetics}); the neural
 experiments of Section~\ref{sec:program} are pending.}}
 \date{August 2026}
@@ -26,21 +26,22 @@ experiments of Section~\ref{sec:program} are pending.}}
 
 \begin{abstract}
 Softmax is the gradient of a perturbed maximum: independent Gumbel noise
-turns the multiclass maximum into log-sum-exp. General perturbations
-give other smooth choice maps and losses, but their expectations are
-evaluated by Monte Carlo, and the leading heteroscedastic image
-classifiers, whose output layer is exactly a low-rank Gaussian perturbed
-argmax, approximate their probabilities by sampling a softmax
-relaxation. For Gaussian perturbations with low-rank-plus-diagonal
-covariance we make the whole object explicit and sampling-free. One
-shared conditional field yields every winner probability, the potential,
-exact Jacobian--vector products, and, by a new reverse-mode formula, the
-gradients with respect to means, factor loadings, and idiosyncratic
-variances, all at cost linear in the number of alternatives. The dual
-regularizer's curvature is the effective resistance of a photo-finish
-graph, with softmax the special case whose conductances are $p_i p_j$.
-The likelihood and Fenchel--Young objectives separate outside that
-special case, and learning covariance by the latter is degenerate.
+turns the multiclass maximum into log-sum-exp. General perturbed-optimizer
+expectations are typically evaluated by Monte Carlo, and the leading
+heteroscedastic image classifiers, whose output layer is exactly a
+low-rank Gaussian argmax, sample a temperature-softmax relaxation. For
+Gaussian perturbations with low-rank-plus-diagonal covariance, one
+shared conditional field yields every winner probability, the
+perturbed-max potential with a certified tail remainder, and, by a new
+reverse-mode formula, gradients with respect to means, loadings, and
+variances, at the asymptotic cost of a forward pass: deterministic
+quadrature at small factor rank, fixed-node Rao--Blackwellized factor
+integration in general. The dual regularizer's curvature is the
+effective resistance of a photo-finish graph, giving each input its own
+simplex geometry where softmax fixes one. The exact likelihood learns
+through decision-boundary rivals, and softmax is characterized as the
+unique link for which the Fenchel--Young loss and the likelihood
+coincide.
 \end{abstract}
 
 \noindent\textbf{Keywords:} perturbed optimizers; multinomial probit;
@@ -51,80 +52,92 @@ effective resistance
 
 A large class of neural operations is organized around the maximum of
 $N$ competing scores. The maximizer is discrete, so it is smoothed by
-perturbation: for noise $\xi$, define
+perturbation: for noise $\xi$ with distribution determined by a
+covariance $\Sigma$,
 \[
-G(\mu) = \E\Big[\max_i (\mu_i + \xi_i)\Big], \qquad
-p(\mu) = \nabla G(\mu) = \E\big[e_{\arg\max_i(\mu_i + \xi_i)}\big].
+G_\Sigma(\mu) = \E\Big[\max_i (\mu_i + \xi_i)\Big], \qquad
+p_\Sigma(\mu) = \nabla_\mu G_\Sigma(\mu)
+= \E\big[e_{\arg\max_i(\mu_i + \xi_i)}\big].
 \]
 For independent Gumbel noise $G$ is log-sum-exp and $p$ is softmax, up
-to an additive constant. \citet{berthet2020} develop this perturbed-optimizer view in
-generality, including the convex dual and the induced Fenchel--Young
-loss \citep{blondel2020}, and evaluate general perturbations by Monte
-Carlo; they demonstrate Gaussian-perturbed argmax training on CIFAR-10.
+to an additive constant. \citet{berthet2020} develop the general
+perturbed-optimizer view, including the convex dual and the induced
+Fenchel--Young loss \citep{blondel2020}; \citet{indelman2024} study the
+representation properties of perturb-softmax and perturb-argmax
+families, including Gaussian members; and \citet{lin2026} develop
+Fenchel--Young estimation for perturbed-utility models, including the
+logit case where it coincides with maximum likelihood. In all of these,
+general perturbed expectations are typically evaluated by Monte Carlo.
 
-The Gaussian member is the natural carrier of correlation. We study
+The structured Gaussian member is the natural carrier of correlation.
+We study
 \[
 U_i = \mu_i + v_i^\top f + \sqrt{D_i}\,\epsilon_i, \qquad
 f \sim N(0, I_k), \quad \epsilon_i \sim N(0,1) \text{ iid},
 \]
-so the perturbation covariance is $\Sigma = VV^\top + \mathrm{diag}(D)$,
-low-rank plus diagonal. This structure arises automatically from
-uncertain representations: if a feature vector is $h = \bar h + Af$ and
-scores are $U_i = w_i^\top h + b_i + \sqrt{D_i}\,\epsilon_i$, then
-$v_i = A^\top w_i$.
+so $\Sigma = VV^\top + \mathrm{diag}(D)$. The structure arises
+automatically from uncertain representations: if a feature vector is
+$h = \bar h + Af$ and scores are $U_i = w_i^\top h + b_i +
+\sqrt{D_i}\,\epsilon_i$, then $v_i = A^\top w_i$.
 
-The same model already ships in computer vision.
-\citet{collier2021} place exactly this latent-utility argmax, with
-input-dependent low-rank-plus-diagonal covariance, on the final layer of
-ImageNet-scale classifiers; lacking a closed form, they approximate the
-winner probabilities by Monte Carlo over a temperature-softmax
-relaxation, and the scaled follow-up \citep{collier2023} identifies the
-latency and memory cost of that sampling as a standing issue.
+The same model already ships in computer vision. \citet{collier2021}
+place exactly this latent-utility argmax, with input-dependent
+low-rank-plus-diagonal covariance, on the final layer of ImageNet-scale
+classifiers; lacking a closed form, they approximate the winner
+probabilities by Monte Carlo over a temperature-softmax relaxation, and
+the scaled follow-up \citep{collier2023} identifies the latency and
+memory cost of that sampling as a standing issue.
 
 A numerical companion \citep{cotton2026} supplies the missing
-primitive. Conditional on the factors the alternatives are independent,
+primitive: conditional on the factors the alternatives are independent,
 so all $N$ winner probabilities come from a single product field in
 $O(QNL)$ operations for $Q$ factor nodes and $L$ lattice points, with
-exact Jacobian--vector products from the same pass, a weighted
-graph-Laplacian Jacobian, and a globally invertible map from mean
-utilities modulo translation to the simplex interior.
+exact Jacobian--vector products, a weighted graph-Laplacian Jacobian,
+and a globally invertible map from mean utilities modulo translation to
+the simplex interior.
 
-This paper asks what that primitive becomes as a neural layer. The
-novelty boundary is deliberately narrow. Perturbed-max smoothing, its
-duality, and Fenchel--Young losses are prior art
-\citep{berthet2020,blondel2020}; generalized-entropy conjugates of
-random-utility surpluses are prior art \citep{fosgerau2020}. What we add
-is what becomes computationally and geometrically explicit in the
-structured Gaussian case:
+This paper develops that primitive as a neural layer. The novelty
+boundary is narrow: perturbed-max smoothing, duality, Fenchel--Young
+losses, and the Gaussian-argmax family as such are prior art
+\citep{berthet2020,blondel2020,indelman2024,lin2026,fosgerau2020}. What
+we add is the structured-Gaussian computational and geometric
+realization:
 
 \begin{enumerate}
-\item \textbf{The potential is free.} The field that computes $p$
-computes $G$ with $O(QL)$ additional work
-(Section~\ref{sec:potential}).
-\item \textbf{Dual graph geometry.} The dual regularizer's Hessian is
-the pseudoinverse of the photo-finish Laplacian, so dual curvature is
-effective electrical resistance; softmax is the special graph with
-conductances $p_i p_j$ (Section~\ref{sec:dual}).
-\item \textbf{Full reverse mode.} A new shared-field vector--Jacobian
-product gives gradients in $(\mu, V, D)$ at the cost of one forward
-pass (Section~\ref{sec:reverse}).
-\item \textbf{Two losses, one special case.} The Gaussian
-Fenchel--Young gradient is $p - e_y$; the exact likelihood gradient is
-$-J e_y / p_y$, which routes the label through its photo-finish edges.
-They coincide exactly when the edge weights are $p_i p_j$, i.e.\ for
-softmax (Section~\ref{sec:losses}).
-\item \textbf{A covariance-learning caution.} The heat identity
-$\partial G/\partial D_i = J_{ii}/2 > 0$ and $\nabla_V G = JV$ make the
-Fenchel--Young loss monotone in choice-relevant perturbation variance:
-it cannot identify free Gaussian noise (Section~\ref{sec:losses}).
+\item \textbf{The potential is a same-field reduction}, with a
+certified closed-form tail remainder (Section~\ref{sec:potential}).
+\item \textbf{Full shared-field reverse mode}: gradients in
+$(\mu, V, D)$ at the same asymptotic complexity as a forward pass
+(Section~\ref{sec:reverse}), with a cheaper label-conditioned kernel
+for supervised likelihood training.
+\item \textbf{Input-dependent simplex geometry}: the dual regularizer's
+curvature is effective resistance in the photo-finish graph, so a
+heteroscedastic model $x \mapsto \Sigma(x)$ learns a geometry per
+input where softmax fixes the Shannon geometry for every input
+(Section~\ref{sec:dual}).
+\item \textbf{Boundary-aware likelihood learning}: the exact winner
+likelihood performs model-implied hard-negative mining through the
+label's photo-finish edges; its linear-head problem is convex; and
+softmax is characterized as the unique smooth link whose
+Fenchel--Young one-hot loss is its likelihood
+(Section~\ref{sec:losses}).
+\item \textbf{What the surrogate computes}: the Monte-Carlo
+temperature-softmax construction is the exact winner probability of a
+Gaussian-plus-Gumbel model, so temperature selects a noise family
+rather than merely trading bias for variance
+(Section~\ref{sec:surrogate}).
+\item \textbf{A scale-collapse caution}: the Fenchel--Young objective is
+monotone in choice-relevant perturbation scale, so unconstrained
+covariance-scale learning collapses; shape learning requires a
+constraint, a bilevel criterion \citep{lin2026}, or the likelihood
+(Section~\ref{sec:losses}).
 \end{enumerate}
 
-Every displayed identity is verified numerically against finite
-differences, Monte Carlo, or direct linear algebra
+Every displayed identity is numerically checked
 (Table~\ref{tab:identities}); the neural experiments of
 Section~\ref{sec:program} are pending.
 
-\section{The structured Gaussian perturbed maximum}
+\section{The structured Gaussian argmax}
 
 Conditional on $f$, the scores are independent with means
 $m_i(f) = \mu_i + v_i^\top f$ and variances $D_i$. Write $F_i(x \mid f)$
@@ -134,84 +147,141 @@ p_i = \Prob(U_i = \max_j U_j)
 = \E_f \int g_i(x \mid f) \prod_{j \ne i} F_j(x \mid f)\, dx .
 \]
 The shared field is $H_f(x) = \prod_j F_j(x \mid f)$; each winner
-integrand divides one factor back out. On $Q$ factor nodes and an $L$-point
-lattice, all $N$ probabilities cost $O(QNL)$ \citep{cotton2026}.
+integrand divides one factor back out. On $Q$ factor nodes and an
+$L$-point lattice, all $N$ probabilities cost $O(QNL)$
+\citep{cotton2026}.
+
+\paragraph{Three integration regimes.} At small $k$ the factor
+expectation is deterministic product Gauss--Hermite quadrature. At
+moderate $k$ it is fixed scrambled-Sobol quasi--Monte Carlo:
+reproducible and resampling-free, but an integration rule, not a
+deterministic quadrature. At larger $k$ it is factor-only (Q)MC, and
+this is a Rao--Blackwellization: with $q_i(f) = \E[\mathbf{1}\{i =
+\arg\max\} \mid f]$ computed by the field,
+$p_i = \E_f q_i(f)$ and, by total variance,
+\[
+\mathrm{Var}[q_i(f)] \le p_i(1 - p_i):
+\]
+sampling only $f$ while integrating all $N$ idiosyncratic shocks
+analytically can only reduce variance relative to direct noisy-argmax
+simulation. How much it reduces it, as a function of the factor share
+of variance, is an empirical question of Section~\ref{sec:program}.
 
 \section{The potential from the same field}\label{sec:potential}
 
-Conditional on $f$, $H_f$ is the CDF of the maximum, so for the lattice
-endpoint $b$,
+Conditional on $f$, $H_f$ is the CDF of the maximum $M_f$, so for any
+finite anchor $a$,
 \[
-\E\big[\max_i U_i \,\big|\, f\big] = b - \int_{-\infty}^{b} H_f(x)\, dx ,
+\E[M_f \mid f] = a + \int_a^{\infty} [1 - H_f(x)]\, dx
+- \int_{-\infty}^{a} H_f(x)\, dx ,
 \]
-and $G(\mu)$ is the factor average. The forward pass has already built
-$H_f$ at every node and lattice point; the potential is one more
-reduction.
+and $G_\Sigma(\mu)$ is the factor average. Taking $a$ at the lattice
+endpoint $b$ and dropping the upper tail leaves the computable truncation
+\[
+\E[M_f \mid f] = b - \int_{-\infty}^{b} H_f(x)\, dx + R_b(f), \qquad
+R_b(f) = \int_b^\infty [1 - H_f(x)]\, dx \ge 0,
+\]
+with the certified closed-form bound
+\[
+R_b(f) \le \sum_i \E[(U_i - b)_+ \mid f]
+= \sum_i \Big[ \sqrt{D_i}\,\phi(a_i) - (b - m_i(f))\,\bar\Phi(a_i)
+\Big], \qquad a_i = \frac{b - m_i(f)}{\sqrt{D_i}} .
+\]
+At the implemented $8\sigma$ endpoint the measured remainder is
+$10^{-25}$ against a bound of $2.3\times10^{-22}$
+(Table~\ref{tab:identities}): the truncation is a controlled
+approximation, not an identity, and the bound makes it certified. The
+forward pass has already built $H_f$ at every node and lattice point;
+the potential is one more reduction.
 
-One discretization point is not cosmetic. The continuum identity
-$\nabla G = p$ survives the lattice only if the potential's quadrature
-is consistent with the probability quadrature: a rectangle-rule
-potential next to the implemented probability integrals broke the
-identity at $2.5\times10^{-4}$ in our tests, while the trapezoidal
-form restores it to $3.6\times10^{-8}$. Fenchel--Young training needs a
-potential-consistent mode, with the discrete $\nabla G = p$ defect
-reported, not assumed away.
+\paragraph{Which map is differentiated?} Four maps must be
+distinguished: the exact continuum $p_\Sigma$; the fixed-node,
+fixed-grid quadrature map $\tilde p_{Q,L}$; its normalization
+$p_{Q,L} = \tilde p_{Q,L} / \mathbf{1}^\top \tilde p_{Q,L}$; and an
+adaptive-envelope implementation whose lattice endpoints move with the
+parameters. The reverse-mode formulas below are exact for the continuum
+integrals, and exact for the fixed-grid sums once the normalization
+cotangent is pulled back; they are not automatically the derivative of
+the adaptive map unless endpoint motion is differentiated too (the
+truncated potential's boundary term $\partial_\theta b\,[1 - H_f(b)]$,
+which the full anchor identity cancels). For Fenchel--Young training the
+clean construction makes $G_{Q,L}$ the primary numerical object and
+\emph{defines} $p_{Q,L} = \nabla_\mu G_{Q,L}$ as its exact discrete
+gradient: integrability then holds by construction, and building
+translation equivariance into $G_{Q,L}$ gives
+$\mathbf{1}^\top p_{Q,L} = 1$ automatically. An independently
+discretized pair broke $\nabla G = p$ at $2.5\times10^{-4}$ in our
+tests; the consistent pair restores $3.6\times10^{-8}$.
 
 \section{Dual geometry}\label{sec:dual}
 
-$G$ is convex and $G(\mu + c\mathbf{1}) = G(\mu) + c$, so the conjugate
-$\Psi = G^*$ lives on the simplex and, on the mean-zero gauge,
-$p = \nabla G(\mu)$ and $\mu = \nabla \Psi(p)$: the share inversion of
-the companion paper is the mirror map, and
-$\Psi(p) = p^\top \mu(p) - G(\mu(p))$ is computable from the inverse
-transform plus the same-pass potential.
+$G_\Sigma$ is convex and $G_\Sigma(\mu + c\mathbf{1}) = G_\Sigma(\mu) +
+c$, so the conjugate $\Psi_\Sigma = G_\Sigma^*$ lives on the simplex
+and, on the mean-zero gauge, $p = \nabla G_\Sigma(\mu)$ and $\mu =
+\nabla \Psi_\Sigma(p)$: the share inversion of the companion paper is
+the mirror map, and $\Psi_\Sigma(p) = p^\top \mu(p) - G_\Sigma(\mu(p))$
+is computable from the inverse transform plus the same-field potential.
 
 The Hessian is the photo-finish Laplacian
 \[
-J = \nabla^2 G = \sum_{i<j} w_{ij} (e_i - e_j)(e_i - e_j)^\top,
-\qquad
+J_\Sigma = \nabla_\mu^2 G_\Sigma = \sum_{i<j} w_{ij} (e_i - e_j)(e_i -
+e_j)^\top, \qquad
 w_{ij} = \E_f \int g_i g_j \prod_{\ell \ne i,j} F_\ell \, dx > 0,
 \]
-with $w_{ij}$ the density of an $i$--$j$ photo finish for the winning
-position. On the tangent space, $\nabla^2 \Psi(p) = J^+$. For the
-transfer direction $d_{ij} = e_i - e_j$,
+with $w_{ij}$ the density of an $i$--$j$ tie for the winning position.
+On the tangent space, $\nabla^2 \Psi_\Sigma(p) = J_\Sigma^+$, and for
+$d_{ij} = e_i - e_j$,
 \[
-d_{ij}^\top J^+ d_{ij} = \text{effective resistance between $i$ and $j$}
+d_{ij}^\top J_\Sigma^+ d_{ij} = \text{effective resistance between $i$
+and $j$}
 \]
 in the network with conductances $w_{ab}$: probability moves cheaply
 between strongly competing alternatives and expensively across weak
 competitive pathways.
 
-Softmax is the special case $w_{ij} = p_i p_j$, whose resistance is
-$1/p_i + 1/p_j$ --- exactly the curvature of negative Shannon entropy
-along $d_{ij}$. Shannon geometry is the effective-resistance geometry of
-one particular competition graph. A structured Gaussian layer separates
-information softmax cannot: two states with identical $p$ can carry
-different photo-finish graphs, distinguishing ``similar marginal
-probability'' from ``direct competitors at the decision boundary''.
+Temperature-$\tau$ softmax is the special case $w^{\mathrm{soft},\tau}_{ij}
+= p_i p_j / \tau$, whose resistance is $\tau(1/p_i + 1/p_j)$ --- the
+curvature of $\tau$-scaled negative Shannon entropy. Shannon geometry
+is the effective-resistance geometry of one particular competition
+graph.
+
+At fixed $\Sigma$, the companion inversion theorem says $p$ determines
+$\mu$ modulo translation, hence also $J_\Sigma(\mu)$: the graph is not
+extra information beyond $p$ \emph{within} one geometry. Across
+covariances it is: the same $p$ carries different photo-finish
+Laplacians under different $\Sigma$. That is the point for
+heteroscedastic classification. An input-dependent model $x \mapsto
+\Sigma(x)$ induces $x \mapsto \Psi_{\Sigma(x)}$: each input gets its own
+simplex geometry, distinguishing ``similar marginal probability'' from
+``direct competitors at this input's decision boundary,'' where softmax
+uses the same Shannon geometry for every input.
 
 \section{Shared-field reverse mode}\label{sec:reverse}
 
-The companion paper differentiates $p$ in $\mu$. A heteroscedastic layer
-needs $V$ and $D$ as well. Let $r_i(x, f) = g_i \prod_{\ell \ne i}
-F_\ell$ be the winner densities, let a downstream loss supply the
+The companion paper differentiates $p$ in $\mu$. A heteroscedastic
+layer needs $V$ and $D$ as well. Let $r_i(x, f) = g_i \prod_{\ell \ne
+i} F_\ell$ be the winner densities, let a downstream loss supply the
 cotangent $c_i = \partial \mathcal{L}/\partial p_i$, and form one
-additional field $S_c = \sum_i c_i r_i$ with hazards
-$\lambda_j = g_j / F_j$.
+additional field $S_c = \sum_i c_i r_i$ with hazards $\lambda_j = g_j /
+F_j$. Define
+\[
+A_j(x, f) = c_j r_j \frac{x - m_j}{D_j} - (S_c - c_j r_j)\, \lambda_j ,
+\qquad
+B_j(x, f) = c_j r_j \frac{(x - m_j)^2 - D_j}{2 D_j^2}
+- (S_c - c_j r_j)\, \frac{x - m_j}{2 D_j}\, \lambda_j .
+\]
 
 \begin{proposition}[Shared-field vector--Jacobian product]
 \label{prop:vjp}
-With $a_j(f) = \int \big[ c_j r_j \frac{x - m_j}{D_j} - (S_c - c_j r_j)
-\lambda_j \big] dx$ and $b_j(f) = \int \big[ c_j r_j
-\frac{(x-m_j)^2 - D_j}{2 D_j^2} - (S_c - c_j r_j)
-\frac{x - m_j}{2 D_j} \lambda_j \big] dx$,
 \[
-\frac{\partial \mathcal{L}}{\partial \mu_j} = \E_f[a_j], \qquad
-\frac{\partial \mathcal{L}}{\partial v_j} = \E_f[a_j f], \qquad
-\frac{\partial \mathcal{L}}{\partial D_j} = \E_f[b_j].
+\frac{\partial \mathcal{L}}{\partial \mu_j} = \E_f \int A_j \, dx,
+\qquad
+\frac{\partial \mathcal{L}}{\partial v_j} = \E_f \Big[ f \int A_j \,
+dx \Big], \qquad
+\frac{\partial \mathcal{L}}{\partial D_j} = \E_f \int B_j \, dx .
 \]
 All $N$ parameter blocks reuse the same $S_c$; the cost is
-$O(QN(L + k))$.
+$O(QN(L + k))$, the same asymptotic complexity as a forward pass.
 \end{proposition}
 
 \begin{proof}
@@ -219,134 +289,243 @@ Only two terms depend on alternative $j$'s parameters: its own winner
 density through $g_j$, and every other winner density through $F_j$.
 Hence $\partial_{\theta_j} \mathcal{L} = \E_f \int [ c_j r_j\,
 \partial_{\theta_j} \log g_j + (S_c - c_j r_j)\, \partial_{\theta_j}
-\log F_j ]\, dx$. For a Gaussian factor, $\partial_{m_j} \log g_j =
-(x - m_j)/D_j$ and $\partial_{m_j} \log F_j = -\lambda_j$;
+\log F_j ]\, dx$. For a Gaussian factor, $\partial_{m_j} \log g_j = (x
+- m_j)/D_j$ and $\partial_{m_j} \log F_j = -\lambda_j$;
 $\partial_{D_j} \log g_j = ((x-m_j)^2 - D_j)/(2 D_j^2)$ and
 $\partial_{D_j} \log F_j = -\lambda_j (x - m_j)/(2 D_j)$. Finally
 $\partial_{\mu_j} m_j = 1$ and $\partial_{v_j} m_j = f$.
 \end{proof}
 
-Measured against central finite differences (experiment 27), the three
-blocks agree to $2.2\times10^{-9}$, $4.9\times10^{-10}$, and
-$6.5\times10^{-10}$.
+Measured against central finite differences, the three blocks agree to
+$2.2\times10^{-9}$, $4.9\times10^{-10}$, and $6.5\times10^{-10}$.
 
-If the implementation normalizes, $p = \tilde p / s$ with
-$s = \mathbf{1}^\top \tilde p$, the incoming cotangent must first be
-pulled back: $\tilde c = (c - (c^\top p)\mathbf{1})/s$. Differentiating
-the unnormalized field while treating normalization as constant is
+If the implementation normalizes, $p = \tilde p / s$ with $s =
+\mathbf{1}^\top \tilde p$, the incoming cotangent must first be pulled
+back: $\tilde c = (c - (c^\top p)\mathbf{1})/s$. Differentiating the
+unnormalized field while treating normalization as constant is
 incorrect.
 
-\section{Two learning objectives}\label{sec:losses}
+\paragraph{The label-conditioned kernel.} Supervised likelihood
+training has the sparse cotangent $c = -e_y / p_y$, so $S_c = -r_y /
+p_y$: the backward pass needs only the common field, the label's winner
+density $r_y$, and the hazards. In particular the off-label mean
+gradients collapse to $\partial \mathcal{L}_{\mathrm{NLL}} / \partial
+\mu_j = w_{yj}/p_y$. A dedicated kernel exploiting this has the same
+asymptotics but materially lower constants and memory, and admits a
+stable formulation in the normalized winning-score density $\pi_y =
+r_y / p_y$, under which gradient components are expectations rather
+than ratios of small numbers.
+
+\section{Learning objectives}\label{sec:losses}
 
 \paragraph{Fenchel--Young.} For a one-hot label $e_y$ and centered
-Gaussian noise, $\Psi(e_y) = 0$, so the Fenchel--Young loss induced by
-$G$ is
+Gaussian noise, $\Psi_\Sigma(e_y) = 0$, so the Fenchel--Young loss
+induced by $G_\Sigma$ is
 \[
-L_{\mathrm{FY}}(\mu, y) = G(\mu) - \mu_y, \qquad
+L_{\mathrm{FY}}(\mu, y) = G_\Sigma(\mu) - \mu_y, \qquad
 \nabla_\mu L_{\mathrm{FY}} = p - e_y ,
 \]
-the exact Gaussian counterpart of the softmax cross-entropy gradient.
-In the binary case, with $\delta = \mu_1 - \mu_2$ and
-$s^2 = \mathrm{Var}(\xi_1 - \xi_2)$,
-$L_{\mathrm{FY}} = s[\phi(\delta/s) - (\delta/s)\Phi(-\delta/s)] =
-\E[(U_2 - U_1)_+]$: a Gaussian-smoothed hinge whose training signal
-concentrates on photo finishes (verified to $4.9\times10^{-13}$
-against the field computation).
+the Gaussian Fenchel--Young counterpart of the softmax cross-entropy
+gradient. In the binary case, with $\delta = \mu_1 - \mu_2$ and $s^2 =
+\mathrm{Var}(\xi_1 - \xi_2)$, $L_{\mathrm{FY}} = s[\phi(\delta/s) -
+(\delta/s)\Phi(-\delta/s)] = \E[(U_2 - U_1)_+]$: a Gaussian-smoothed
+hinge whose curvature, and whose residual gradient on correctly
+separated examples, concentrate near photo finishes (checked to
+$4.9\times10^{-13}$ against the field computation).
 
-\paragraph{Likelihood.} Treating the race as a probabilistic model
-gives $L_{\mathrm{NLL}} = -\log p_y$, and by symmetry of $J$,
+\paragraph{Likelihood as hard-negative mining.} Treating the race as a
+probabilistic model gives $L_{\mathrm{NLL}} = -\log p_y$, and by
+symmetry of $J_\Sigma$, with $d_y = \sum_{j \ne y} w_{yj} = (J_\Sigma)_{yy}$
+and rival distribution $\rho_{j \mid y} = w_{yj} / d_y$,
 \[
-\nabla_\mu L_{\mathrm{NLL}} = -\frac{J e_y}{p_y}
-= \frac{1}{p_y} \sum_{j \ne y} w_{yj} (e_j - e_y):
+\nabla_\mu L_{\mathrm{NLL}} = -\frac{J_\Sigma e_y}{p_y}
+= \frac{d_y}{p_y}\,\big( \rho_{\cdot \mid y} - e_y \big) :
 \]
-the label updates only through its photo-finish edges. For softmax,
-$w_{yj} = p_y p_j$ collapses this to $p - e_y$: the two objectives
-coincide exactly in the Gumbel/softmax case and separate otherwise.
-Their curvatures likewise separate: Fenchel--Young curvature is $J$;
-the Fisher information of the winner likelihood is
-$J\,\mathrm{diag}(p)^{-1} J$, and softmax satisfies
+the update pushes the label's utility up and redistributes exactly onto
+its \emph{decision-boundary rivals}, with total strength $d_y / p_y$.
+For a linear head $\mu_i = a_i^\top h$, $\nabla_h L_{\mathrm{NLL}} =
+\frac{1}{p_y} \sum_{j \ne y} w_{yj} (a_j - a_y)$: the representation
+moves specifically away from the class directions that share winning
+boundaries with $y$. Softmax forces $\rho_{j \mid y} = p_j / (1 -
+p_y)$; the structured Gaussian model lets a class with moderate
+marginal probability be a dominant rival, or a probable class be
+irrelevant to this particular boundary. The exact likelihood performs
+model-implied hard-negative mining.
+
+\begin{proposition}[Convexity of the winner likelihood]
+\label{prop:convex}
+For fixed $\Sigma$ with $D_i > 0$, $p_y(\mu)$ is log-concave in $\mu$,
+so $-\log p_y(\mu)$ is convex; with fixed features and covariance the
+linear-head likelihood problem is convex.
+\end{proposition}
+
+\begin{proof}
+$p_y(\mu) = \int_{C_y} \phi_\Sigma(u - \mu)\, du$ with $C_y = \{u : u_y
+\ge u_j\ \forall j\}$ a convex cone. The integrand
+$\mathbf{1}_{C_y}(u)\, \phi_\Sigma(u - \mu)$ is jointly log-concave in
+$(u, \mu)$; marginalizing $u$ preserves log-concavity by Pr\'ekopa's
+theorem.
+\end{proof}
+
+Numerically, second differences of $-\log p_y$ along random directions
+are bounded below by $+3\times10^{-2}$ in our checks
+(Table~\ref{tab:identities}). General perturbed-utility maximum
+likelihood need not be convex, a motivation \citet{lin2026} give for
+Fenchel--Young estimation; the Gaussian winner model has more
+structure.
+
+\begin{proposition}[Softmax is the coincidence case]
+\label{prop:unique}
+Suppose a smooth perturbed-max link $p = \nabla G$ satisfies, for all
+$\mu$ and every label $y$, $G(\mu) - \mu_y = \tau\,[-\log p_y(\mu)] +
+c_y$ for constants $\tau > 0, c_y$. Then $p$ is temperature-$\tau$
+softmax with class offsets: $p_y(\mu) \propto A_y e^{\mu_y/\tau}$,
+$A_y = e^{c_y/\tau}$. Conversely these links satisfy the identity.
+\end{proposition}
+
+\begin{proof}
+Rearranging, $p_y(\mu) = A_y \exp[(\mu_y - G(\mu))/\tau]$. Summing
+over $y$ and using $\mathbf{1}^\top p = 1$ gives $G(\mu) = \tau \log
+\sum_y A_y e^{\mu_y / \tau}$, hence the softmax form. The converse is
+the standard log-sum-exp computation (checked to machine precision).
+\end{proof}
+
+Up to temperature and class offsets, softmax is the unique smooth
+perturbed-max link whose Fenchel--Young one-hot loss is also its
+negative log likelihood. Under any other Gaussian geometry the two
+objectives, and their curvatures, separate: Fenchel--Young curvature is
+$J_\Sigma$, while the \emph{expected} NLL curvature is
+$J_\Sigma\,\mathrm{diag}(p)^{-1} J_\Sigma$, and softmax satisfies
 $J\,\mathrm{diag}(p)^{-1} J = J$.
 
-\paragraph{Covariance collapse.} The Gaussian potential obeys the heat
-identity $dG = \tfrac12 \mathrm{tr}(J\, d\Sigma)$, hence
+\paragraph{Scale collapse.} The Gaussian potential obeys the heat
+identity $d G_\Sigma = \tfrac12 \mathrm{tr}(J_\Sigma\, d\Sigma)$, hence
 \[
-\frac{\partial G}{\partial D_i} = \frac{J_{ii}}{2} > 0, \qquad
-\nabla_V G = J V
+\frac{\partial G}{\partial D_i} = \frac{(J_\Sigma)_{ii}}{2} > 0, \qquad
+\nabla_V G = J_\Sigma V
 \]
-(both verified to $\sim10^{-8}$). Since $-\mu_y$ carries no covariance
-dependence, $\nabla_{V,D} L_{\mathrm{FY}} = \nabla_{V,D} G$: the
-Fenchel--Young loss is monotone increasing in every positive-semidefinite
-direction of choice-relevant perturbation covariance. Unconstrained
-minimization removes the noise. If $\Sigma$ is a chosen smoothing
-geometry, fix or constrain it; if $\Sigma(x)$ is uncertainty to be
-learned, use the winner likelihood or an outer criterion.
+(both checked to $\sim10^{-8}$). Since $-\mu_y$ carries no covariance
+dependence, the Fenchel--Young objective is monotone increasing in
+every positive-semidefinite direction of choice-relevant perturbation
+covariance: \emph{unconstrained learning of Gaussian perturbation
+scale collapses}. This does not preclude learning covariance
+\emph{shape} at fixed scale, where directions are indefinite; shape
+learning requires a scale constraint (for instance $\mathrm{tr}(P
+\Sigma P)/(N-1) = 1$), a bilevel criterion \citep{lin2026}, or the
+likelihood objective.
 
 \paragraph{Gauges.} An end-to-end layer must remove three invariances:
-$\mu \mapsto \mu + c\mathbf{1}$; $V \mapsto V + \mathbf{1}a^\top$
-(common factor noise); and joint scaling $(\mu, V, D) \mapsto
-(s\mu, sV, s^2 D)$. Project $\mu$ and $V$ onto mean-zero columns and
-normalize the contrast covariance, e.g.\
-$\mathrm{tr}(P \Sigma P)/(N-1) = 1$ with
-$P = I - \mathbf{1}\mathbf{1}^\top/N$. Factor rotation
-$V \mapsto VR$ remains unidentified and is harmless for prediction.
+$\mu \mapsto \mu + c\mathbf{1}$; $V \mapsto V + \mathbf{1}a^\top$; and
+joint scaling $(\mu, V, D) \mapsto (s\mu, sV, s^2 D)$. Project $\mu$
+and $V$ onto mean-zero columns; then compute $s^2 = \mathrm{tr}(P
+\Sigma P)/(N-1)$ and rescale \emph{all three} components, $\mu
+\leftarrow \mu/s$, $V \leftarrow V/s$, $D \leftarrow D/s^2$, which
+leaves the winner probabilities unchanged. Rescaling only $(V, D)$
+changes the model rather than fixing its gauge. Factor rotation $V
+\mapsto VR$ remains unidentified and is harmless for prediction.
+
+\section{What the temperature-softmax surrogate computes}
+\label{sec:surrogate}
+
+The Monte-Carlo temperature-softmax construction of
+\citet{collier2021} is not merely a smoothed estimate of the Gaussian
+argmax. By the Gumbel-max identity, for iid standard Gumbels
+$\gamma_j$,
+\[
+\mathrm{softmax}_\tau(\mu + \xi)_i
+= \Prob\big(i = \arg\max_j \{\mu_j + \xi_j + \tau \gamma_j\} \,\big|\,
+\xi\big),
+\]
+so averaging over the Gaussian $\xi$ gives \emph{exactly} the winner
+probability of a Gaussian-plus-Gumbel random-utility model
+(checked within Monte Carlo error, Table~\ref{tab:identities}). The
+surrogate at temperature $\tau$ is the exact probability of a different
+noise family: $\tau = 0$ is pure Gaussian argmax, $\tau > 0$ adds iid
+Gumbel. Tuning $\tau$ selects a noise model, not merely a
+bias--variance point. The convolved model retains conditional
+independence given $f$, so it sits inside the shared-field architecture
+with a tabulated one-dimensional CDF; the exact-vs-surrogate comparison
+of Section~\ref{sec:program} is therefore a comparison of noise
+families computed by one method, not of two numerical methods.
+
+\paragraph{Certified screening for large $N$.} For a rival subset $S$,
+$p_y^{(S)} = \Prob(U_y > U_j\ \forall j \in S)$ satisfies
+\[
+\max\{0,\; p_y^{(S)} - \delta_S\} \le p_y \le p_y^{(S)}, \qquad
+\delta_S = \sum_{j \notin S \cup \{y\}} \Phi\Big( \frac{\mu_j -
+\mu_y}{s_{jy}} \Big), \quad s_{jy}^2 = D_j + D_y + \|v_j - v_y\|^2,
+\]
+giving a certified likelihood interval whenever $p_y^{(S)} > \delta_S$;
+and the edge weights obey $w_{yj} \le \phi\big((\mu_y -
+\mu_j)/s_{jy}\big)/s_{jy}$, screening gradient contributions. Both
+bounds are checked numerically. This is the route to very large class
+sets.
 
 \begin{table}[t]
 \centering
-\begin{tabular}{lr}
+\small
+\begin{tabular}{llr}
 \toprule
-identity & max error \\
+identity & metric & discrepancy \\
 \midrule
-$\nabla_\mu G = p$ & $3.6\times10^{-8}$ \\
-reverse mode, $\mu$ block & $2.2\times10^{-9}$ \\
-reverse mode, $V$ block & $4.9\times10^{-10}$ \\
-reverse mode, $D$ block & $6.5\times10^{-10}$ \\
-heat identity $\partial G/\partial D_i = J_{ii}/2$ & $1.0\times10^{-8}$ \\
-$\nabla_V G = JV$ & $7.7\times10^{-9}$ \\
-$\nabla_\mu(-\log p_y) = -J e_y / p_y$ & $5.1\times10^{-9}$ \\
-binary Fenchel--Young closed form & $4.9\times10^{-13}$ \\
-dual curvature $=$ effective resistance & $1.4\times10^{-6}$ (rel.) \\
-softmax $R_{ij} = 1/p_i + 1/p_j$ & $1.8\times10^{-15}$ \\
-$G$ against $4\times10^6$-draw Monte Carlo & $1.9\times10^{-4}$ ($\tfrac12$ s.e.) \\
+$\nabla_\mu G = p$ & max abs, vs FD & $3.6\times10^{-8}$ \\
+reverse mode, $\mu$ block & max abs, vs FD & $2.2\times10^{-9}$ \\
+reverse mode, $V$ block & max abs, vs FD & $4.9\times10^{-10}$ \\
+reverse mode, $D$ block & max abs, vs FD & $6.5\times10^{-10}$ \\
+heat identity $\partial G/\partial D_i = J_{ii}/2$ & max abs, vs FD & $1.0\times10^{-8}$ \\
+$\nabla_V G = JV$ & max abs, vs FD & $7.7\times10^{-9}$ \\
+$\nabla_\mu(-\log p_y) = -J e_y / p_y$ & max abs, vs FD & $5.1\times10^{-9}$ \\
+binary Fenchel--Young closed form & abs & $4.9\times10^{-13}$ \\
+dual curvature $=$ effective resistance & relative, vs FD of $\Psi$ & $1.4\times10^{-6}$ \\
+softmax $R_{ij} = 1/p_i + 1/p_j$ & abs, linear algebra & $1.8\times10^{-15}$ \\
+$G$ vs $4\times10^6$-draw MC & abs ($\tfrac12$ s.e.) & $1.9\times10^{-4}$ \\
+tail remainder vs certified bound & $10^{-25} \le 2.3\times10^{-22}$ & holds \\
+surrogate $=$ Gauss$+$Gumbel argmax & max abs, vs MC ($3$ s.e.\ $10^{-3}$) & $4.4\times10^{-4}$ \\
+NLL convexity, 20 random directions & min second difference & $+3.0\times10^{-2}$ \\
+softmax FY $=$ NLL & abs & $4.4\times10^{-16}$ \\
+active-class sandwich and $w_{yj}$ bound & containment & holds \\
 \bottomrule
 \end{tabular}
-\caption{Every claimed identity, verified (experiment 27: $N=5$, $k=1$,
-Gauss--Hermite 21, $L=2001$, against central finite differences, Monte
-Carlo, or direct linear algebra).}
+\caption{Principal identities, numerically checked (experiment 27:
+$N=5$, $k=1$, Gauss--Hermite 21, $L=2001$; frozen grid; central
+differences with steps $10^{-4}$--$10^{-6}$). A numerical experiment
+checks an implementation; randomized multi-problem sweeps and autograd
+\texttt{gradcheck} are part of the experimental program.}
 \label{tab:identities}
 \end{table}
 
 \section{Experimental program}\label{sec:program}
 
 Three questions, kept separate. \textbf{A} (numerical): can the
-operator be evaluated and differentiated accurately without resampling?
-\textbf{B} (optimization): does a fixed accurate gradient beat $M$-sample
-Monte Carlo gradients at matched wall time --- including $M = 1$, which
-\citet{berthet2020} note is often adequate for SGD? \textbf{C}
-(statistical): does structured Gaussian competition improve the model?
-A faster operator is not evidence of a better inductive bias, and
-vice versa.
+operator be evaluated and differentiated accurately without
+resampling? \textbf{B} (optimization): does a fixed accurate gradient
+beat $M$-sample Monte Carlo gradients at matched wall time --- including
+$M = 1$, which \citet{berthet2020} note is often adequate for SGD?
+\textbf{C} (statistical): does structured Gaussian competition improve
+the model? A faster operator is not evidence of a better inductive
+bias, and vice versa.
 
-The planned sequence: (I) operator microbenchmarks over
-$N \in \{10, \dots, 10^4\}$, $k \le 15$ (product Gauss--Hermite at low
-$k$, fixed scrambled Sobol above), reporting probability, potential,
-and gradient error against wall time and memory, with equal-time and
-equal-error comparisons against hard-argmax Monte Carlo, common-random-number
-and RQMC variants, and the temperature-softmax surrogate; (II) the
-identity suite of Table~\ref{tab:identities} extended to automated
-randomized tests plus autograd \texttt{gradcheck}; (III) frozen-feature
-classification (convex in the head) comparing softmax, Gaussian
-Fenchel--Young at $M \in \{1, \dots, 1000\}$, the resampling-free
+The planned sequence: (I) continuum/discretization tests, making the
+numerical loss--gradient pair exactly consistent
+(Section~\ref{sec:potential}); (II) the Rao--Blackwell benchmark ---
+direct argmax MC, Gaussian-draw temperature softmax, factor-only MC and
+factor-only Sobol over $q_i(f)$, and low-rank product quadrature,
+across $N \in \{10, \dots, 10^4\}$ and $k \le 15$, at equal wall time
+and equal error; (III) the label-conditioned NLL kernel against the
+generic VJP, for speed and memory; (IV) frozen-feature linear heads
+(convex by Proposition~\ref{prop:convex}): softmax cross-entropy,
+Gaussian Fenchel--Young at $M \in \{1, \dots, 1000\}$, the fixed-node
 evaluator, and exact winner NLL, on objective gap and accuracy versus
-wall clock; (IV) replication of the Gaussian CIFAR-10 experiment of
-\citet{berthet2020} with one added treatment, the deterministic
-evaluator; (V) structured fixed covariance from held-out confusion,
-prototypes, or augmentation logit covariance at $k \in \{1,2,4,8\}$;
-(VI) the heteroscedastic classifier of \citet{collier2021} re-trained
-with the exact winner likelihood via Proposition~\ref{prop:vjp},
-against the Monte-Carlo temperature-softmax surrogate, both evaluated
-under a common high-accuracy reference.
+wall clock; (V) replication of the Gaussian CIFAR-10 experiment of
+\citet{berthet2020} plus one treatment, the fixed-node evaluator; (VI)
+the heteroscedastic classifier of \citet{collier2021}, comparing pure
+Gaussian argmax NLL against the Gaussian-plus-Gumbel model that its
+temperature-softmax training actually implements
+(Section~\ref{sec:surrogate}), both evaluated under a common
+high-accuracy reference; (VII) certified active-class screening at
+large $N$.
 
-Success requires any of: materially better accuracy-per-wall-time than
+Success requires any of: materially better accuracy per wall time than
 Monte Carlo; materially lower gradient error at matched time; faster
 convergence to a validation threshold; large latency or memory savings
 at high accuracy; or better-calibrated models from the exact
@@ -358,22 +537,24 @@ inference and calibration, not SGD replacement.
 \section{Discussion}
 
 Softmax is the explicitly computable Gumbel member of the perturbed-max
-family. The results above make the low-rank Gaussian member explicit
-too: potential, probabilities, inverse, and all parameter gradients
-from one shared field, with a graph geometry that softmax collapses to
-a single special case. The claim is not that Gaussian perturbations
-dominate Gumbel ones; it is that in this structured regime,
-computability no longer decides the comparison in advance. The
+family. The results above make the structured Gaussian member explicit
+too: potential, probabilities, and parameter gradients from one
+shared-field pass, with the inverse obtained by repeated shared-field
+evaluations, and a graph geometry that softmax collapses to a single
+special case. The claim is not that Gaussian perturbations dominate
+Gumbel ones --- indeed Section~\ref{sec:surrogate} shows the practical
+surrogate interpolates between them --- but that in this structured
+regime, computability no longer decides the comparison in advance. The
 heteroscedastic classification literature already states the demand:
-its generative model is this model, and its current evaluator is a
-sampled relaxation of it.
+its generative model is this model, and its current evaluator is the
+exact probability of a different noise family.
 
 \section*{Reproducibility}
 
 Experiment 27 in the companion repository implements the operator and
-verifies every identity in Table~\ref{tab:identities}; the companion
+checks every identity in Table~\ref{tab:identities}; the companion
 paper's experiments 13--26 cover the underlying transform, its
-certification, and its benchmarks.
+accuracy assessment, and its benchmarks.
 
 \begin{thebibliography}{9}
 
@@ -411,6 +592,15 @@ calibration. Working paper (2026),
 Shum]{fosgerau2020} M.~Fosgerau, E.~Melo, A.~de~Palma, M.~Shum.
 Discrete choice and rational inattention: a general equivalence result.
 \emph{International Economic Review} 61 (2020) 1569--1589.
+
+\bibitem[Indelman and Hazan(2024)]{indelman2024} H.~C. Indelman,
+T.~Hazan. On the statistical representation properties of the
+perturb-softmax and the perturb-argmax probability distributions.
+arXiv:2406.02180 (2024).
+
+\bibitem[Lin et~al.(2026)Lin, Yin, and Liu]{lin2026} X.~Lin, Y.~Yin,
+T.~Liu. Fenchel--Young estimators of perturbed utility models.
+arXiv:2602.21376 (2026).
 
 \end{thebibliography}
 

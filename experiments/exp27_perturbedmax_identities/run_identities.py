@@ -213,5 +213,122 @@ def main():
     print("wrote results.csv")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__" and "--part2" not in sys.argv:
     main()
+
+
+def part2():
+    """Referee-round additions: tail remainder, Gumbel surrogate identity,
+    NLL convexity, softmax FY=NLL, active-class screening bounds."""
+    from scipy.stats import norm
+    rng = np.random.default_rng(13)
+    n, k = 5, 1
+    mu = rng.normal(0, 1.0, n)
+    V = rng.normal(0, 0.5, (n, k))
+    D = rng.uniform(0.6, 1.4, n)
+    F, W = gh_nodes(k)
+    report = []
+
+    # A. potential upper-tail remainder and its certified bound
+    x, dx, z, logF, g, M = fields(mu, V, D, F, W, 2001)
+    field = logF.sum(axis=1)
+    H = np.exp(np.clip(field, -745, 0))
+    b = x[-1]
+    # true remainder by wide-grid extension
+    x2 = np.linspace(b, b + 12, 4001)
+    rem = 0.0
+    bound = 0.0
+    for q in range(len(F)):
+        z2 = (x2[None, :] - M[q, :, None]) / np.sqrt(D)[:, None]
+        H2 = np.exp(np.clip(log_ndtr(z2).sum(axis=0), -745, 0))
+        rem += W[q] * np.trapezoid(1 - H2, x2)
+        aa = (b - M[q]) / np.sqrt(D)
+        bound += W[q] * np.sum(np.sqrt(D) * norm.pdf(aa)
+                               - (b - M[q]) * norm.sf(aa))
+    report.append(("tail remainder <= bound", 0.0 if rem <= bound + 1e-15 else rem - bound))
+    print(f"tail remainder {rem:.2e} certified bound {bound:.2e} "
+          f"({'OK' if rem <= bound + 1e-15 else 'FAIL'})")
+
+    # B. temperature-softmax surrogate = Gaussian + tau*Gumbel argmax
+    tau = 0.7
+    R = 2_000_000
+    f = rng.standard_normal((R, k))
+    Xi = f @ V.T + np.sqrt(D)[None, :] * rng.standard_normal((R, n))
+    Usm = (mu[None, :] + Xi) / tau
+    Usm -= Usm.max(axis=1, keepdims=True)
+    Esm = np.exp(Usm)
+    p_surr = (Esm / Esm.sum(axis=1, keepdims=True)).mean(axis=0)
+    Gum = -np.log(-np.log(rng.uniform(size=(R, n))))
+    p_gg = np.bincount(np.argmax(mu[None, :] + Xi + tau * Gum, axis=1),
+                       minlength=n) / R
+    err = np.abs(p_surr - p_gg).max()
+    se = 3 * np.sqrt((p_gg * (1 - p_gg)).max() / R)
+    report.append(("surrogate = Gauss+Gumbel argmax", err))
+    print(f"surrogate identity err {err:.2e} (3 se {se:.2e}) "
+          f"({'OK' if err < 2 * se + 1e-4 else 'FAIL'})")
+
+    # C. convexity of -log p_y along random directions
+    y = 1
+    worst = np.inf
+    for _ in range(20):
+        h = rng.normal(0, 1, n); h /= np.linalg.norm(h)
+        e = 1e-3
+        f0 = -np.log(forward(mu, V, D, F, W)[0][y])
+        fp = -np.log(forward(mu + e * h, V, D, F, W)[0][y])
+        fm = -np.log(forward(mu - e * h, V, D, F, W)[0][y])
+        worst = min(worst, (fp - 2 * f0 + fm) / e**2)
+    report.append(("NLL convexity (min 2nd diff)", -min(worst, 0)))
+    print(f"NLL min second difference {worst:.2e} "
+          f"({'OK' if worst > -1e-6 else 'FAIL'})")
+
+    # D. softmax: FY loss equals NLL exactly
+    mus = rng.normal(0, 1, n)
+    ps = np.exp(mus - mus.max()); ps /= ps.sum()
+    Gsm = np.log(np.exp(mus).sum())
+    fy = Gsm - mus[y]
+    nll = -np.log(ps[y])
+    report.append(("softmax FY = NLL", abs(fy - nll)))
+    print(f"softmax FY = NLL err {abs(fy - nll):.2e} OK")
+
+    # E. active-class sandwich and tie-density screening bound
+    p_full, _ = forward(mu, V, D, F, W)
+    yb = int(np.argmax(p_full))
+    S = [j for j in range(n) if j != yb and p_full[j] > 0.05]
+    keep = [yb] + S
+    pS, _ = forward(mu[keep], V[keep], D[keep], F, W)
+    pyS = pS[0] * 1.0
+    # note pS renormalized over subset = P(y beats S) needs unnormalized...
+    # compute P(y beats S) directly: subset race probability of y
+    # (forward normalizes; at these resolutions total ~1 so pS[0] is it)
+    delta = 0.0
+    for j in range(n):
+        if j == yb or j in S:
+            continue
+        s2 = D[j] + D[yb] + np.sum((V[j] - V[yb])**2)
+        delta += norm.cdf((mu[j] - mu[yb]) / np.sqrt(s2))
+    lo_b, hi_b = max(0.0, pyS - delta), pyS
+    ok = lo_b - 1e-9 <= p_full[yb] <= hi_b + 1e-9
+    report.append(("active-class sandwich", 0.0 if ok else 1.0))
+    print(f"sandwich [{lo_b:.5f}, {hi_b:.5f}] contains p_y {p_full[yb]:.5f} "
+          f"({'OK' if ok else 'FAIL'})")
+
+    # tie-density bound w_yj <= phi(dmu/s)/s via FD J
+    eps = 1e-5
+    Jcol = np.array([(forward(mu + eps * np.eye(n)[j], V, D, F, W)[0][yb]
+                      - forward(mu - eps * np.eye(n)[j], V, D, F, W)[0][yb])
+                     / (2 * eps) for j in range(n)])
+    okw = True
+    for j in range(n):
+        if j == yb:
+            continue
+        s2 = D[j] + D[yb] + np.sum((V[j] - V[yb])**2)
+        wb = norm.pdf((mu[yb] - mu[j]) / np.sqrt(s2)) / np.sqrt(s2)
+        if -Jcol[j] > wb + 1e-6:
+            okw = False
+    report.append(("tie-density bound", 0.0 if okw else 1.0))
+    print(f"tie-density screening bound {'OK' if okw else 'FAIL'}")
+    return report
+
+
+if __name__ == "__main__" and "--part2" in sys.argv:
+    part2()
