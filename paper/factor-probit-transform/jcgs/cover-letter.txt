@@ -18,9 +18,18 @@ implementation, and its validation.
 
 Every number in the paper is produced by committed, seeded scripts, and
 a single manifest regenerates every table and figure; code and the
-experiment suite are supplied as supplementary material. Given the
-journal's lineage in this area (Genz, 1992, appeared in Volume 1), we
-believe JCGS is the natural home for this work.
+experiment suite are supplied as supplementary material.
+
+We believe JCGS is the natural home for this work, and the precedent we
+have in mind is specific: Genz (1992), in Volume 1 of this journal,
+proved no theorems but made a computation feasible, and became the
+foundation on which the simulation literature (GHK included) was built.
+The present paper aims at the same role for factor-structured choice
+models: the pieces of the algorithm were held separately for decades by
+the ranking-and-selection, competing-risks, and discrete-choice
+literatures, and the composition makes a fifty-year-old bottleneck --
+the tractability objection that made logit universal -- no longer bind
+for the factor form.
 
 This manuscript is not under consideration elsewhere. The author reports
 no conflicts of interest.
