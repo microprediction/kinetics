@@ -112,7 +112,7 @@ Once this inverse exists, an exact watermark follows from the tower property. Sp
 
 \subsection{Contributions and novelty boundary}
 
-The paper makes five claims, separated deliberately from what is already known.
+The paper makes six claims, separated deliberately from what is already known.
 
 \begin{enumerate}
 \item \textbf{Graph form of Tournament sampling.} A two-sample Tournament layer is an oriented complete-graph flow. In the binary case, SynthID's supplementary Equation E20 becomes exactly \eqref{eq:headline-synthid}. This is a reinterpretation and a source of short corollaries, not a claim to have invented Tournament sampling or its non-distortion proof.
@@ -122,6 +122,13 @@ The paper makes five claims, separated deliberately from what is already known.
 \item \textbf{Calibrated Gaussian factor watermark.} We propose to expose part of a factor-Gaussian perturbation to the key while keeping the total covariance fixed. Probit share inversion supplies the required mirror map $p\mapsto\mu_\Sigma(p)$. To our knowledge, this calibrated correlated-Gaussian construction has not previously been proposed for text watermarking.
 
 \item \textbf{Detection and information geometry.} The optimal model-aware evidence is a conditional likelihood ratio with mean $I(R;Y)$. A model-free linear score has drift equal to photo-finish Dirichlet energy by Stein's identity and has an exact Gaussian null under ideal independent context seeds. Locally, the likelihood geometry $J\diag(p)^{-1}J$ separates from the mirror/effective-resistance geometry $J^+$; softmax is the case in which they collapse.
+
+\item \textbf{Detection-optimal exposure is an eigenproblem.} Among
+unit directions in factor space, the keyed drift of the directional
+score is the Rayleigh quotient of $M=\E_R[V^\trans J_{\rho,R}V]$, so
+the best watermark direction is the principal eigenvector of a
+$k\times k$ matrix assembled from photo-finish conductances
+(\cref{thm:eigen}).
 
 \item \textbf{Reproducible synthetic verification and a falsifiable program.} Seeded experiments verify every new algebraic and Gaussian identity and illustrate the key-exposure frontier. They do not test an LLM. The practical case remains to be established against modern distortion-free systems, including SynthID-Text and Gumbel-based methods such as TextSeal \citep{sander2026textseal}.
 \end{enumerate}
@@ -585,6 +592,59 @@ Differentiating the conditional probabilities with respect to $r$ gives
 Stein's identity converts the factor $r$ in the expectation into this derivative, yielding \eqref{eq:stein-energy}. The common-loading gauge $V\mapsto V+\one a^\trans$ contributes no energy, so $V$ should be column-centered.
 
 The detector is model-free in a restricted but useful sense: it does not require $p_t$, $\mu_t$, or the residual Gaussian integration. It does require the key-to-Gaussian pseudorandom function and the loading vector attached to each vocabulary item. If $V$ is fixed globally, or derived by a public deterministic rule from token embeddings, the score can be computed from text alone.
+
+\subsection{The detection-optimal exposure direction}
+
+The score \eqref{eq:linear-score} uses every factor coordinate. The
+designer, or the detector, may instead summarize the key through a
+single direction $a\in\R^k$, $\|a\|_2=1$: score the text by
+\begin{equation}
+S_a(r,y)=(a^\trans r)\,(Va)_y .
+\label{eq:directional-score}
+\end{equation}
+The generator is unchanged; only the summary statistic varies. The best
+direction is a small eigenproblem on the photo-finish graph.
+
+\begin{theorem}[Detection-optimal exposure direction]
+\label{thm:eigen}
+Define the $k\times k$ positive-semidefinite matrix
+\begin{equation}
+M=\E_R\!\left[V^\trans J_{\rho,R}V\right]
+=\E_R\sum_{i<j}w_{ij}(R)\,(v_i-v_j)(v_i-v_j)^\trans .
+\label{eq:M-def}
+\end{equation}
+Under the watermark \eqref{eq:gaussian-watermark},
+\begin{equation}
+\E_1[S_a(R,Y)]=\sqrt{\rho}\;a^\trans M a,
+\qquad
+\E_0[S_a(R,Y)]=0,
+\end{equation}
+and the drift is maximized over unit directions by the principal
+eigenvector $a^\star$ of $M$, with maximal drift
+$\sqrt{\rho}\,\lambda_{\max}(M)$.
+\end{theorem}
+
+\begin{proof}
+Conditional on $R=r$, $\E[S_a\mid R=r]=(a^\trans r)\,a^\trans
+V^\trans q_{\rho,r}$. As in \cref{thm:stein}, $\nabla_r
+q_{\rho,r}=\sqrt{\rho}\,J_{\rho,r}V$, and Stein's identity applied to
+the Gaussian factor $a^\trans r$ gives
+$\E_1[S_a]=\sqrt{\rho}\,\E_R\,a^\trans V^\trans J_{\rho,R}Va$. The
+edge form in \eqref{eq:M-def} is the Laplacian quadratic expansion. The
+maximization is the Rayleigh quotient of $M$. Under the null, $R$ is
+independent of $Y$ and centered, so the drift vanishes.
+\end{proof}
+
+Detection-optimal watermarking is thus an eigenvector problem: $M$
+aggregates the photo-finish conductances through the loading geometry,
+its top eigendirection is the ``prevailing wind'' along which keyed
+drift is most visible, and it is computable with $k$ Jacobian--vector
+products per factor draw using the companion transform. The
+common-loading gauge contributes no energy to any direction, so $M$ is
+gauge-invariant after column-centering $V$. Numerically (seeded suite):
+the Monte-Carlo drift of $S_a$ matches $\sqrt{\rho}\,a^\trans Ma$
+across random directions and the principal eigendirection attains the
+largest drift among all sampled directions.
 
 \subsection{An exact Gaussian null test}
 

@@ -1,0 +1,131 @@
+\begin{thebibliography}{16}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Berthet et~al.(2020)Berthet, Blondel, Teboul, Cuturi, Vert, and
+  Bach]{berthet2020perturbed}
+Quentin Berthet, Mathieu Blondel, Olivier Teboul, Marco Cuturi, Jean-Philippe
+  Vert, and Francis Bach.
+\newblock Learning with differentiable perturbed optimizers.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~33, pages 9508--9519, 2020.
+
+\bibitem[Blondel et~al.(2020)Blondel, Martins, and Niculae]{blondel2020fenchel}
+Mathieu Blondel, Andre F.~T. Martins, and Vlad Niculae.
+\newblock Learning with {Fenchel--Young} losses.
+\newblock \emph{Journal of Machine Learning Research}, 21\penalty0
+  (35):\penalty0 1--69, 2020.
+
+\bibitem[Christ et~al.(2024)Christ, Gunn, and Zamir]{christ2024undetectable}
+Miranda Christ, Sam Gunn, and Or~Zamir.
+\newblock Undetectable watermarks for language models.
+\newblock In \emph{Proceedings of the 37th Conference on Learning Theory},
+  volume 247 of \emph{Proceedings of Machine Learning Research}, pages
+  1125--1139, 2024.
+
+\bibitem[Collier et~al.(2021)Collier, Mustafa, Kokiopoulou, Jenatton, and
+  Berent]{collier2021correlated}
+Mark Collier, Basil Mustafa, Effrosyni Kokiopoulou, Rodolphe Jenatton, and
+  Jesse Berent.
+\newblock Correlated input-dependent label noise in large-scale image
+  classification.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision
+  and Pattern Recognition}, pages 1551--1560, 2021.
+
+\bibitem[Cotton(2026{\natexlab{a}})]{cotton2026calibration}
+Peter Cotton.
+\newblock Scalable probit share calibration.
+\newblock \emph{Working paper}, 2026{\natexlab{a}}.
+\newblock Companion manuscript.
+
+\bibitem[Cotton(2026{\natexlab{b}})]{cotton2026gaussian}
+Peter Cotton.
+\newblock Gaussian perturbed maxima without sampling.
+\newblock \emph{Working paper}, 2026{\natexlab{b}}.
+\newblock Companion manuscript.
+
+\bibitem[Dathathri et~al.(2024)Dathathri, See, Ghaisas, Huang, McAdam, Welbl,
+  Bachani, Kaskasoli, Stanforth, Matejovicova, Hayes, Vyas, Al~Merey,
+  Brown-Cohen, Bunel, Balle, Cemgil, Ahmed, Stacpoole, Shumailov, Baetu, Gowal,
+  Hassabis, and Kohli]{dathathri2024synthid}
+Sumanth Dathathri, Abigail See, Sumedh Ghaisas, Po-Sen Huang, Rob McAdam,
+  Johannes Welbl, Vandana Bachani, Alex Kaskasoli, Robert Stanforth, Tatiana
+  Matejovicova, Jamie Hayes, Nidhi Vyas, Majd Al~Merey, Jonah Brown-Cohen, Rudy
+  Bunel, Borja Balle, Taylan Cemgil, Zahra Ahmed, Kitty Stacpoole, Ilia
+  Shumailov, Ciprian Baetu, Sven Gowal, Demis Hassabis, and Pushmeet Kohli.
+\newblock Scalable watermarking for identifying large language model outputs.
+\newblock \emph{Nature}, 634:\penalty0 818--823, 2024.
+\newblock \doi{10.1038/s41586-024-08025-4}.
+
+\bibitem[Fosgerau et~al.(2020)Fosgerau, Melo, de~Palma, and
+  Shum]{fosgerau2020choice}
+Mogens Fosgerau, Emerson Melo, Andre de~Palma, and Matthew Shum.
+\newblock Discrete choice and rational inattention: A general equivalence
+  result.
+\newblock \emph{International Economic Review}, 61\penalty0 (4):\penalty0
+  1569--1589, 2020.
+
+\bibitem[Hu et~al.(2024)Hu, Chen, Wu, Wu, Zhang, and Huang]{hu2024unbiased}
+Zhengmian Hu, Lichang Chen, Xidong Wu, Yihan Wu, Hongyang Zhang, and Heng
+  Huang.
+\newblock Unbiased watermark for large language models.
+\newblock In \emph{The Twelfth International Conference on Learning
+  Representations}, 2024.
+
+\bibitem[Kirchenbauer et~al.(2023)Kirchenbauer, Geiping, Wen, Katz, Miers, and
+  Goldstein]{kirchenbauer2023watermark}
+John Kirchenbauer, Jonas Geiping, Yuxin Wen, Jonathan Katz, Ian Miers, and Tom
+  Goldstein.
+\newblock A watermark for large language models.
+\newblock In \emph{Proceedings of the 40th International Conference on Machine
+  Learning}, volume 202 of \emph{Proceedings of Machine Learning Research},
+  pages 17061--17084, 2023.
+
+\bibitem[Kuditipudi et~al.(2024)Kuditipudi, Thickstun, Hashimoto, and
+  Liang]{kuditipudi2024robust}
+Rohith Kuditipudi, John Thickstun, Tatsunori Hashimoto, and Percy Liang.
+\newblock Robust distortion-free watermarks for language models.
+\newblock \emph{Transactions on Machine Learning Research}, 2024.
+\newblock OpenReview: FpaCL1MO2C.
+
+\bibitem[McFadden(1981)]{mcfadden1981probabilistic}
+Daniel McFadden.
+\newblock Econometric models of probabilistic choice.
+\newblock In Charles~F. Manski and Daniel McFadden, editors, \emph{Structural
+  Analysis of Discrete Data with Econometric Applications}. MIT Press, 1981.
+
+\bibitem[Omidi et~al.(2026)Omidi, Dong, and Wang]{omidi2026synthid}
+Romina Omidi, Yun Dong, and Binghui Wang.
+\newblock On google's {SynthID-Text} {LLM} watermarking system: Theoretical
+  analysis and empirical validation.
+\newblock \emph{arXiv preprint arXiv:2603.03410}, 2026.
+
+\bibitem[Sander et~al.(2026)Sander, Chang, Sou{\v{c}}ek, Tran, Lacatusu,
+  Rebuffi, Mourachko, Parimi, Ropers, Moritz, Stark, Elsahar, and
+  Fernandez]{sander2026textseal}
+Tom Sander, Hongyan Chang, Tom{\'{a}}{\v{s}} Sou{\v{c}}ek, Tuan Tran, Valeriu
+  Lacatusu, Sylvestre-Alvise Rebuffi, Alexandre Mourachko, Surya Parimi,
+  Christophe Ropers, Rashel Moritz, Vanessa Stark, Hady Elsahar, and Pierre
+  Fernandez.
+\newblock {TextSeal}: A localized {LLM} watermark for provenance and
+  distillation protection.
+\newblock \emph{arXiv preprint arXiv:2605.12456}, 2026.
+
+\bibitem[Stein(1981)]{stein1981mean}
+Charles~M. Stein.
+\newblock Estimation of the mean of a multivariate normal distribution.
+\newblock \emph{The Annals of Statistics}, 9\penalty0 (6):\penalty0 1135--1151,
+  1981.
+
+\bibitem[Tsur et~al.(2025)Tsur, Long, Verdun, Hsu, Permuter, and
+  Calmon]{tsur2025couplings}
+Dor Tsur, Carol~Xuan Long, Claudio~Mayrink Verdun, Hsiang Hsu, Haim Permuter,
+  and Flavio~P. Calmon.
+\newblock Optimized couplings for watermarking large language models.
+\newblock \emph{arXiv preprint arXiv:2505.08878}, 2025.
+\newblock Accepted at IEEE ISIT 2025.
+
+\end{thebibliography}
