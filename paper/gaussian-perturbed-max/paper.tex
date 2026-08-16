@@ -505,7 +505,29 @@ $M = 1$, which \citet{berthet2020} note is often adequate for SGD?
 the model? A faster operator is not evidence of a better inductive
 bias, and vice versa.
 
-The planned sequence: (I) continuum/discretization tests, making the
+\paragraph{First results: the operator benchmark.} Experiment 28
+(committed) runs the grid $N \in \{10, 10^2, 10^3, 10^4\} \times k \in
+\{0, 1, 2, 4, 8, 15\}$ against hard-argmax Monte Carlo and the
+temperature-softmax surrogate at $M = 1000$, all scored against
+higher-resolution references. At $N = 1000$: for $k \le 2$ the
+deterministic operator is strictly dominant --- $10^{-17}$ absolute
+error in $5$\,ms at $k=0$, $8.8\times10^{-9}$ in $0.74$\,s at $k=2$,
+against $2$--$5\times10^{-4}$ in $9$--$14$\,s for $10^6$-draw MC, and
+three-plus orders of magnitude better in log-share error on tails.
+Product quadrature hits its wall at $k = 4$ (the unpruned rule needs
+$10^4$ nodes); fixed-node Sobol takes over. In the Rao--Blackwellized
+regime ($k = 8, 15$; $1024$ Sobol nodes) the operator's error is
+$2.6$--$2.8\times10^{-4}$ in $7$\,s against MC's
+$4.8$--$9.4\times10^{-4}$ in $10$\,s: a real but modest $2$--$4\times$
+gain at matched time, quantifying how much variance the analytic
+idiosyncratic integration removes at these factor-variance shares. The
+surrogate costs milliseconds but carries its predicted model
+discrepancy: $\sim10^{-2}$ at $\tau = 0.1$, $0.1$--$0.4$ at $\tau = 1$,
+against the pure Gaussian argmax --- consistent with
+Section~\ref{sec:surrogate}, this is a different noise family, not a
+noisy estimate.
+
+The remaining sequence: (I) continuum/discretization tests, making the
 numerical loss--gradient pair exactly consistent
 (Section~\ref{sec:potential}); (II) the Rao--Blackwell benchmark ---
 direct argmax MC, Gaussian-draw temperature softmax, factor-only MC and
