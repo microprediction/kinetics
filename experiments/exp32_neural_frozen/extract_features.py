@@ -7,7 +7,9 @@ from torchvision import transforms
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-dev = "mps" if torch.backends.mps.is_available() else "cpu"
+dev = ("cuda" if torch.cuda.is_available() else
+       "mps" if torch.backends.mps.is_available() else "cpu")
+print("device:", dev)
 tf = transforms.Compose([
     transforms.Resize(224),
     transforms.ToTensor(),
@@ -21,7 +23,7 @@ out = {}
 for split, train in (("train", True), ("test", False)):
     ds = torchvision.datasets.CIFAR10(str(HERE / "data"), train=train,
                                       download=True, transform=tf)
-    dl = torch.utils.data.DataLoader(ds, batch_size=256, num_workers=4)
+    dl = torch.utils.data.DataLoader(ds, batch_size=256, num_workers=0)
     feats, labels = [], []
     with torch.no_grad():
         for i, (x, y) in enumerate(dl):
