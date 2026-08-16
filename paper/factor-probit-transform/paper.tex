@@ -24,9 +24,9 @@ pdfauthor={Peter Cotton}}
 \newcommand{\Prob}{\mathbb{P}}
 
 \title{Scalable Probit Share Calibration}
-\author{Peter Cotton\thanks{Every number in this paper is produced by a
-committed, seeded script; see the Reproducibility section and
-\url{https://github.com/microprediction/kinetics}.}}
+\author{Peter Cotton\thanks{peter.cotton@microprediction.com. Every
+number in this paper is produced by a committed, seeded script; see
+Reproducibility and Supplementary Materials.}}
 \date{August 2026}
 
 \begin{document}
@@ -36,16 +36,18 @@ committed, seeded script; see the Reproducibility section and
 Probit models are a cornerstone of economic, choice, and contest theory, and
 machine learning runs on the same latent-utility family. Yet the
 many-alternative form sees little use beyond small menus: its probabilities
-have no closed form, the standard simulator prices one alternative at a
-time, and calibration, meaning the recovery of the utilities at which model
+have no closed form, standard smooth orthant evaluators price one
+alternative at a time, and calibration, meaning the recovery of the utilities at which model
 shares match observed shares with the factor covariance given and fixed,
 has been out of reach at scale. We give an
 algorithm that calibrates a two-factor probit model with a thousand
-alternatives in three seconds on a laptop, with cost growing linearly in
-the number of alternatives: roughly a million times faster than plain
-simulation-in-the-loop calibration at matched accuracy. The computed shares carry log-odds
-errors of a few parts in a hundred thousand, hundred-to-one tails
-included.
+alternatives in three seconds on a laptop, with wall time approximately
+linear in the number of alternatives over the tested range. Relative to
+a plain direct-Monte-Carlo simulation-in-the-loop benchmark, measured
+throughput and standard sampling-error arithmetic imply a speed
+advantage of roughly six orders of magnitude at matched share-map
+accuracy. The computed shares carry log-share errors of a few parts in
+a hundred thousand, hundred-to-one shares included.
 \end{abstract}
 
 \noindent\textbf{Keywords:} multinomial probit; discrete choice;
@@ -56,10 +58,12 @@ model
 
 Probit models are a cornerstone of economic, choice, and contest theory:
 Thurstone's comparative judgment, the ordered and binary probits of applied
-microeconometrics, and the Lazear--Rosen tournament are all the same
+microeconometrics, and the Lazear--Rosen tournament
+\citep{lazear1981} are all the same
 Gaussian latent-performance model. Machine learning runs on the same
 family: a softmax output layer is its Luce--Gumbel member, and
-Thurstone--Mosteller pairwise comparison, the probit member, underlies
+Thurstone--Mosteller pairwise comparison \citep{mosteller1951}, the
+probit member, underlies
 rating systems and preference learning.
 
 Such models are calibrated to observed shares so that the recovered
@@ -74,11 +78,11 @@ Choice modeling did not start there: it started with Thurstone's 1927 model
 \citep{thurstone1927} of jointly Gaussian utilities with unrestricted
 correlation, brought into econometrics as the conditional (multinomial)
 probit model by \citet{hausman1978} and known since as MNP. The same
-object has re-emerged in machine learning: heteroscedastic image
-classifiers place exactly the factor-Gaussian utility of this paper on
-their final layer and take the argmax, approximating the winner
-probabilities by Monte Carlo over a softmax relaxation
-\citep{collier2021}.
+object has re-emerged in machine learning: conditional on an input,
+heteroscedastic image classifiers place exactly this
+low-rank-plus-diagonal Gaussian race on their final layer and take the
+argmax, approximating the winner probabilities by Monte Carlo over a
+softmax relaxation \citep{collier2021}.
 
 Probit probabilities are $(N-1)$-dimensional Gaussian integrals with no
 closed form. The standard evaluator is the Geweke--Hajivassiliou--Keane
@@ -147,7 +151,7 @@ single-removal counterfactuals.
 \toprule
 approach & all $N$ shares & calibration \\
 \midrule
-GHK simulation \citep{geweke1994,hajivassiliou1998} & $N$ separate runs, $R^{-1/2}$ error & no reported large-$N$ share inversion known to us \\
+GHK simulation \citep{geweke1994,hajivassiliou1998} & $N$ separate runs, $R^{-1/2}$ (plain MC) & no reported large-$N$ share inversion known to us \\
 direct utility simulation & whole vector per draw, $R^{-1/2}$ & raw frequency map is nonsmooth \\
 analytic approximations \citep{bhat2011,connors2014} & per-alternative & no \\
 factor quadrature \citep{butler1982,elrod1995} & $N$ separate $(k{+}1)$-dim integrals & no \\
@@ -300,7 +304,7 @@ positive semidefinite, has $\mathbf{1}$ as its only null direction, and
 $B^\top J B \succ 0$ for every full-rank basis $B$ of $\mathbf{1}^\perp$.
 Moreover $p = \nabla G$ for the social-surplus function
 $G(\mu) = \E \max_i \{\mu_i + \xi_i\}$ (the Williams--Daly--Zachary /
-McFadden identity \citep{mcfadden1981}), and the restriction of $p$ to
+McFadden identity \citep{williams1977,daly1978,mcfadden1981}), and the restriction of $p$ to
 $\mathbf{1}^\perp$ is a smooth bijection onto the interior of the
 probability simplex: every strictly positive target $\hat p$ has exactly one
 mean-zero utility vector.
@@ -383,7 +387,8 @@ reduced Newton system SPD, so conjugate gradients apply with the $O(QNL)$
 Jacobian--vector product of Proposition~\ref{prop:jvp} playing the role of
 a fast Laplacian multiply. Structurally, each linearization of the calibration solves a weighted
 graph-Laplacian system on the photo-finish graph (the weights themselves
-move with $\mu$), and such systems are easy for the same reason resistor
+move with $\mu$), and such systems admit mature SPD and
+graph-Laplacian solvers for the same reason resistor
 networks and heat equations are.
 
 None of this is specifically Gaussian.
@@ -596,6 +601,44 @@ single zero factor node) \Comment{warm start}
 \end{algorithmic}
 \end{algorithm}
 
+\begin{proposition}[Local convergence of damped Jacobi]
+\label{prop:jacobi}
+For the exact continuum share map and a strictly positive target, the
+mean-zero damped Jacobi iteration underlying
+Algorithm~\ref{alg:calibrate} is locally linearly convergent for every
+fixed damping $0 < \alpha < 1$, and also at $\alpha = 1$ for $N \ge 3$,
+with local convergence factor $\max_{j \ge 2} |1 - \alpha \lambda_j|$,
+where $\lambda_j$ are the nonzero eigenvalues of the random-walk
+normalized photo-finish Laplacian $\Delta^{-1} J$,
+$\Delta = \mathrm{diag}(J_{11}, \dots, J_{NN})$.
+\end{proposition}
+
+\begin{proof}
+With $r(\mu) = \log p(\mu) - \log \hat p$, the Jacobian at the
+solution is $Dr = \mathrm{diag}(p)^{-1} J$, and the iteration's exact
+Jacobi preconditioner is $M = \mathrm{diag}(J_{ii}/p_i)$, so the
+linearized update on the mean-zero quotient is $I - \alpha
+\Delta^{-1} J$. By Proposition~\ref{thm:inv}, $J$ is a graph Laplacian
+with strictly positive weights, so $\Delta^{-1} J$ is similar to the
+symmetric normalized Laplacian $\Delta^{-1/2} J \Delta^{-1/2}$, whose
+spectrum lies in $[0, 2]$ with $0$ simple (the common-shift direction,
+removed by the quotient). The photo-finish graph is complete, hence
+nonbipartite for $N \ge 3$, so $\lambda_N < 2$ and $\max_{j\ge2} |1 -
+\alpha \lambda_j| < 1$ for $0 < \alpha \le 1$. Step caps are inactive
+near the solution, and the mean-zero projection selects a quotient
+representative without altering the spectrum.
+\end{proof}
+
+Measured (experiment 31, $N = 12$): the spectrum of $\Delta^{-1}J$ is
+$[0,\, 0.974, \dots, 1.379]$, and the observed contraction of the
+exact iteration matches the predicted factor to two decimals ($0.369$
+against $0.379$ at $\alpha = 1$; $0.316$ against $0.318$ at $\alpha =
+0.7$). Global convergence of the capped, adaptive-grid implementation
+remains empirical; slow convergence corresponds to a small normalized
+spectral gap $\lambda_2$, which the photo-finish graph makes
+interpretable: tiny shares or nearly redundant alternatives weaken the
+graph's connectivity.
+
 The rectangle rule uses $\Delta x$ weights with no endpoint modification
 (differing from the trapezoidal rule only by negligible endpoint terms).
 
@@ -640,17 +683,19 @@ closed form, the lattice transform agrees to $3.3\times10^{-16}$ (an easy
 anchor, useful for code validation rather than as evidence about the hard
 regime).
 
-At $N=5$ both methods sit within the noise of
-a $10^7$-draw Monte Carlo reference, and the shipped package
-implementation agrees with the benchmark kernel to $1.1\times10^{-5}$.
+At $N=5$ the lattice transform and a large-draw simulator both sit
+within the noise of a $10^7$-draw Monte Carlo reference, and the shipped
+package implementation agrees with the benchmark kernel to
+$1.1\times10^{-5}$ (the package default uses its own coarser lattice
+and interval rule; at matched settings agreement is machine precision).
 
 \paragraph{Error metric.} Throughout, $\max_i |\hat p_i - p_i|$ against a
 simulation reference. Absolute error is not always the decision-relevant
 scale: in betting, moving a 100-to-1 chance to 150-to-1 is an enormous
-change carried by $|\Delta p| \approx 0.003$, so log-odds error matters
-(we report $\max_i |\log \hat p_i - \log p_i^{\mathrm{ref}}|$ over
-resolvable shares, which agrees with log-odds error to $O(p)$ on small
-shares), and there the log-domain lattice is at its strongest (deep-tail shares
+change carried by $|\Delta p| \approx 0.003$, so relative error matters
+(we report the log-share error $\max_i |\log p^{\mathrm{lat}}_i -
+\log p_i^{\mathrm{ref}}|$ over resolvable shares, which agrees with
+log-odds error to $O(p)$ on small shares), and there the log-domain lattice is at its strongest (deep-tail shares
 resolve to genuine small positives) while a direct simulation reference resolves
 relative error $\epsilon$ only for shares above roughly
 $1/(R\epsilon^2)$; committed records therefore carry both metrics. A maximum over $N$ coordinates tends to grow with $N$ at fixed
@@ -668,7 +713,7 @@ replicate-to-replicate noise. The convergence evidence indicates accuracy far
 below this measurement floor (the resolution sweeps and the log-odds
 assessment below).
 
-\paragraph{Log-odds assessment.} Against super-converged references
+\paragraph{Log-share assessment.} Against super-converged references
 (Gauss--Hermite $60^2$ with $L=5001$ through $N=100$; $40^2$ with
 $L=3001$ at $N=1000$, three problems; experiment 25) the production
 settings' log-odds error is at most $5\times10^{-5}$ on every share from
@@ -679,7 +724,22 @@ $10^{-9}$). A plain winner-frequency simulation could not resolve these
 relative tail errors at practical draw counts: it needs about
 $1/(p\epsilon^2)$ draws for relative error $\epsilon$ on a share $p$.
 
-\paragraph{Resolution sweeps.} Experiment 17 sweeps
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figs/validation.png}
+\caption{Central validation evidence, from the committed experiments.
+Left: lattice self-convergence in $L$ and Gauss--Hermite factor sweep
+(experiment 17). Middle: log-share error against super-converged
+references by true-share bucket at $N = 1000$, three problems
+(experiment 25). Right: utility recovery against independent
+$5\times10^6$-draw noisy targets over $N = 1000$ to $10000$
+(experiment 19); the plateau is target sampling noise, not solver error
+(experiment 21).}
+\label{fig:validation}
+\end{figure}
+
+\paragraph{Resolution sweeps.} Figure~\ref{fig:validation} collects the
+central accuracy evidence. Experiment 17 sweeps
 each resolution knob separately at $N=200$, $k=2$.
 Holding the factor rule fixed, lattice self-convergence is
 $2.7\times10^{-8}$ at $L=101$ and at machine precision from $L \approx
@@ -789,8 +849,9 @@ come free from the product structure: conditional probabilities lie in
 $[0,1]$, so pruning factor weight $\delta$ perturbs unnormalized shares by
 at most $\delta = 2.39\times10^{-8}$ in sup norm (measured:
 $6.2\times10^{-9}$); and the $\pm8\sigma_{\max}$ envelope omits
-conditional mass at most $N\Phi(-8) \approx 6\times10^{-12}$ even at
-$N = 10^4$.
+conditional mass at most $N\Phi(-8) + \Phi(-8)^N \le (N+1)\Phi(-8)
+\approx 6\times10^{-12}$ even at $N = 10^4$ (the lower tail by a union
+bound, the upper by independence).
 
 \paragraph{Compiled implementation.} The same pass in Rust (in the
 repository, with machine-precision parity and identical iteration counts)
@@ -923,7 +984,8 @@ $3.1\times10^{-3}$ at $\gamma = 0.5, 1.5, 3$ from $k=1$ starting points of
 $2.3\times10^{-3}$, $1.5\times10^{-2}$, $7.1\times10^{-2}$.
 
 Decomposing the error with a second simulation under the fitted factor model:
-integration error is flat at $2$--$7\times10^{-4}$ across every $(\gamma,
+lattice-versus-simulation discrepancy (which includes the finite
+reference's own noise) is flat at $2$--$7\times10^{-4}$ across every $(\gamma,
 k)$ tested, so the rank-$k$ error is essentially covariance-fit error:
 rank, not quadrature, is the binding constraint.
 
@@ -960,8 +1022,8 @@ orders of magnitude conservative but informative exactly where
 certification matters: fitting two factors to a fast-decaying
 four-factor truth certifies share error below $5.3\times10^{-2}$
 (actual $4\times10^{-4}$), and three factors certify
-$8.4\times10^{-3}$ (actual $9.7\times10^{-5}$). It converts a
-covariance-fit residual into a hard share-error guarantee before any
+$8.4\times10^{-3}$ (actual $9.7\times10^{-5}$). It converts the fitted pair of contrast covariances, through their
+Gaussian KL divergence, into a hard share-error guarantee before any
 transform is run.
 
 \paragraph{Substitution: a $2\times2$ factorial illustration.} The design varies factor
@@ -1169,8 +1231,21 @@ verified against each other to $1.7\times10^{-5}$), the per-alternative
 route needs 215 seconds at $N = 1000$ against the shared field's 1.5,
 a gap of $140\times$ that widens linearly in $N$.
 
+An older transportation literature used ``calibration'' for MNP
+parameter estimation. \citet{daganzo1977} introduced an early numerical
+MNP forecasting algorithm and claimed applicability to large problems;
+\citet{sheffi1982} reviewed probability and calibration methods and
+proposed simulation-based estimation; \citet{kamakura1989} embedded the
+Mendell--Elston approximation in a calibration routine. These estimate
+parameters from choice data or approximate designated probabilities;
+none provides a smooth all-$N$ share map, a shared-field
+Jacobian--vector product, or aggregate-share inversion at the scale
+considered here.
+
 Inversion theory is likewise established. \citet{berry1994} made
 share-to-utility inversion the workhorse of demand estimation;
+\citet{bonnet2022} invert demand in general, including nonsmooth
+random-utility models, through two-sided matching;
 \citet{hotz1993}
 inverted choice probabilities to utility differences; \citet{norets2013}
 prove surjectivity of the utility-to-probability map;
@@ -1207,12 +1282,11 @@ that only difference covariances are identified.
 
 The pass itself can be accelerated further: its two stages are smooth-kernel
 sums whose matrices are numerically low-rank, and a Chebyshev-separated
-evaluation (in the spirit of black-box fast multipole methods) reduces each
-node's cost from $O(NL)$ to $O(r(N+L))$; a committed prototype (experiment 20) reproduces the exact pass to
-$6\times10^{-5}$ at $23\times$ speed for $N=5000$ in NumPy, and the
-compiled version of the same construction measures $93\times$, with
-exponential convergence in $r$. Development to full
-generality is left to a companion note.
+evaluation (in the spirit of black-box fast multipole methods) reduces
+each node's cost from $O(NL)$ to $O(r(N+L))$, with exponential
+convergence in $r$. A forward-map prototype is committed (experiment
+20); its systematic error control and extension to the derivative and
+calibration passes are developed in a companion paper.
 
 Beyond the Gaussian family, the same machinery computes races with arbitrary
 alternative-specific idiosyncratic densities. A common-scale Gumbel base with
@@ -1236,12 +1310,13 @@ factor estimation with this inner solver is outside the present paper,
 and with $(V, D)$ in hand the choice
 between logit and probit families becomes one of fit, not tractability.
 
-\section*{Supplementary Materials}
+\section*{Reproducibility and Supplementary Materials}
 
 \begin{description}
 \item[Code and experiments:] all numbers come from committed, seeded
 scripts with correctness anchors run before any comparison (repository
-experiments 13--26). A single manifest,
+experiments 13--26 and 29--31; 27 and 28 support the companion paper).
+A single manifest,
 \texttt{experiments/run\_all\_paper.py}, regenerates every table and
 figure; this draft is built from commit \texttt{9efd63d} (an
 immutable tag is pinned at submission). (Archive supplied as a zip with
@@ -1255,7 +1330,8 @@ scripts; no external data are required.
 \end{description}
 
 Hardware and software: Apple M4, 16\,GB, Python 3.12.9,
-NumPy 2.4.6, SciPy 1.18.0; experiment 17 enforces single-threaded BLAS via
+NumPy 2.4.6, SciPy 1.18.0; compiled timings use rustc 1.97.1
+(release profile, rayon defaulting to all performance cores); experiment 17 enforces single-threaded BLAS via
 \texttt{threadpoolctl}; sub-second timings are warmed medians of three
 runs, and long simulations are single realizations, disclosed as such.
 Monte Carlo chunk sizes derive from an explicit 1.5\,GB memory budget, and
@@ -1267,6 +1343,40 @@ The author reports no conflicts of interest. No external funding was
 received for this work.
 
 \begin{thebibliography}{9}
+\bibitem[Williams(1977)]{williams1977} H.~C.~W.~L. Williams. On the
+formation of travel demand models and economic evaluation measures of
+user benefit. \emph{Environment and Planning A} 9 (1977) 285--344.
+
+\bibitem[Daly and Zachary(1978)]{daly1978} A.~Daly, S.~Zachary.
+Improved multiple choice models. In D.~Hensher, M.~Dalvi (eds.),
+\emph{Determinants of Travel Choice}, Saxon House, 1978.
+
+\bibitem[Lazear and Rosen(1981)]{lazear1981} E.~P. Lazear, S.~Rosen.
+Rank-order tournaments as optimum labor contracts. \emph{Journal of
+Political Economy} 89 (1981) 841--864.
+
+\bibitem[Mosteller(1951)]{mosteller1951} F.~Mosteller. Remarks on the
+method of paired comparisons I. \emph{Psychometrika} 16 (1951) 3--9.
+
+\bibitem[Daganzo et~al.(1977)Daganzo, Bouthelier, and
+Sheffi]{daganzo1977} C.~F. Daganzo, F.~Bouthelier, Y.~Sheffi.
+Multinomial probit and qualitative choice: a computationally efficient
+algorithm. \emph{Transportation Science} 11 (1977) 338--358.
+
+\bibitem[Sheffi et~al.(1982)Sheffi, Hall, and Daganzo]{sheffi1982}
+Y.~Sheffi, R.~Hall, C.~F. Daganzo. On the estimation of the multinomial
+probit model. \emph{Transportation Research Part A} 16 (1982) 447--456.
+
+\bibitem[Kamakura(1989)]{kamakura1989} W.~A. Kamakura. The estimation
+of multinomial probit models: a new calibration algorithm.
+\emph{Transportation Science} 23 (1989) 253--265.
+
+\bibitem[Bonnet et~al.(2022)Bonnet, Galichon, Hsieh, O'Hara, and
+Shum]{bonnet2022} O.~Bonnet, A.~Galichon, Y.-W. Hsieh, K.~O'Hara,
+M.~Shum. Yogurts choose consumers? Estimation of random-utility models
+via two-sided matching. \emph{Review of Economic Studies} 89 (2022)
+3085--3114.
+
 \bibitem[McFadden(1984)]{mcfadden1984} D.~McFadden. Econometric
 analysis of qualitative response models. In Z.~Griliches,
 M.~Intriligator (eds.), \emph{Handbook of Econometrics}, vol.~II,
@@ -1318,7 +1428,7 @@ models. \emph{Journal of Business \& Economic Statistics} 41 (2023)
 \bibitem[Kim et~al.(2026)Kim, Kang, Kock, Bansal, and Sohn]{kim2026}
 G.~Kim, Y.~Kang, L.~Kock, P.~Bansal, K.~Sohn. Scalable variational
 inference for multinomial probit models under large choice sets and
-sample sizes. \emph{Statistics and Computing} (2026).
+sample sizes. \emph{Statistics and Computing} 36 (2026) 47.
 
 \bibitem[Ding et~al.(2024)Ding, Imbens, Qu, and Ye]{ding2024} P.~Ding,
 G.~Imbens, Z.~Qu, Y.~Ye. Computationally efficient estimation of large
@@ -1450,7 +1560,8 @@ the computation of high-dimensional multivariate normal probabilities.
 
 \bibitem[Cao and Katzfuss(2025)]{cao2025} J.~Cao, M.~Katzfuss.
 Linear-cost Vecchia approximation of multivariate normal probabilities.
-\emph{Journal of the American Statistical Association} (2025).
+\emph{Journal of the American Statistical Association} 121 (2026)
+768--781.
 
 \bibitem[Genz(1992)]{genz1992} A.~Genz. Numerical computation of multivariate normal
 probabilities. \emph{J.\ Computational and Graphical Statistics} 1 (1992)
@@ -1469,7 +1580,7 @@ qualitative traits: genetic analysis and prediction of recurrence risks.
 Gaussian probabilities and expectation propagation. arXiv:1111.6832 (2011).
 \bibitem[Fasano and Denti(2025)]{fasano2025} A.~Fasano, F.~Denti. Expectation propagation for
 multivariate Gaussian cumulative distribution functions.
-\emph{Biometrika} (2025).
+\emph{Biometrika} 112 (2025) asaf060.
 \bibitem[Cotton(2024)]{allocationpkg} P.~Cotton. The
 \texttt{allocation} package: Thurstone-tilt portfolio construction,
 2024. \url{https://github.com/microprediction/allocation}.
