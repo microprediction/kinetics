@@ -144,3 +144,48 @@ distribution-preserving noise keying, Stable Signature) -- novelty pass
 REQUIRED before claiming the diffusion variant. Distinctive regardless:
 continuous rho-dial with exactness, correlated factor keying with
 capacity-ranked channels, eigen-optimal direction, exact null.
+
+## Product positioning (2026-08-16): forensic fingerprinting, not AI detection
+
+The killer application is NOT "was this AI-written" but ATTRIBUTION:
+given leaked/disputed text, which model, tenant, session, or recipient
+generated it, after ordinary metadata is gone. Concrete scenario: a
+sensitive AI-generated briefing goes to 500 authorized recipients, each
+copy statistically equivalent (same marginal law) but keyed with a
+different Gaussian stream; a leak is scored against all 500 keys.
+
+Why the controlled-enterprise setting fits this construction:
+- generator AND detector controlled -> model-aware likelihood-ratio
+  detection (evidence = I(R;Y)), not just the model-free score;
+- exact marginal preservation matters in safety-critical text (no
+  systematic bias toward a green subset when the token is a dosage or a
+  "not");
+- outputs valuable enough to fund specialized infrastructure (top-k,
+  amortized inverse, native Gaussian head, offline forensics);
+- per-recipient fingerprinting = the eigenbasis channel structure.
+
+Four-layer architecture: digital signature/C2PA + provenance metadata +
+Gaussian textual fingerprint (the durability layer that survives
+copy-paste out of the credentialed container) + immutable audit logs.
+
+Hard limitations to state in any product claim:
+- NOT cryptographic authentication: spoofing/reverse-engineering
+  attacks exist against distortion-free watermarks; never authorize
+  consequential actions on a watermark hit alone;
+- rewriting/translation/regeneration remain the central threats
+  (semantic robustness is measured, not assumed -- exp33/34);
+- short messages carry little evidence -> aggregate across documents,
+  sessions, collections;
+- operating point for high-value use is FPR 1e-5..1e-6, not academic
+  1%; validated on wrong keys, human text, neighboring model versions,
+  adversarial edits;
+- collusion resistance (multiple recipients diffing copies) needs a
+  coding layer on top of the statistical channel -- not yet designed;
+- top-k deployment preserves the RENORMALIZED top-k law, not
+  automatically the full-vocabulary distribution.
+
+Benchmark spec: frozen logits; documents of 100/300/1000/3000 tokens;
+thousands of simulated recipient keys; attack suite = paraphrase,
+translation, truncation, reordering, copy-paste mixing, repeated
+detector queries, key-stream estimation, collusion. exp35 gives the
+clean-channel attribution scaling.
