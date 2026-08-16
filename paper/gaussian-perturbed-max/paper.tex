@@ -527,6 +527,25 @@ against the pure Gaussian argmax --- consistent with
 Section~\ref{sec:surrogate}, this is a different noise family, not a
 noisy estimate.
 
+\paragraph{First results: frozen-feature heads.} Experiment 32
+(committed) trains linear heads over frozen ResNet-18 CIFAR-10 features
+($N = 10$ classes), all methods at matched Adam settings. Accuracy is
+statistically indistinguishable across softmax cross-entropy, Gaussian
+Fenchel--Young at $M \in \{1, 16\}$, the exact evaluator, and the exact
+winner likelihood ($87.0$--$87.4\%$). On wall clock the Monte Carlo
+gradients win decisively at this $N$: the exact evaluator costs
+$16\times$ the $M{=}16$ sampler for equal accuracy, confirming
+\citet{berthet2020}'s observation that tiny $M$ suffices for SGD ---
+the anticipated pivot criterion, triggered at small $N$. Two positive
+findings: each geometry calibrates itself (Gaussian-trained heads reach
+ECE $\approx 0.011$ under the exact Gaussian probe where the
+softmax-trained head shows $0.037$, and symmetrically under the softmax
+probe), and the exact likelihood attains the best Gaussian-model test
+NLL ($0.378$ against $0.441$ for the softmax-trained head under the
+same probe). At ten classes the operator's role is measurement, not
+acceleration; the large-$N$ and structured-covariance experiments below
+are where the question stays open.
+
 The remaining sequence: (I) continuum/discretization tests, making the
 numerical loss--gradient pair exactly consistent
 (Section~\ref{sec:potential}); (II) the Rao--Blackwell benchmark ---

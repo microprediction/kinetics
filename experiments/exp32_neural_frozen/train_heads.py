@@ -115,8 +115,8 @@ def train(method, Xtr, ytr, Xte, yte, s=1.0, epochs=12, bs=512, lr=1e-3):
                 p = gauss_forward(mu, s)
                 w = gauss_w_row(mu, s, y)
                 py = p[np.arange(nb), y]
-                gmu = -w / py[:, None]
-                gmu[np.arange(nb), y] = w.sum(axis=1) / py
+                gmu = w / py[:, None]
+                gmu[np.arange(nb), y] = -w.sum(axis=1) / py
             elif method.startswith("fy_mc"):
                 M = int(method[5:])
                 gmu = np.zeros_like(mu)
@@ -162,7 +162,10 @@ def main():
     Xtr = (Xtr - m) / sd; Xte = (Xte - m) / sd
     print(f"features {Xtr.shape}, test {Xte.shape}")
     rows = ["method,s,seconds,acc,nll_gauss,nll_soft,ece_gauss,ece_soft"]
-    for method in ("softmax", "fy_mc1", "fy_mc16", "fy_exact", "nll_exact"):
+    import sys as _sys
+    methods = (_sys.argv[1],) if len(_sys.argv) > 1 else (
+        "softmax", "fy_mc1", "fy_mc16", "fy_exact", "nll_exact")
+    for method in methods:
         for s in ((1.0,) if method == "softmax" else (0.5, 1.0)):
             r = train(method, Xtr, ytr, Xte, yte, s=s)
             print(f"{method:>9} s={s}: {r['seconds']:6.1f}s "
