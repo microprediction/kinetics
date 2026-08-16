@@ -433,6 +433,36 @@ differences to $6\times10^{-9}$, symmetry to $4\times10^{-12}$, and
 positive definiteness of the reduced numerical Jacobian.
 \end{remark}
 
+\begin{remark}[Transport form]
+On the contrast space, with $b_i = e_i - \mathbf{1}/N$ the vertices of
+a regular simplex, $\arg\max_i (x_i + \mu_i) = \arg\min_i
+\{\tfrac12 \|x - b_i\|^2 - \mu_i\}$: the choice cells are the
+Laguerre cells of quadratic semi-discrete optimal transport from the
+contrast Gaussian to $\nu_q = \sum_i q_i \delta_{b_i}$, and
+Kantorovich duality identifies $\Omega(q)$, up to an additive constant,
+with $\tfrac12 W_2^2$ between them. Calibration is the dual solve of a
+structured transport problem; $w_{ij}$ is the Gaussian surface mass on
+the shared Laguerre facet (scaled by $1/\sqrt2$), and a Newton step is
+an electrical solve on that network, for which
+Proposition~\ref{prop:jvp} is the matrix-free multiply.
+
+Gaussian integration by parts closes the conjugate in graph form:
+$G(\mu) = \mu^\top p + \mathrm{tr}(\Sigma J)$, hence
+\[
+\Omega(p) = -\mathrm{tr}(\Sigma J)
+= -\sum_{i<j} w_{ij}\, s_{ij}^2, \qquad
+s_{ij}^2 = D_i + D_j + \|v_i - v_j\|^2 :
+\]
+the generalized entropy is the negative variance-weighted total
+conductance of the photo-finish graph (binary check
+$\Omega = -s\,\phi(\Phi^{-1}(q))$ to $3\times10^{-13}$; the identity to
+$3\times10^{-9}$; experiment 27). Common covariance shifts vanish on
+every edge difference, which is the quotient statement once more. The
+assignment form of $G^*$ is classical \citep{chiong2016}; the
+regular-simplex quadratic specialization and its $O(QN(k+L))$
+value--gradient--Hessian oracle are developed in a companion note.
+\end{remark}
+
 \begin{proposition}[Jacobian--vector products in $O(QNL)$]\label{prop:jvp}
 With hazards $\lambda_j = g_j / F_j$, $\Lambda = \sum_j \lambda_j$, and
 $A = \sum_j h_j \lambda_j$ (all conditional on $f$, all functions of $x$),

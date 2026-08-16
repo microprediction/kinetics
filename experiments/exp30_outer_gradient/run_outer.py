@@ -68,33 +68,29 @@ def main():
     D0 = rng.uniform(0.6, 1.2, N)
     B = np.linalg.qr(np.eye(N) - np.ones((N, N)) / N)[0][:, :N - 1]
 
-    # markets: distinct share vectors from perturbed utility scales
-    markets = []
-    for m in range(M):
-        mu_m = mu_star + 0.15 * rng.normal(0, 1, N)
-        mu_m -= mu_m.mean()
-        markets.append(forward(mu_m, V0, D0, F, W))   # noiseless targets
+    # markets share ONE utility vector; known factor-scale multipliers
+    # c_m identify theta (at truth, recovered utilities agree exactly)
+    CM = np.array([0.6, 0.9, 1.2, 1.5])
+    markets = [forward(mu_star, CM[m] * V0, D0, F, W) for m in range(M)]
 
-    def recover(pm, th):
-        V, D = th[0] * V0, np.exp(th[1]) * D0
+    def recover(pm, th, m):
+        V, D = CM[m] * th[0] * V0, np.exp(th[1]) * D0
         return abilities_from_probabilities_factor(pm, V, D, F, W, tol=1e-9)
 
     def L_and_grad(th, want_grad=True):
-        mus = [recover(pm, th) for pm in markets]
+        mus = [recover(pm, th, m) for m, pm in enumerate(markets)]
         mubar = np.mean(mus, axis=0)
         L = sum(float(np.sum((mu - mubar) ** 2)) for mu in mus)
         if not want_grad:
             return L, None
         G = np.zeros(2)
-        for pm, mu in zip(markets, mus):
-            V, D = th[0] * V0, np.exp(th[1]) * D0
+        mubar = np.mean(mus, axis=0)
+        for m, (pm, mu) in enumerate(zip(markets, mus)):
+            V, D = CM[m] * th[0] * V0, np.exp(th[1]) * D0
             J = jac(mu, V, D, F, W)
-            S = dp_dtheta(mu, V0, D0, th, F, W)
+            S = dp_dtheta(mu, CM[m] * V0, D0, th, F, W)
             dmu = -B @ np.linalg.solve(B.T @ J @ B, B.T @ S)   # N x 2
-            gL = 2 * (mu - np.mean([recover(q, th) for q in markets], axis=0))
-            # dL/dmu_m: through mu_m and through the mean; with M markets
-            # d/dmu_m sum_m' ||mu_m' - mubar||^2 = 2(mu_m - mubar)
-            gL = 2 * (mu - np.mean([recover(q, th) for q in markets], axis=0))
+            gL = 2 * (mu - mubar)
             G += gL @ dmu
         return L, G
 

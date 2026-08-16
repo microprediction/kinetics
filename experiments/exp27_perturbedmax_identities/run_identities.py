@@ -213,7 +213,7 @@ def main():
     print("wrote results.csv")
 
 
-if __name__ == "__main__" and "--part2" not in sys.argv:
+if __name__ == "__main__" and "--part2" not in sys.argv and "--part3" not in sys.argv:
     main()
 
 
@@ -332,3 +332,74 @@ def part2():
 
 if __name__ == "__main__" and "--part2" in sys.argv:
     part2()
+
+
+def part3():
+    """Transport-round identities: Stein/conjugate-value formula and the
+    binary entropy closed form."""
+    from scipy.stats import norm
+    rng = np.random.default_rng(14)
+    n, k = 5, 1
+    mu = rng.normal(0, 1.0, n)
+    V = rng.normal(0, 0.5, (n, k))
+    D = rng.uniform(0.6, 1.4, n)
+    F, W = gh_nodes(k)
+    Sigma = V @ V.T + np.diag(D)
+    p0, G0 = forward(mu, V, D, F, W)
+
+    eps = 1e-5
+    J = np.zeros((n, n))
+    for j in range(n):
+        e = np.zeros(n); e[j] = eps
+        J[:, j] = (forward(mu + e, V, D, F, W)[0]
+                   - forward(mu - e, V, D, F, W)[0]) / (2 * eps)
+    J = 0.5 * (J + J.T)
+
+    # A. Stein per-coordinate: E[xi_i 1{I=i}] = (Sigma J)_ii  (row sums)
+    R = 4_000_000
+    f = rng.standard_normal((R, k))
+    Xi = f @ V.T + np.sqrt(D)[None, :] * rng.standard_normal((R, n))
+    I = np.argmax(mu[None, :] + Xi, axis=1)
+    lhs = np.array([Xi[I == i, i].sum() / R for i in range(n)])
+    rhs = np.diag(Sigma @ J)
+    se = np.sqrt(np.array([np.var(Xi[:, i] * (I == i)) for i in range(n)]) / R)
+    print(f"Stein per-class: max |lhs - rhs| = {np.abs(lhs - rhs).max():.2e} "
+          f"(3 se {3*se.max():.2e})")
+
+    # B. G = mu'p + tr(Sigma J)
+    g_id = mu @ p0 + np.trace(Sigma @ J)
+    print(f"G = mu'p + tr(Sigma J): |{G0:.6f} - {g_id:.6f}| = "
+          f"{abs(G0 - g_id):.2e}")
+
+    # C. Omega(p) = -tr(Sigma J) via Omega = p'mu - G at the same mu
+    omega = p0 @ mu - G0
+    print(f"Omega = -tr(Sigma J): |{omega:.6f} - {-np.trace(Sigma @ J):.6f}| "
+          f"= {abs(omega + np.trace(Sigma @ J)):.2e}")
+
+    # D. binary closed form: Omega(q) = -s phi(Phi^-1(q))
+    mu2 = np.array([0.37, -0.37]); V2 = np.array([[0.4], [-0.3]])
+    D2 = np.array([0.9, 1.2])
+    s = np.sqrt(np.sum((V2[0] - V2[1])**2) + D2.sum())
+    p2, G2 = forward(mu2, V2, D2, *gh_nodes(1))
+    omega2 = p2 @ mu2 - G2
+    closed = -s * norm.pdf(norm.ppf(p2[0]))
+    print(f"binary Omega: |{omega2:.8f} - {closed:.8f}| = "
+          f"{abs(omega2 - closed):.2e}")
+
+    # E. Laguerre identity: argmax(x_i + mu_i) = argmin(0.5||x-b_i||^2 - mu_i)
+    P = np.eye(n) - np.ones((n, n)) / n
+    Bv = P
+    ok = True
+    for _ in range(2000):
+        xi = rng.normal(0, 1, n)
+        x = P @ xi
+        a1 = np.argmax(x + mu)
+        a2 = np.argmin(0.5 * np.sum((x[None, :] - Bv)**2, axis=1) - mu)
+        if a1 != a2:
+            ok = False
+            break
+    print(f"Laguerre-cell identity: {'OK' if ok else 'FAIL'}")
+
+
+if __name__ == "__main__" and "--part3" in sys.argv:
+    part3()

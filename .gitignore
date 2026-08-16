@@ -221,3 +221,5 @@ __marimo__/
 *.aux
 *.out
 *.synctex.gz
+experiments/exp32_neural_frozen/data/
+experiments/exp32_neural_frozen/features.npz
