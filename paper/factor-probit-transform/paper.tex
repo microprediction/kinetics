@@ -109,7 +109,9 @@ day \citep{berry1995,conlon2020}; estimating $(V, D)$ is the outer problem,
 discussed in Section~\ref{sec:discussion}.
 
 We solve it at $N = 1000$
-in three seconds, and the inverse problem is globally well-posed
+in three seconds. The tractability objection that made the logit family
+universal does not apply to factor-structured probit. The inverse
+problem is also globally well-posed
 (Proposition~\ref{thm:inv}: shares determine utilities uniquely up to
 location). Three ingredients make it work:
 
@@ -1060,8 +1062,8 @@ sums whose matrices are numerically low-rank, and a Chebyshev-separated
 evaluation (in the spirit of black-box fast multipole methods) reduces each
 node's cost from $O(NL)$ to $O(r(N+L))$; a committed prototype (experiment 20) reproduces the exact pass to
 $6\times10^{-5}$ at $23\times$ speed for $N=5000$ in NumPy, and the
-compiled version of the same construction measures $93\times$ (77 ms for
-all 5000 shares), with exponential convergence in $r$. Development to full
+compiled version of the same construction measures $93\times$, with
+exponential convergence in $r$. Development to full
 generality is left to a companion note.
 
 Beyond the Gaussian family, the same machinery computes races with arbitrary
@@ -1072,8 +1074,16 @@ generalizations.
 Neither method class dominates the other. Simulation owns arbitrary
 $\Sigma$ and coarse accuracy; the shared field owns the factor form,
 tight accuracy, derivatives, and calibration; the boundary experiments draw
-the border at intermediate spectral decay. We leave to future work replication of the substitution factorial across
-truth designs and a walk-forward calibration on real assortment data.
+the border at intermediate spectral decay. We leave to future work
+replication of the substitution factorial across truth designs and a
+walk-forward calibration on real assortment data.
+
+For fifty years, computability decided which choice models get used. For
+the factor form of probit, the form in which correlated utilities entered
+econometrics, that constraint is gone: all shares, their derivatives, and
+the inverse map cost seconds at ten thousand alternatives. Estimating the
+factors themselves remains open, and with $(V, D)$ in hand the choice
+between logit and probit families becomes one of fit, not tractability.
 
 \section*{Supplementary Materials}
 
