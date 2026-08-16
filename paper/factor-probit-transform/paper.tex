@@ -892,6 +892,22 @@ cheaper route to $3$--$4\times10^{-3}$; the lattice's advantage is large
 $N$ at small $k$. Where accuracy demands exceed the achievable rank-$k$
 error, GHK's arbitrary-$\Sigma$ generality is the right tool.
 
+\paragraph{A certificate for the fit.} Winner events depend only on
+contrasts, so for any basis $B$ of $\mathbf{1}^\perp$, Pinsker's
+inequality bounds every share discrepancy by the Kullback--Leibler
+divergence between the contrast Gaussians:
+$|p_i(\Sigma) - p_i(\hat\Sigma)| \le
+\sqrt{\mathrm{KL}\big(\mathcal{N}(B^\top\mu, B^\top\Sigma B)\,\|\,
+\mathcal{N}(B^\top\mu, B^\top\hat\Sigma B)\big)/2}$, with the Gaussian
+KL in closed form. Measured (experiment 26), the bound is roughly two
+orders of magnitude conservative but informative exactly where
+certification matters: fitting two factors to a fast-decaying
+four-factor truth certifies share error below $5.3\times10^{-2}$
+(actual $4\times10^{-4}$), and three factors certify
+$8.4\times10^{-3}$ (actual $9.7\times10^{-5}$). It converts a
+covariance-fit residual into a hard share-error guarantee before any
+transform is run.
+
 \paragraph{Substitution: a $2\times2$ factorial illustration.} The design varies factor
 structure and noise family one axis at a time, holding the idiosyncratic
 scale common. Coupling either axis with alternative-specific scales would
@@ -1148,7 +1164,7 @@ between logit and probit families becomes one of fit, not tractability.
 \begin{description}
 \item[Code and experiments:] all numbers come from committed, seeded
 scripts with correctness anchors run before any comparison (repository
-experiments 13--25). A single manifest,
+experiments 13--26). A single manifest,
 \texttt{experiments/run\_all\_paper.py}, regenerates every table and
 figure; the exact commit is recorded in the repository README and an
 immutable tag is pinned at submission. (Archive supplied as a zip with
