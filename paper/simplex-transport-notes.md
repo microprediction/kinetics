@@ -105,3 +105,10 @@ that grad Omega = calibration solve and Hess Omega = reduced inverse --
 Paper 1's conjugate complexity claim was corrected accordingly; Paper 3
 should state the oracle table (value: k JVPs + diagonal; gradient:
 calibration; HVP of Omega: reduced solve) from the start.
+
+Additional Paper 3 literature (verified 2026-08-17): Melo, "Learning in
+random utility models via online decision problems," IJET 21(4) 494-526
+(2025), arXiv:2112.10993 -- formal duality between RUM share inversion,
+online convex optimization, and no-regret learning. Direct bridge from
+the photo-finish graph to online learning dynamics; cite prominently in
+the mirror-map section.

@@ -84,7 +84,7 @@ Trillions of dollars are invested passively in capital weighted indexes in a sub
 
 The Capital Asset Pricing Model is internally coherent only for the universe of all assets, incidentally, and the argument that justifies it does not extend to sub-portfolios. In fact, the 
 use of capital weighted indexes for investment or return comparison is fundamentally inconsistent in this respect---so in that sense it is in many ways analogous to the same 
-unthinking renormalization that tends to occur almost everywhere in machine learning (including, of course, the very architecture of artificial neurons).    
+unthinking renormalization that tends to occur almost everywhere in machine learning (including, of course, the very architecture of artificial neurons).\footnote{For a constructive alternative in the portfolio setting see the \texttt{allocation} package \citep{allocationpkg}.}    
 
 Choice models cannot be distinguished on a fixed set, assuming calibration is possible. However when logit,  probit or other models are calibrated to observed shares\footnote{We call the choice probabilities $p_i$ \emph{shares} throughout. The racing origin \citep{cotton2021} called them \emph{state prices}, borrowing prediction-market and finance usage. In the probit choice setting \emph{shares}, as in market shares, is the more natural term, and \emph{probability} or \emph{implied probability} would blur them against the many other probabilities in play.} the recovered utilities can serve as inputs to questions the data do not answer
 directly: elasticities, welfare,
@@ -528,7 +528,9 @@ the simplex and $p(\mu) = \arg\max_{q \in \Delta}\{\mu^\top q -
 \Omega(q)\}$. For iid Gumbel noise $\Omega$ is Shannon negentropy and
 the maximizer is softmax. In general it is the generalized entropy of
 \citet{fosgerau2020}, with the perturbation--regularization duality
-developed for machine learning by \citet{berthet2020}. Factor probit
+developed for machine learning by \citet{berthet2020}.
+\citet{melo2025} gives the online-learning reading of the same
+duality. Factor probit
 carries a covariance-dependent, non-separable entropy that couples
 alternatives through the factor structure. 
 
@@ -703,7 +705,7 @@ convergence of that loop.
 
 \begin{proposition}[Local convergence of damped Jacobi]
 \label{prop:jacobi}
-For the exact continuum share map and a strictly positive target (no horses with infinite odds), the
+For the exact continuum share map and a strictly positive target, the
 mean-zero damped Jacobi iteration underlying
 Algorithm~\ref{alg:calibrate} is locally linearly convergent for every
 fixed damping $0 < \alpha < 1$, and also at $\alpha = 1$ for $N \ge 3$,
@@ -1122,6 +1124,9 @@ covariances but simulated probabilities. Sparse-grid integration
 
 \citet{elrod1995}
 estimated factor-analytic probit for panel data;
+\citet{haaijer1998} estimated utility covariances in conjoint MNP;
+\citet{cohen2010} built a structured covariance probit expressly for
+demand estimation;
 \citet{loaiza2022} pursue large choice sets by
 Bayesian estimation, with variational follow-ups \citep{loaiza2023};
 \citet{kim2026} reach twenty alternatives at a million observations by
@@ -1142,8 +1147,9 @@ survival-product win integral for normal running times and gave its
 first-order analytic inversion. \citet{ali1998} inverted market odds to
 abilities numerically at eight-runner fields, and betting practice
 otherwise approximated the inversion away \citep{lo1994}. The lattice survival-product identity and
-its fast inverse transform come from racing \citep{cotton2021}, which
-names the common-factor extension developed here as an open problem.
+its fast inverse transform come from racing \citep{cotton2021}, ship in
+the \texttt{winning} package \citep{winningpkg}, and the common-factor
+extension developed here is named there as an open problem.
 
 The shared-product assembly itself also appears in competing-risks
 computation: \citet{mahani2019} compute all cause-specific cumulative
@@ -1198,7 +1204,10 @@ generalized-entropy duality, without an algorithm.
  \citet{berry1995} built demand
 estimation on the logit-side inversion, and \citet{conlon2020}
 maintain its modern practice. \citet{chia2021}
-differentiates logit BLP automatically; \citet{huch2026}
+differentiates logit BLP automatically. On the GEV side, closed-form
+flexible-correlation kernels pursue rich substitution without
+high-dimensional integration \citep{tinessa2020,tinessa2021}.
+Meanwhile \citet{huch2026}
 amortize correlated-choice probabilities with neural networks, evidence of
 current demand for this computation.
 
@@ -1506,7 +1515,9 @@ $N$.
 
 Of course, estimating $(V, D)$ rather than supplying them raises the usual
 identification cautions: scale normalization, factor rotation, and the fact
-that only difference covariances are identified. This is left to future work. 
+that only difference covariances are identified. Rank and order
+conditions for identifying error-component structures are given by
+\citet{walker2007}. This is left to future work. 
 
 Separately, the pass itself can be accelerated further. Its two stages
 are smooth-kernel sums whose matrices are numerically low-rank in our
@@ -1714,7 +1725,9 @@ Rank-order tournaments as optimum labor contracts. \emph{Journal of
 Political Economy} 89 (1981) 841--864.
 
 \bibitem[Mosteller(1951)]{mosteller1951} F.~Mosteller. Remarks on the
-method of paired comparisons I. \emph{Psychometrika} 16 (1951) 3--9.
+method of paired comparisons: I. The least squares solution assuming
+equal standard deviations and equal correlations. \emph{Psychometrika}
+16 (1951) 3--9.
 
 \bibitem[Daganzo et~al.(1977)Daganzo, Bouthelier, and
 Sheffi]{daganzo1977} C.~F. Daganzo, F.~Bouthelier, Y.~Sheffi.
@@ -1869,7 +1882,7 @@ and invertibility of demand. \emph{Econometrica} 81(5):2087--2111, 2013.
 \bibitem[Berry et~al.(1995)Berry, Levinsohn, and Pakes]{berry1995} S.~Berry, J.~Levinsohn, A.~Pakes. Automobile prices in
 market equilibrium. \emph{Econometrica} 63 (1995) 841--890.
 \bibitem[Conlon and Gortmaker(2020)]{conlon2020} C.~Conlon, J.~Gortmaker. Best practices for
-differentiated products demand estimation with pyblp. \emph{RAND Journal of
+differentiated products demand estimation with PyBLP. \emph{RAND Journal of
 Economics} 51 (2020) 1108--1161.
 \bibitem[Chia(2021)]{chia2021} A.~Chia. Automatically differentiable random coefficient
 logistic demand estimation. arXiv:2106.04636 (2021).
@@ -1878,7 +1891,7 @@ discrete choice models via equivariant neural networks. arXiv:2603.24705
 (2026).
 \bibitem[McFadden(1981)]{mcfadden1981} D.~McFadden. Econometric models of probabilistic
 choice. In C.~Manski, D.~McFadden (eds.), \emph{Structural Analysis of
-Discrete Data}, MIT Press, 1981.
+Discrete Data with Econometric Applications}, MIT Press, 1981.
 \bibitem[Chiong et~al.(2016)Chiong, Galichon, and Shum]{chiong2016} K.~Chiong, A.~Galichon, M.~Shum. Duality in dynamic
 discrete-choice models. \emph{Quantitative Economics} 7 (2016) 83--115.
 \bibitem[Norets and Takahashi(2013)]{norets2013} A.~Norets, S.~Takahashi. On the surjectivity of the
@@ -1916,7 +1929,7 @@ the computation of high-dimensional multivariate normal probabilities.
 \emph{Journal of Computational and Graphical Statistics} 27 (2018)
 268--277.
 
-\bibitem[Cao and Katzfuss(2025)]{cao2025} J.~Cao, M.~Katzfuss.
+\bibitem[Cao and Katzfuss(2026)]{cao2025} J.~Cao, M.~Katzfuss.
 Linear-cost Vecchia approximation of multivariate normal probabilities.
 \emph{Journal of the American Statistical Association} 121 (2026)
 768--781.
@@ -1936,9 +1949,32 @@ qualitative traits: genetic analysis and prediction of recurrence risks.
 \emph{Biometrics} 30 (1974) 41--57.
 \bibitem[Cunningham et~al.(2011)Cunningham, Hennig, and Lacoste-Julien]{cunningham2011} J.~P. Cunningham, P.~Hennig, S.~Lacoste-Julien.
 Gaussian probabilities and expectation propagation. arXiv:1111.6832 (2011).
-\bibitem[Fasano and Denti(2025)]{fasano2025} A.~Fasano, F.~Denti. Expectation propagation for
-multivariate Gaussian cumulative distribution functions.
-\emph{Biometrika} 112 (2025) asaf060.
+\bibitem[Fasano and Denti(2025)]{fasano2025} A.~Fasano, F.~Denti. Multivariate Gaussian
+cumulative distribution functions as the marginal likelihood of their
+dual Bayesian probit models. \emph{Biometrika} 112 (2025) asaf060.
+\bibitem[Walker et~al.(2007)Walker, Ben-Akiva, and Bolduc]{walker2007}
+J.~L. Walker, M.~Ben-Akiva, D.~Bolduc. Identification of parameters in
+normal error component logit-mixture (NECLM) models. \emph{Journal of
+Applied Econometrics} 22 (2007) 1095--1125.
+\bibitem[Haaijer et~al.(1998)Haaijer, Wedel, Vriens, and
+Wansbeek]{haaijer1998} R.~Haaijer, M.~Wedel, M.~Vriens, T.~Wansbeek.
+Utility covariances and context effects in conjoint MNP models.
+\emph{Marketing Science} 17 (1998) 236--252.
+\bibitem[Cohen(2010)]{cohen2010} M.~Cohen. A structured covariance
+probit demand model. Food Marketing Policy Center Research Report 123,
+University of Connecticut, 2010.
+\bibitem[Tinessa et~al.(2020)Tinessa, Marzano, and Papola]{tinessa2020}
+F.~Tinessa, V.~Marzano, A.~Papola. Mixing distributions of tastes with
+a Combination of Nested Logit (CoNL) kernel: formulation and
+performance analysis. \emph{Transportation Research Part B} 141 (2020)
+1--23.
+\bibitem[Tinessa(2021)]{tinessa2021} F.~Tinessa. Closed-form random
+utility models with mixture distributions of random utilities:
+exploring finite mixtures of qGEV models. \emph{Transportation
+Research Part B} 146 (2021) 262--288.
+\bibitem[Melo(2025)]{melo2025} E.~Melo. Learning in random utility
+models via online decision problems. \emph{International Journal of
+Economic Theory} 21 (2025) 494--526.
 \bibitem[Aurenhammer et~al.(1998)Aurenhammer, Hoffmann, and
 Aronov]{aurenhammer1998} F.~Aurenhammer, F.~Hoffmann, B.~Aronov.
 Minkowski-type theorems and least-squares clustering.
@@ -1957,7 +1993,7 @@ numerical solution. \emph{Mathematical Programming} 199 (2023)
 1033--1106.
 \bibitem[Chang et~al.(2026)Chang, Narita, and Saito]{chang2022}
 H.~Chang, Y.~Narita, K.~Saito. Approximating choice data by discrete
-choice models. Working paper, 2026 revision.
+choice models. Working paper, arXiv:2205.01882, 2026 revision.
 \bibitem[Lee(2000)]{lee2000} L.-F. Lee. A numerically stable quadrature
 procedure for the one-factor random-component discrete choice model.
 \emph{Journal of Econometrics} 95 (2000) 117--129.
