@@ -84,3 +84,24 @@ claiming); explicit global smoothness/strong-convexity constants.
 Compact "Transport form" remark added after the conjugate remark
 (2026-08-16) with the verified conductance identity and binary check;
 everything else deferred to this note.
+
+
+## Referee round (2026-08-16) intersecting this program
+
+A JCGS-style review of Paper 1 independently demanded the OT framing and
+supplied the citation spine, now added to Paper 1's transport paragraph:
+- Aurenhammer, Hoffmann, Aronov (1998): power-diagram formulation.
+- Levy (2015): convex weight optimization.
+- Kitagawa, Merigot, Thibert (2019): damped Newton, Laplacian Hessian
+  with facet-integral weights, global convergence under compact-support
+  regularity (does NOT import verbatim for an unbounded Gaussian source;
+  a truncation/extension argument is theorem 2's opening move).
+- Taskesen, Shafieezadeh-Abadeh, Kuhn (2023): discrete-choice smoothing
+  as semi-discrete OT.
+Paper 1 now claims only the oracle novelty (all cell masses + HVP in
+O(QN(k+L)) for a factor-Gaussian source on simplex sites); the full
+optimization story stays here for Paper 3. The reviewer also flagged
+that grad Omega = calibration solve and Hess Omega = reduced inverse --
+Paper 1's conjugate complexity claim was corrected accordingly; Paper 3
+should state the oracle table (value: k JVPs + diagonal; gradient:
+calibration; HVP of Omega: reduced solve) from the start.

@@ -47,6 +47,8 @@ SCRIPTS = [
     "exp23_newton_cg/run_newton_cg.py",
     "exp24_factor_rqmc/run_factor_rqmc.py",
     "exp25_logodds_accuracy/run_logodds.py",
+    "exp33_dstress/run_dstress.py",
+    "exp34_softmax/run_softmax.py",
 ]
 
 def main():
