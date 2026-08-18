@@ -47,3 +47,13 @@ Schur-complement object in portfolio construction.
   year    = {2021}
 }
 ```
+
+## Note: factor-probit program moved
+
+The factor multinomial probit paper and its experiment suite (13-38)
+now live in the [winning repository](https://github.com/microprediction/winning)
+(`papers/factor-probit-transform/`, `research/experiments/`, branch
+`benchmark-arena`, tag `jcgs-v2`), alongside the production
+implementation in `winning.factor`. The physics experiments and the
+companion papers remain here; `experiments/raceutil.py` is now a shim
+importing the canonical implementation from the winning package.
