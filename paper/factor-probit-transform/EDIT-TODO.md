@@ -28,3 +28,17 @@
 - Ordered-probit/Lazear-Rosen "same model" looseness in intro ¶1.
 - D-range reporting for the original exp16 robustness suite (new exp33
   covers ratios 1e2/1e3; retrofitting old suite optional).
+- Factorial replication: DONE 2026-08-17 (experiment 36, 20 seeds,
+  factor probit wins 20/20 in every stratum). Remaining caveat: single
+  truth family.
+- Optional: 1000-problem randomized stress suite for empirical global
+  convergence (failure count, worst iterations vs spectral gap).
+- Real-data inner-inversion demo (reviewer suggestion): take V from
+  actual product characteristics or an existing fitted factor MNP and
+  demonstrate ONLY the inner inversion/removal problem. Removes the
+  "synthetic algorithm looking for a use case" objection without
+  expanding claims.
+- Reviewer prefers Further structure compressed to a paragraph with the
+  transport/trace material in an appendix (currently its own section
+  after the numerics). Editorial; Peter's call.
+- Intro trim: reviewer asks again for 40-50% cut of pp. 1-2 color.

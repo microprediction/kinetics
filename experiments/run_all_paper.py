@@ -49,6 +49,9 @@ SCRIPTS = [
     "exp25_logodds_accuracy/run_logodds.py",
     "exp33_dstress/run_dstress.py",
     "exp34_softmax/run_softmax.py",
+    "exp35_independent_inversion/run_independent.py",
+    "exp36_factorial_replication/run_factorial_replication.py",
+    "exp38_conditional_mc/run_conditional_mc.py",
 ]
 
 def main():
