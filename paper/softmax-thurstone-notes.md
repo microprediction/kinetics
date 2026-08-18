@@ -209,3 +209,21 @@ Commit sequence:
   separate them), PR #14 (the correlated backend is the already-merged version 3),
   and the GHK/econometrics line (logistic-normal aggregate shares are the
   compositional-data workhorse; the inverse map is our transform).
+
+## Verification log
+
+2026-08-17: the organizing identity machine-checked. E[softmin(X/tau)]
+= P(argmin(X + tau*g)), g iid min-Gumbel: max diff 3.7e-4 at R=4e6
+common draws (MC noise 1.5e-3), N=8, tau=0.7. The softmin expectation
+is exactly a hard race with the base convolved with tau-Gumbel, so it
+drops into winning.factor.race_probabilities as a convolved base;
+composes with factors since the g are iid (conditional independence
+survives). Temperature still not identifiable from one race.
+
+2026-08-17 (later): IMPLEMENTED. race_probabilities(..., temperature=)
+in winning.factor.races via per-runner lattice convolution with the
+tau-Gumbel kernel; envelope padded 30*tau left (heavy min-Gumbel tail;
+the exp33 lesson applied). Tests: matches common-draw MC softmin at
+3e-3 with and without factors; tau->0 recovers hard race; tau->inf
+flattens to uniform; calibration roundtrips at fixed tau. The notes'
+larger program (choice theorem, phase diagram) remains open.
