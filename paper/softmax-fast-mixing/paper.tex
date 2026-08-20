@@ -37,9 +37,12 @@ predicts every blocked-subset counterfactual by restricting sums, so the whole
 deletion ensemble follows from one calculation. Fluctuations common to all
 channels cancel exactly, so departures from softmax measure differential
 structure alone, and environmental modes of rank $r$ give $K$ of rank exactly
-$r$. We verify the expansion on finite chains, then on Brownian narrow escape
-with reaction windows, where the leading and corrected errors decay with
-measured orders $0.93$ and $1.93$ against an exactly discretized generator.
+$r$. The same correction predicts the runner-up kernel, which is observable in
+any race that reports a finishing order, so the theory can be tested without
+running interventions. We verify the expansion on finite chains, then on
+Brownian narrow escape with reaction windows, where the leading and corrected
+errors decay with measured orders $0.93$ and $1.93$ against an exactly
+discretized generator.
 \end{abstract}
 
 \section{Introduction}
@@ -108,6 +111,8 @@ quantity is an exact linear solve. Section~\ref{sec:escape} moves to
 continuous physics, a reflected Brownian motion in a disk with reaction
 windows, and reports the measured convergence orders together with two
 systematic errors that a layered numerical design exposed.
+Section~\ref{sec:runnerup} shows the correction also predicts the runner-up
+kernel, which makes it testable against ranked data.
 
 \section{The shared-state race}\label{sec:model}
 
@@ -383,6 +388,49 @@ one window and $+0.006$ on its overlap partner, and its flatness under both
 time-step and grid refinement confirmed that it was not a discretization
 artifact.
 
+\section{The correction predicts the runner-up}\label{sec:runnerup}
+
+The correction has been described so far as a statement about win
+probabilities, which are what a blocked-set experiment measures. Those
+experiments are expensive, since each availability set requires its own
+intervention. There is a cheaper observable that carries the same information.
+
+Let $M_{ij} = \Prob(\text{runner-up} = j \mid \text{winner} = i)$ be the
+runner-up kernel, the probability that $j$ finishes second given that $i$
+finishes first. Removing channel $i$ changes the outcome only in those
+realizations where $i$ won, and in those the runner-up inherits the win. This
+gives an identity that holds for every $\varepsilon$ and involves no
+approximation,
+\begin{equation}\label{eq:runnerup}
+  q^{(-i)}_j = p_j + p_i M_{ij} ,
+\end{equation}
+where $q^{(-i)}$ is the deletion counterfactual. The companion work shows
+$M$ is exactly the object that identifies single deletions, and that
+winner-only data constrains it not at all.
+
+Applying Theorem~\ref{thm:main} to the full set and to $A \setminus \{i\}$
+therefore predicts $M$ itself. At leading order the prediction is
+\begin{equation}\label{eq:Mluce}
+  M_{ij} = \frac{\lbar_j}{\bar\Lambda_A - \lbar_i} + O(\varepsilon) ,
+\end{equation}
+which says the runner-up is drawn from the race among the remaining channels,
+the IIA prediction. Substituting the corrected shares into \eqref{eq:runnerup}
+gains an order.
+
+Experiment 39 verifies this on the same chains. The identity
+\eqref{eq:runnerup} holds to $1.8\times10^{-15}$, the predicted kernel is
+row-stochastic to $8.0\times10^{-15}$, and the measured convergence orders are
+$0.967$ for the Luce prediction \eqref{eq:Mluce} and $1.967$ with the
+Green--Kubo correction. At $\varepsilon = 0.005$ the maximum error over
+off-diagonal entries falls from $3.0\times10^{-4}$ to $2.1\times10^{-6}$.
+
+This matters for testing the theory. The runner-up is observed in any race that
+reports a finishing order, so the correction can be checked against ordinary
+ranked data rather than against interventions. It also runs the other way. Where
+the environment is unknown, a measured $M$ constrains the Green--Kubo matrix,
+which is the beginning of estimating $K$ from data rather than computing it from
+a known generator.
+
 \section{Discussion}
 
 The result explains why softmax is a reasonable default in systems with fast
@@ -398,11 +446,15 @@ Section~\ref{sec:escape}. The results are proved for finite chains and verified
 on a reversible diffusion, and a formal treatment of reversible diffusions with
 a spectral gap is left open.
 
-Two extensions look tractable. The disk's boundary operator diagonalizes in
+One extension looks tractable. The disk's boundary operator diagonalizes in
 Fourier modes, which may render the leading geometric correction analytic
-rather than numerical. Separately, the Green--Kubo kernel and the empirical
-substitution kernel of the companion work describe the same non-IIA structure
-from theory and from data, and identifying them would connect a computed
-correction to an estimated one.
+rather than numerical.
+
+Section~\ref{sec:runnerup} closes the gap between the computed correction and
+the estimated one, at least in one direction. What remains is the inverse
+problem. Estimating $K$ from an observed runner-up kernel is an
+underdetermined fit, since $M$ supplies $N(N-1)$ numbers for the $N^2$ entries
+of $K$ and only through the combinations appearing in \eqref{eq:main}, so the
+identifiable part of $K$ has yet to be characterized.
 
 \end{document}

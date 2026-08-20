@@ -1,0 +1,7 @@
+quantity,value
+identity_max_err,1.832e-15
+rowsum_max_err,7.994e-15
+luce_slope,0.9668
+gk_slope,1.9672
+luce_err_at_eps0.005,3.044e-04
+gk_err_at_eps0.005,2.120e-06
