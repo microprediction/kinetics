@@ -112,3 +112,20 @@ def test_general_start_restores_second_order():
     assert extra_pt > 1e-3                       # genuinely present off equilibrium
     assert s_pt < 1.3, s_pt                      # stationary formula loses the order
     assert g_pt > 1.8, g_pt                      # general formula restores it
+
+
+def test_proportional_hazards_is_exact_pointwise_under_stress():
+    """Prop 1 needs no positivity of c and no bound on eps, and holds for
+    every start state, not only in equilibrium."""
+    rng = np.random.default_rng(5150)
+    L, pi, _ = rb.environment(rng, 6, 5, 0.5)
+    a = rng.uniform(0.5, 2.0, 5)
+    A = [0, 1, 3]
+    luce = a[A] / a[A].sum()
+    for cvec in (rng.uniform(0.4, 3.0, 6),
+                 np.array([0.0, 0.0, 0.0, 0.0, 1.3, 0.7]),
+                 np.array([1e-9, 1e-5, 1e-2, 1.0, 1e3, 1e9])):
+        lam = a[:, None] * cvec[None, :]
+        for eps in (1e-3, 0.3, 3.0, 100.0):
+            u = np.linalg.solve(L / eps - np.diag(lam[A].sum(0)), -lam[A].T)
+            assert np.abs(u - luce[None, :]).max() < 1e-12

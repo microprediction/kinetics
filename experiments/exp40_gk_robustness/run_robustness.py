@@ -18,6 +18,15 @@ Part C. RANK BOUND. Rank-r loadings give rank(K) <= r, but there is a second
 cap: deviations live in the mean-zero subspace of the environment, so
 rank(K) <= min(N, m-1) whatever the loadings. Verify both.
 
+Part G. PROPORTIONAL HAZARDS UNDER STRESS. Proposition 1 claims lambda_i =
+a_i c(y) gives Luce exactly, pointwise in the start state, for any c >= 0 and
+any eps. Stress it: let c vanish on most states, span nine orders of magnitude,
+and push eps to 100.
+
+Part F. EXHAUSTIVE SUBSETS. Experiment 7 samples 41 availability sets, none of
+size two. Sweep ALL subsets of size >= 2 of the committed exp07 chain instead,
+so the quoted maxima are true maxima, and fit the order on every one of them.
+
 Part E. THE START LAW. The theorem is stated from stationarity. From any other
 start the leading softmax term is unchanged, but the first-order correction
 picks up an extra term, so the stationary formula is only first-order accurate
@@ -223,6 +232,66 @@ def main() -> None:
         rows += [(f"start_{label}_stationary_form_order", f"{order(e_stat):.4f}"),
                  (f"start_{label}_general_form_order", f"{order(e_gen):.4f}"),
                  (f"start_{label}_extra_term_max", f"{np.abs(extra).max():.3e}")]
+
+    # ---- Part F: exhaustive subset sweep on the exp07 instance -------------
+    import itertools
+    import sys as _sys
+    _sys.path.insert(0, str(HERE.parent / "exp07_green_kubo"))
+    import run_green_kubo as gk7  # noqa: E402
+
+    rng7 = np.random.default_rng(gk7.SEED)
+    L7, pi7 = gk7.make_chain(rng7)
+    lam7 = rng7.lognormal(0.0, 0.8, size=(gk7.N, gk7.M))
+    lam_bar7, K7, _ = kubo(L7, pi7, lam7)
+    asym7 = np.abs(K7 - K7.T).max()
+    rows += [("exp07_K_asymmetry_abs", f"{asym7:.4f}"),
+             ("exp07_K_max_abs", f"{np.abs(K7).max():.4f}"),
+             ("exp07_K_relative_asymmetry", f"{asym7 / np.abs(K7).max():.4f}")]
+
+    idx = list(range(gk7.N))
+    subsets = [list(c) for r in range(2, gk7.N + 1)
+               for c in itertools.combinations(idx, r)]
+    eps_ref = 0.05
+    worst_soft = worst_gk = 0.0
+    n_worse = 0
+    ord_gk, ord_soft = [], []
+    for A7 in subsets:
+        p7 = exact_shares(L7, pi7, lam7, A7, eps_ref)
+        s7, g7 = predicted(lam_bar7, K7, A7, eps_ref)
+        es, eg = np.abs(p7 - s7).max(), np.abs(p7 - g7).max()
+        worst_soft = max(worst_soft, es)
+        worst_gk = max(worst_gk, eg)
+        n_worse += eg > es
+        so, go, _ = orders_for(L7, pi7, lam7, K7, lam_bar7, A7)
+        ord_soft.append(so)
+        ord_gk.append(go)
+    rows += [("subsets_swept", str(len(subsets))),
+             ("subset_worst_softmax_err", f"{worst_soft:.3e}"),
+             ("subset_worst_gk_err", f"{worst_gk:.3e}"),
+             ("subsets_where_gk_worse", str(int(n_worse))),
+             ("subset_gk_order_min", f"{min(ord_gk):.4f}"),
+             ("subset_gk_order_max", f"{max(ord_gk):.4f}"),
+             ("subset_softmax_order_min", f"{min(ord_soft):.4f}"),
+             ("subset_softmax_order_max", f"{max(ord_soft):.4f}")]
+
+    # ---- Part G: proportional hazards under stress -------------------------
+    rngc = np.random.default_rng(5150)
+    Lc, pic, _ = environment(rngc, 6, 5, 0.5)
+    a = rngc.uniform(0.5, 2.0, 5)
+    worst = 0.0
+    cases = {
+        "c_positive": rngc.uniform(0.4, 3.0, 6),
+        "c_zero_on_four_of_six": np.array([0.0, 0.0, 0.0, 0.0, 1.3, 0.7]),
+        "c_nine_decades": np.array([1e-9, 1e-5, 1e-2, 1.0, 1e3, 1e9]),
+    }
+    for name, cvec in cases.items():
+        lam_c = a[:, None] * cvec[None, :]
+        for eps in (1e-3, 0.3, 3.0, 100.0):
+            A2 = [0, 1, 3]
+            u = np.linalg.solve(Lc / eps - np.diag(lam_c[A2].sum(0)), -lam_c[A2].T)
+            luce = a[A2] / a[A2].sum()
+            worst = max(worst, np.abs(u - luce[None, :]).max())   # pointwise in y
+    rows += [("prop_hazards_worst_pointwise_dev", f"{worst:.3e}")]
 
     with open(HERE / "results.csv", "w") as fh:
         fh.write("quantity,value\n")

@@ -282,20 +282,32 @@ $a_i \gamma \sum_{j\in A} a_j - (a_i/\sum_{j\in A}a_j)\gamma
 (\sum_{j\in A}a_j)^2 = 0$. The correction vanishes identically.
 
 \begin{proposition}[Proportional hazards give Luce exactly]\label{prop:common}
-If $\lambda_i(y) = a_i c(y)$ with $c > 0$ then
-$p_i^A = a_i / \sum_{j\in A} a_j$ exactly, for every $\varepsilon$ and every
-$A$, not merely to the order computed above.
+Suppose $\lambda_i(y) = a_i c(y)$ with $a_i > 0$ and $c \ge 0$ not identically
+zero. Then for every $y$, every $\varepsilon$, and every $A$,
+\[
+  u_i^A(y) = \frac{a_i}{\sum_{j \in A} a_j} ,
+\]
+so the win probability is Luce's law from any start, not merely from $\pi$ and
+not merely to the order computed above.
 \end{proposition}
 
 \begin{proof}
-Let $\tau_c(t) = \int_0^t c(Y_s)\,ds$, a strictly increasing time change. In
-the clock $\tau_c$ every channel fires at the constant rate $a_i$, because the
-cumulative hazard of channel $i$ up to real time $t$ is $a_i \tau_c(t)$. The
-race is then a race among constant exponential rates, whose winner is $i$ with
-probability $a_i/\sum_{j\in A}a_j$, independently of the clock. Since the
-identity of the winner is invariant under a common monotone time change, the
-same holds in real time.
+Let $v_i$ be the constant function $a_i / \sum_{j\in A}a_j$. Constants are
+annihilated by $L$, and
+$\Lambda_A v_i = c(y)\big(\sum_{j\in A}a_j\big) \cdot a_i /
+\sum_{j\in A}a_j = a_i c(y) = \lambda_i$, so
+$(\Lambda_A - L/\varepsilon)v_i = \lambda_i$. Since the killed resolvent is
+invertible, $v_i$ is the unique solution of \eqref{eq:resolvent}, which is
+$u_i^A$.
 \end{proof}
+
+The proof needs no positivity of $c$, no time change, and no condition on
+$\varepsilon$. What it says is that a common modulation factors out of the
+competition entirely, which is the proportional-hazards normal form. Experiment
+40 confirms it where the hypotheses are stressed. With $c$ vanishing on four of
+six states, with $c$ ranging over nine orders of magnitude, and at
+$\varepsilon = 100$, the departure from Luce stays below $5.5\times10^{-14}$ at every
+state.
 
 This is a stronger statement than the vanishing of the correction, and it is
 practically useful in the opposite direction. It says a measured departure from
@@ -323,8 +335,8 @@ On a finite state space every object above is an exact linear solve, so the
 theorem can be tested without simulation error. Experiment 7 runs a six-state
 chain with ten channels.
 
-\paragraph{Setup.} The generator has independent uniform off-diagonal rates on
-$[0.2, 1.5]$, giving a non-reversible chain with spectral gap $2.63$. Channel
+\paragraph{Setup.} The generator has independent unit-mean exponential
+off-diagonal rates, giving a non-reversible chain with spectral gap $2.63$. Channel
 intensities are lognormal with log-scale $0.8$, giving
 $\bar\Lambda_A = 11.4$ on the full set. The seed is $5$ and the sweep covers
 thirteen values of $\varepsilon$ from $10^{-3}$ to $1$. The dimensionless
@@ -360,10 +372,20 @@ single trial.
   \label{fig:chain}
 \end{figure}
 
-Figure~\ref{fig:chain} shows both. The subset-uniformity claim is tested by fixing one $(\lbar, K)$ pair and
-predicting $41$ random availability sets at $\varepsilon = 0.05$. The maximum
-error over all subsets falls from $2.8\times10^{-3}$ under softmax to
-$4.0\times10^{-4}$ with the correction, with no per-subset computation.
+Figure~\ref{fig:chain} shows both. The subset-uniformity claim is tested by
+fixing one $(\lbar, K)$ pair and predicting every availability set. Experiment
+40 sweeps all $1013$ subsets of size at least two at $\varepsilon = 0.05$, so
+the maxima here are true maxima rather than samples. The worst error over all
+subsets falls from $3.1\times10^{-3}$ under softmax to $4.4\times10^{-4}$ with
+the correction, with no per-subset computation.
+
+The order is uniform in a strong sense. Fitting the convergence order
+separately on each of the $1013$ subsets puts every corrected order in
+$[1.92, 2.00]$. Small subsets are better rather than worse, because the
+effective parameter is $\varepsilon\bar\Lambda_A/\mathrm{gap}$ and
+$\bar\Lambda_A$ shrinks with the subset. Exactly one subset has the correction
+slightly worse than softmax, a two-element near-tie where both errors are
+already two orders of magnitude below the maximum.
 
 The word Green--Kubo is doing work in \eqref{eq:K}, and experiment 40 tests
 whether it needs to. Replacing $K$ by the equal-time covariance
@@ -385,12 +407,12 @@ $[0.022, 0.002, 0, 0]$, so the rank is exactly two.
 
 A Gillespie simulation of the same system, event-driven and including the
 hidden state, agrees with the resolvent solution to $1.9\times10^{-3}$ across
-$40{,}000$ trajectories at $\varepsilon = 0.3$, against a sampling noise of
-about $2.7\times10^{-3}$.
+$40{,}000$ trajectories at $\varepsilon = 0.3$, against a binomial sampling
+noise of $2.1\times10^{-3}$.
 
-The chain is not reversible, so $K$ is asymmetric. On the committed instance
+The chain is not reversible, so $K$ is asymmetric. On this instance
 $\max_{jk}|K_{jk} - K_{kj}| = 0.139$ against $\max_{jk}|K_{jk}| = 0.603$, a
-relative asymmetry of $23\%$. This is what distinguishes $K_{ji}$ from
+relative asymmetry of $23\%$ recorded by experiment 40. This is what distinguishes $K_{ji}$ from
 $K_{ij}$ in \eqref{eq:main}, and experiment 40 confirms the index order is not
 a convention. Transposing $K$ in the correction degrades the measured order
 from $1.94$ to $1.58$, and $K$ agrees with brute-force time integration of the
@@ -405,11 +427,14 @@ channel $i$ fires at rate $\kappa$. The first window to fire wins. Here
 $\kappa$ plays the role of $\varepsilon$, since a slow reaction rate means the
 particle mixes many times before firing.
 
-\paragraph{Setup.} Sixteen boundary windows of half-width $0.12$ on the unit
-circle, drawn with seed $42$, three pairs of which overlap. The polar grid is
-$40 \times 88$, giving $3520$ cells. Simulations use time step
-$2\times10^{-4}$ and $50{,}000$ trajectories per $\kappa$, with
-$\kappa \in \{2, 5, 10, 20, 40\}$.
+\paragraph{Setup.} Sixteen boundary windows on the unit circle, six clustered
+within about $50$ degrees and the rest scattered, drawn with seed $42$. Angular
+half-widths are lognormal with median $0.030$, ranging over $[0.019, 0.055]$ on
+this draw, and three pairs overlap. The reaction bands extend $0.12$ inward in
+radius. The polar grid is $40 \times 88$, giving $3520$ cells. The resolvent
+sweep covers $\kappa \in \{2, 5, 10, 20, 40\}$, and the Brownian simulation
+runs at $\kappa \in \{5, 20\}$ with time step $2\times10^{-4}$ and
+$50{,}000$ trajectories.
 
 Experiment 9 separates three layers so that no error source can hide in
 another. Layer A is a real Brownian simulation with independent per-step
@@ -463,18 +488,18 @@ order of magnitude only while $\kappa$ stays in the first half of this table.
 
 Figure~\ref{fig:continuous} shows the three layers together. Comparing layers
 A and B tests the discretization. The maximum discrepancy is
-$2.2\times10^{-3}$ at $\kappa = 5$ with $50{,}000$ trajectories against a
-sampling noise of about $10^{-3}$, and falls to $9.6\times10^{-4}$ against a
-noise floor of $7\times10^{-4}$ in a $200{,}000$-trajectory check.
+$2.2\times10^{-3}$ at $\kappa = 5$ and $1.6\times10^{-3}$ at $\kappa = 20$,
+against a sampling noise of about $10^{-3}$ at $50{,}000$ trajectories.
 
 \paragraph{Two systematic errors.} Both would have corrupted a direct
 comparison of simulation against theory, and neither is visible without the
 middle layer.
 
 The first is band quantization, worth $5\times10^{-2}$. Sharp cell indicators
-mis-size any window narrower than a grid cell, by up to a factor of three.
-Fractional area-exact cell coverage fixes it, after which band areas match
-their analytic values to $10^{-14}$.
+mis-size any window narrower than a grid cell, with the mis-sizing ratio
+running from $2.0$ down to zero, since the narrowest window here spans about
+half a cell and is missed entirely. Fractional area-exact cell coverage fixes
+it, after which band areas match their analytic values to $2\times10^{-17}$.
 
 The second is overlap semantics, worth $1.4\times10^{-2}$. The window geometry
 contains three overlapping pairs. The original simulation awarded an overlap to
@@ -515,8 +540,9 @@ the IIA prediction. Substituting the corrected shares into \eqref{eq:runnerup}
 gains an order.
 
 Experiment 39 verifies this on the same chains. The identity
-\eqref{eq:runnerup} holds to $1.8\times10^{-15}$, the predicted kernel is
-row-stochastic to $8.0\times10^{-15}$, and the measured convergence orders are
+\eqref{eq:runnerup} holds to $1.8\times10^{-15}$, the exactly computed kernel
+is row-stochastic to $8.0\times10^{-15}$, which checks the two-stage solve, and
+the measured convergence orders are
 $0.967$ for the Luce prediction \eqref{eq:Mluce} and $1.967$ with the
 Green--Kubo correction. At $\varepsilon = 0.005$ the maximum error over
 off-diagonal entries falls from $3.0\times10^{-4}$ to $2.1\times10^{-6}$.

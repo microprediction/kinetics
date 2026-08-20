@@ -25,3 +25,15 @@ start_point_mass_extra_term_max,1.663e-01
 start_stationary_stationary_form_order,1.9557
 start_stationary_general_form_order,1.9557
 start_stationary_extra_term_max,7.286e-17
+exp07_K_asymmetry_abs,0.1392
+exp07_K_max_abs,0.6030
+exp07_K_relative_asymmetry,0.2308
+subsets_swept,1013
+subset_worst_softmax_err,3.059e-03
+subset_worst_gk_err,4.361e-04
+subsets_where_gk_worse,1
+subset_gk_order_min,1.9154
+subset_gk_order_max,2.0012
+subset_softmax_order_min,0.4015
+subset_softmax_order_max,1.0423
+prop_hazards_worst_pointwise_dev,5.468e-14
