@@ -36,8 +36,8 @@ One pair of objects, the mean intensities and the correlation matrix $K$, then
 predicts every blocked-subset counterfactual by restricting sums, so the whole
 deletion ensemble follows from one calculation. Fluctuations common to all
 channels cancel exactly, so departures from softmax measure differential
-structure alone, and environmental modes of rank $r$ give $K$ of rank exactly
-$r$. The same correction predicts the runner-up kernel, which is observable in
+structure alone, and environmental modes of rank $r$ give $K$ of rank $r$, up
+to a cap set by the environment's own dimension. The same correction predicts the runner-up kernel, which is observable in
 any race that reports a finishing order, so the theory can be tested without
 running interventions. We verify the expansion on finite chains, then on
 Brownian narrow escape with reaction windows, where the leading and corrected
@@ -100,7 +100,7 @@ $\lambda_i(y) = a_i c(y)$, cancel from the correction identically. We show this
 is not merely an asymptotic statement. A common fluctuation is a common time
 change, so Luce holds exactly at every degree of separation, which is the
 proportional-hazards normal form. Separately, if the intensity deviations are
-driven by $r$ environmental modes then $K$ has rank exactly $r$, so the
+driven by $r$ environmental modes then $K$ has rank $r$, so the
 correction inherits any low-dimensional structure the physics has.
 
 Section~\ref{sec:model} sets up the shared-state race and the killed resolvent.
@@ -110,7 +110,7 @@ Section~\ref{sec:chain} verifies everything on finite chains, where each
 quantity is an exact linear solve. Section~\ref{sec:escape} moves to
 continuous physics, a reflected Brownian motion in a disk with reaction
 windows, and reports the measured convergence orders together with two
-systematic errors that a layered numerical design exposed.
+systematic errors found there.
 Section~\ref{sec:runnerup} shows the correction also predicts the runner-up
 kernel, which makes it testable against ranked data.
 
@@ -241,8 +241,9 @@ $\sum_{i\in A}p_i^A = 1$ at each order.
 \paragraph{One computation answers every counterfactual.} The pair
 $(\lbar, K)$ does not depend on $A$. Every blocked-set counterfactual is
 obtained from \eqref{eq:main} by restricting the sums to the surviving set.
-For a system with $N$ channels this replaces $2^N$ separate resolvent solves
-with one deviation solve and $O(N^2)$ stored numbers.
+For a system with $N$ channels this reduces $2^N$ separate resolvent solves to
+one deviation solve and $O(N^2)$ stored numbers, at the cost of the
+$O(\varepsilon^2)$ error the expansion carries.
 
 \paragraph{Common-mode fluctuations cancel.} Suppose
 $\lambda_i(y) = a_i c(y)$, so that every channel is modulated by the same
@@ -279,20 +280,44 @@ intensity deviations are driven by $r$ environmental modes,
 $\lambda_i - \lbar_i = b_i^\top z(y)$ with $z$ taking values in $\R^r$ and
 $\int z \, d\pi = 0$. Then $K = B \Gamma B^\top$ with $B$ the $N \times r$
 matrix of loadings and $\Gamma_{ab} = \int z_a (D z_b) d\pi$, so $K$ has rank
-at most $r$. The compressed correlated race that appears elsewhere in this
+at most $r$. There is a second cap. Deviations live in the mean-zero subspace
+of the environment, so $\mathrm{rank}(K) \le \min(N, m-1)$ for an environment
+with $m$ states, whatever the loadings are. Experiment 40 attains both bounds,
+giving rank exactly $r$ for $r = 1, \dots, 5$ on a six-state environment and
+rank $5 = \min(10, 5)$ for generic intensities on ten channels. The compressed
+correlated race that appears elsewhere in this
 program therefore has a physical provenance rather than being a modelling
 convenience.
 
 \section{Verification on finite chains}\label{sec:chain}
 
 On a finite state space every object above is an exact linear solve, so the
-theorem can be tested without simulation error. Experiment 7 in the repository
-runs a six-state chain with ten channels.
+theorem can be tested without simulation error. Experiment 7 runs a six-state
+chain with ten channels.
+
+\paragraph{Setup.} The generator has independent uniform off-diagonal rates on
+$[0.2, 1.5]$, giving a non-reversible chain with spectral gap $2.63$. Channel
+intensities are lognormal with log-scale $0.8$, giving
+$\bar\Lambda_A = 11.4$ on the full set. The seed is $5$ and the sweep covers
+thirteen values of $\varepsilon$ from $10^{-3}$ to $1$. The dimensionless
+small parameter is $\varepsilon\bar\Lambda_A / \mathrm{gap} \approx
+4.3\,\varepsilon$, so the fitted window ends near $0.08$ in those units and
+$\varepsilon = 0.3$ corresponds to $1.3$.
 
 The measured convergence order of the leading term is $0.985$, against the
 theoretical $1$. After adding the Green--Kubo correction the measured order is
-$1.985$, against the theoretical $2$. The gain of exactly one order is the
-signature the expansion predicts.
+$1.985$, against the theoretical $2$. Both are fitted over the smallest six of
+thirteen values of $\varepsilon$, spanning $10^{-3}$ to $1.8\times10^{-2}$,
+since the expansion is asymptotic and the largest $\varepsilon$ carry the
+$O(\varepsilon^2)$ residual. The gain of exactly one order is the signature
+the expansion predicts.
+
+One instance is an anecdote, so experiment 40 repeats the measurement over
+twenty environments drawn with four to nine hidden states, three to eight
+channels, and intensity dispersions from $0.3$ to $1.2$. The leading order has
+median $0.960$ and range $[0.919, 0.982]$, the corrected order has median
+$1.958$ and range $[1.888, 1.979]$, and the gain exceeds $0.948$ in every
+single trial.
 
 \begin{figure}[t]
   \centering
@@ -307,30 +332,41 @@ signature the expansion predicts.
   \label{fig:chain}
 \end{figure}
 
-The subset-uniformity claim is tested by fixing one $(\lbar, K)$ pair and
+Figure~\ref{fig:chain} shows both. The subset-uniformity claim is tested by fixing one $(\lbar, K)$ pair and
 predicting $41$ random availability sets at $\varepsilon = 0.05$. The maximum
 error over all subsets falls from $2.8\times10^{-3}$ under softmax to
 $4.0\times10^{-4}$ with the correction, with no per-subset computation.
 
+The word Green--Kubo is doing work in \eqref{eq:K}, and experiment 40 tests
+whether it needs to. Replacing $K$ by the equal-time covariance
+$\int \tilde\lambda_j \tilde\lambda_k \, d\pi$ scaled by a single
+timescale, with that timescale fitted to give the ablation its best case,
+leaves the measured order at $1.09$ rather than $1.96$, and the error at the
+smallest $\varepsilon$ is $8.8$ times worse. Static correlation between two
+channels does not determine the correction. The time integral does.
+
 Common-mode cancellation is confirmed at $2.6\times10^{-16}$ for the
 Green--Kubo coefficient, and the exact win probabilities agree with Luce to
-$1.1\times10^{-16}$ at $\varepsilon = 0.3$, which is far outside the asymptotic
-regime and is the content of Proposition~\ref{prop:common}. Rank-two
+$1.1\times10^{-16}$ at $\varepsilon = 0.3$. The regression suite carries the
+same check at $\varepsilon = 3.0$, where the environment is ten times slower
+than the channels rather than faster and the expansion has no claim at all,
+and Luce still holds to $10^{-12}$. That is the content of
+Proposition~\ref{prop:common}. Rank-two
 environmental loadings give $K$ with singular values
 $[0.022, 0.002, 0, 0]$, so the rank is exactly two.
 
 A Gillespie simulation of the same system, event-driven and including the
 hidden state, agrees with the resolvent solution to $1.9\times10^{-3}$ across
-$40{,}000$ trajectories at $\varepsilon = 0.3$, which is its own sampling
-noise.
+$40{,}000$ trajectories at $\varepsilon = 0.3$, against a sampling noise of
+about $2.7\times10^{-3}$.
 
-An independent reimplementation, written from the statement of
-Theorem~\ref{thm:main} alone and run on a deliberately non-reversible chain
-where $K$ is asymmetric by $4.0\times10^{-3}$, reproduces the order gain
-($0.934$ to $1.935$), matches $K$ against brute-force time integration of the
-covariance to $7.7\times10^{-10}$, and reproduces both structural properties.
-The non-reversible test matters because it is what distinguishes $K_{ji}$ from
-$K_{ij}$ in \eqref{eq:main}.
+The chain is not reversible, so $K$ is asymmetric. On the committed instance
+$\max_{jk}|K_{jk} - K_{kj}| = 0.139$ against $\max_{jk}|K_{jk}| = 0.603$, a
+relative asymmetry of $23\%$. This is what distinguishes $K_{ji}$ from
+$K_{ij}$ in \eqref{eq:main}, and experiment 40 confirms the index order is not
+a convention. Transposing $K$ in the correction degrades the measured order
+from $1.94$ to $1.58$, and $K$ agrees with brute-force time integration of the
+covariance to $4.1\times10^{-6}$.
 
 \section{Narrow escape}\label{sec:escape}
 
@@ -341,19 +377,51 @@ channel $i$ fires at rate $\kappa$. The first window to fire wins. Here
 $\kappa$ plays the role of $\varepsilon$, since a slow reaction rate means the
 particle mixes many times before firing.
 
+\paragraph{Setup.} Sixteen boundary windows of half-width $0.12$ on the unit
+circle, drawn with seed $42$, three pairs of which overlap. The polar grid is
+$40 \times 88$, giving $3520$ cells. Simulations use time step
+$2\times10^{-4}$ and $50{,}000$ trajectories per $\kappa$, with
+$\kappa \in \{2, 5, 10, 20, 40\}$.
+
 Experiment 9 separates three layers so that no error source can hide in
 another. Layer A is a real Brownian simulation with independent per-step
 firing. Layer B is an exact killed-resolvent solve on a finite-volume Neumann
 Laplacian over a polar grid, with the uniform invariant law, reversibility, and
-conservation asserted numerically rather than assumed. Layer C is the theory,
+conservation checked numerically. Layer C is the theory,
 band-area softmax plus the Green--Kubo term from one deviation solve, using the
 same code that passed the chain tests.
 
 Comparing layers B and C tests the theorem on a continuous-physics generator.
 The softmax error decays with measured order $0.93$ and the corrected error
-with order $1.93$, again a clean gain of one order. At $\kappa = 2$ the
-correction takes the maximum error from $1.6\times10^{-3}$ to
-$5.0\times10^{-5}$.
+with order $1.93$, again a clean gain of one order. Both orders are fitted on
+the three smallest values of $\kappa$, for the same reason as before.
+
+Table~\ref{tab:kappa} gives the full sweep, including where the correction
+stops paying. The improvement factor falls monotonically from $31\times$ at
+$\kappa = 2$ to $1.6\times$ at $\kappa = 40$. This is the expected behaviour
+of a first-order expansion rather than a defect, but it bounds the useful
+range, and a practitioner should read the correction as buying roughly an
+order of magnitude only while $\kappa$ stays in the first half of this table.
+
+\begin{table}[t]
+  \centering
+  \begin{tabular}{rccc}
+    \toprule
+    $\kappa$ & softmax & with Green--Kubo & improvement \\
+    \midrule
+    $2$  & $1.6\times10^{-3}$ & $5.0\times10^{-5}$ & $31\times$ \\
+    $5$  & $3.7\times10^{-3}$ & $3.0\times10^{-4}$ & $12\times$ \\
+    $10$ & $6.9\times10^{-3}$ & $1.1\times10^{-3}$ & $6.3\times$ \\
+    $20$ & $1.2\times10^{-2}$ & $3.9\times10^{-3}$ & $3.2\times$ \\
+    $40$ & $2.0\times10^{-2}$ & $1.2\times10^{-2}$ & $1.6\times$ \\
+    \bottomrule
+  \end{tabular}
+  \caption{Maximum absolute error in the win probabilities against the exactly
+  discretized generator, over sixteen boundary windows. The correction gains an
+  order of magnitude at small $\kappa$ and degrades to nothing by
+  $\kappa = 40$, which is where the neglected $O(\kappa^2)$ term takes over.}
+  \label{tab:kappa}
+\end{table}
 
 \begin{figure}[t]
   \centering
@@ -365,14 +433,15 @@ $5.0\times10^{-5}$.
   \label{fig:continuous}
 \end{figure}
 
-Comparing layers A and B tests the discretization. The maximum discrepancy is
+Figure~\ref{fig:continuous} shows the three layers together. Comparing layers
+A and B tests the discretization. The maximum discrepancy is
 $2.2\times10^{-3}$ at $\kappa = 5$ with $50{,}000$ trajectories against a
 sampling noise of about $10^{-3}$, and falls to $9.6\times10^{-4}$ against a
 noise floor of $7\times10^{-4}$ in a $200{,}000$-trajectory check.
 
-\paragraph{Two systematic errors the layering caught.} Both would have
-corrupted a direct comparison of simulation against theory, and neither is
-visible without the middle layer.
+\paragraph{Two systematic errors.} Both would have corrupted a direct
+comparison of simulation against theory, and neither is visible without the
+middle layer.
 
 The first is band quantization, worth $5\times10^{-2}$. Sharp cell indicators
 mis-size any window narrower than a grid cell, by up to a factor of three.
@@ -431,6 +500,19 @@ the environment is unknown, a measured $M$ constrains the Green--Kubo matrix,
 which is the beginning of estimating $K$ from data rather than computing it from
 a known generator.
 
+\section{Reproducibility}
+
+Every number in this paper comes from a committed script. Experiment 7 gives
+the chain verification, experiment 9 the narrow-escape study, experiment 39 the
+runner-up bridge, and experiment 40 the replication, the equal-time ablation,
+the rank bounds, and the index-order check. All four run from a clean checkout
+of \url{https://github.com/microprediction/kinetics} with NumPy, SciPy, and
+Matplotlib, and each writes the \texttt{results.csv} the corresponding numbers
+are quoted from. Experiments 7, 39, and 40 take seconds. Experiment 9 takes
+about three minutes. A regression suite locks every property stated here,
+including the two convergence orders, the exactness of common-mode
+cancellation, the rank bounds, and the runner-up identity.
+
 \section{Discussion}
 
 The result explains why softmax is a reasonable default in systems with fast
@@ -438,13 +520,16 @@ shared dynamics, and it quantifies exactly when that default fails. The failure
 is governed by integrated dynamical correlations, not by static ones, and it is
 insensitive to any fluctuation shared across channels.
 
-Three limitations bound the claim. The expansion is in the mixing-to-firing
+Four limitations bound the claim. The expansion is in the mixing-to-firing
 timescale ratio and says nothing when channels fire faster than the environment
 relaxes. The correction is first order, so systems at moderate separation
-retain an $O(\varepsilon^2)$ residual, visible in the finite-$\kappa$ end of
-Section~\ref{sec:escape}. The results are proved for finite chains and verified
-on a reversible diffusion, and a formal treatment of reversible diffusions with
-a spectral gap is left open.
+retain an $O(\varepsilon^2)$ residual, quantified in Table~\ref{tab:kappa},
+where the improvement decays to nothing by $\kappa = 40$. The theorem is
+proved for finite chains, and a formal treatment of reversible diffusions with
+a spectral gap is left open, so the narrow-escape study verifies rather than
+proves that case. Finally the continuum study is one geometry with one window
+arrangement, and while the chain results replicate over twenty environments,
+the physics results do not yet replicate over geometries.
 
 One extension looks tractable. The disk's boundary operator diagonalizes in
 Fourier modes, which may render the leading geometric correction analytic

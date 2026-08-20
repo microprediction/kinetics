@@ -1,0 +1,21 @@
+quantity,value
+replication_trials,20
+softmax_order_median,0.9596
+softmax_order_min,0.9191
+softmax_order_max,0.9819
+gk_order_median,1.9578
+gk_order_min,1.8875
+gk_order_max,1.9791
+order_gain_min,0.9481
+order_gain_median,0.9993
+ablation_best_tau,0.2274
+ablation_static_order,1.0926
+true_gk_order,1.9586
+ablation_err_ratio_at_min_eps,8.8
+lowrank_ranks_r1_to_r5,1 2 3 4 5
+generic_rank_N10_m6,5
+generic_rank_bound_min_N_mminus1,5
+K_relative_asymmetry,0.0173
+K_vs_brute_force_max_err,4.146e-06
+order_correct_index,1.9364
+order_transposed_index,1.5796
