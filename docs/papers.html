@@ -116,26 +116,30 @@
     <h2>Planned</h2>
     <ul>
       <li>
-        <em>Deterministic Choice Probabilities and Share Inversion for Factor Probit
-        with Many Alternatives</em> &mdash; the algorithm paper;
+        <em>Scalable Share Calibration for Factor Multinomial Probit Models</em>
+        &mdash; the algorithm paper;
         <strong>working draft available</strong>:
-        <a href="./factor-probit-transform.pdf">PDF</a>,
-        <a href="https://github.com/microprediction/kinetics/tree/main/paper/factor-probit-transform">source</a>;
-        benchmark in
-        <a href="https://github.com/microprediction/kinetics/tree/main/experiments/exp13_ghk_benchmark">experiment
-        13</a>. <em>The lattice fast ability transform vs the GHK simulator: flat
+<a href="https://winning.microprediction.org/assets/pdf/factor_probit_share_calibration.pdf">PDF</a>,
+        <a href="https://github.com/microprediction/winning/tree/main/papers/factor-probit-transform">source</a>.
+        The paper, its experiments, and the algorithm now live in the
+        <a href="https://github.com/microprediction/winning">winning</a> repository,
+        released as <code>pip install winning</code>. <em>The lattice fast ability transform vs the GHK simulator: flat
         ~3e-4 error where GHK degrades and becomes infeasible (N=5000 in 22&nbsp;s vs
         &ge;13&nbsp;h at matched accuracy); smooth unbiased derivatives (GHK trades
         noise for bias under common random numbers); market-share inversion validated
         at N=1000; the assortment ensemble in one pass.</em>
       </li>
       <li>
-        <em>Softmax from Fast Mixing: Green&ndash;Kubo Corrections for Counterfactual
-        Races</em> &mdash; the flagship (Q7); <strong>central formula machine-verified</strong>
-        on finite-state chains in
+        <em>Softmax from Fast Mixing</em> &mdash; the flagship (Q7);
+        <strong>working draft available</strong>:
+        <a href="./softmax-fast-mixing.pdf">PDF</a>,
+        <a href="https://github.com/microprediction/kinetics/tree/main/paper/softmax-fast-mixing">source</a>.
+        Central formula machine-verified on finite-state chains in
         <a href="https://github.com/microprediction/kinetics/tree/main/experiments/exp07_green_kubo">experiment 7</a>
         (convergence slopes 0.99/1.99; one $(\bar\lambda, K)$ corrects every blocked
-        subset; common mode = exact Luce at all $\varepsilon$). <em>Common-clock proportional-hazard normal
+        subset; common mode = exact Luce at all $\varepsilon$), and on continuous physics in
+        <a href="https://github.com/microprediction/kinetics/tree/main/experiments/exp09_gk_narrow_escape">experiment 9</a>
+        (orders 0.93/1.93 against an exactly discretized Neumann generator). <em>Common-clock proportional-hazard normal
         form; the killed-resolvent representation; softmax as the homogenized choice law
         of fast hidden kinetics; the Green&ndash;Kubo first correction, uniform over
         blocked subsets; finite-state exact examples; low-rank compression.</em>
