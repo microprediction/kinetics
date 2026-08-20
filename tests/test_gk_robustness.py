@@ -78,3 +78,37 @@ def test_transposing_K_breaks_the_correction():
     _, wrong, _ = rb.orders_for(L, pi, lam, K, lam_bar, A, Kalt=K.T)
     assert right > 1.8
     assert wrong < right - 0.2
+
+
+def test_general_start_restores_second_order():
+    """From a non-stationary start the stationary formula loses an order, and
+    the general form recovers it; the extra term vanishes under pi."""
+    L, pi, lam = rb.environment(np.random.default_rng(99), 6, 4, 0.6)
+    lam_bar, K, lam_t = rb.kubo(L, pi, lam)
+    n, m = len(lam), len(pi)
+    A = list(range(n))
+    Pi = np.outer(np.ones(m), pi)
+    dev = lambda g: np.linalg.solve(Pi - L, g - pi @ g)
+    Lb = lam_bar.sum()
+    soft = lam_bar / Lb
+    m_const = -(K.sum(axis=0) - soft * K.sum()) / Lb
+    LamT = lam_t.sum(0)
+
+    def orders(mu0):
+        extra = np.array([-(mu0 @ dev(soft[i] * LamT - lam_t[i])) for i in range(n)])
+        e_s, e_g = [], []
+        for eps in rb.EPS_GRID:
+            u = np.linalg.solve(L / eps - np.diag(lam[A].sum(0)), -lam[A].T)
+            p0 = mu0 @ u
+            e_s.append(np.abs(p0 - (soft + eps * m_const)).max())
+            e_g.append(np.abs(p0 - (soft + eps * (m_const + extra))).max())
+        return rb.order(e_s), rb.order(e_g), np.abs(extra).max()
+
+    s_stat, g_stat, extra_pi = orders(pi)
+    assert extra_pi < 1e-14                      # vanishes in equilibrium
+    assert g_stat > 1.8
+
+    s_pt, g_pt, extra_pt = orders(np.eye(m)[0])
+    assert extra_pt > 1e-3                       # genuinely present off equilibrium
+    assert s_pt < 1.3, s_pt                      # stationary formula loses the order
+    assert g_pt > 1.8, g_pt                      # general formula restores it

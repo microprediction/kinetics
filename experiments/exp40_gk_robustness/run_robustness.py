@@ -18,6 +18,12 @@ Part C. RANK BOUND. Rank-r loadings give rank(K) <= r, but there is a second
 cap: deviations live in the mean-zero subspace of the environment, so
 rank(K) <= min(N, m-1) whatever the loadings. Verify both.
 
+Part E. THE START LAW. The theorem is stated from stationarity. From any other
+start the leading softmax term is unchanged, but the first-order correction
+picks up an extra term, so the stationary formula is only first-order accurate
+there. Verify the general form restores second order, and that its extra term
+vanishes under the invariant law.
+
 Part D. NON-REVERSIBLE INDEX PLACEMENT. K is asymmetric off reversibility, so
 K_ji and K_ij differ and the theorem's index order is testable. Check the
 correction against brute-force time integration of the covariance, and confirm
@@ -191,6 +197,32 @@ def main() -> None:
              ("K_vs_brute_force_max_err", f"{bf_err:.3e}"),
              ("order_correct_index", f"{g_right:.4f}"),
              ("order_transposed_index", f"{g_wrong:.4f}")]
+
+    # ---- Part E: general start law ----------------------------------------
+    L, pi, lam = environment(np.random.default_rng(99), 6, 4, 0.6)
+    lam_bar, K, lam_t = kubo(L, pi, lam)
+    n = len(lam)
+    A = list(range(n))
+    m_states = len(pi)
+    Pi = np.outer(np.ones(m_states), pi)
+    dev = lambda g: np.linalg.solve(Pi - L, g - pi @ g)
+    Lb = lam_bar.sum()
+    soft = lam_bar / Lb
+    m_const = -(K.sum(axis=0) - soft * K.sum()) / Lb
+    LamT = lam_t.sum(0)
+    starts = [("point_mass", np.eye(m_states)[0]), ("stationary", pi)]
+    for label, mu0 in starts:
+        extra = np.array([-(mu0 @ dev(soft[i] * LamT - lam_t[i]))
+                          for i in range(n)])
+        e_stat, e_gen = [], []
+        for eps in EPS_GRID:
+            u = np.linalg.solve(L / eps - np.diag(lam[A].sum(0)), -lam[A].T)
+            p0 = mu0 @ u
+            e_stat.append(np.abs(p0 - (soft + eps * m_const)).max())
+            e_gen.append(np.abs(p0 - (soft + eps * (m_const + extra))).max())
+        rows += [(f"start_{label}_stationary_form_order", f"{order(e_stat):.4f}"),
+                 (f"start_{label}_general_form_order", f"{order(e_gen):.4f}"),
+                 (f"start_{label}_extra_term_max", f"{np.abs(extra).max():.3e}")]
 
     with open(HERE / "results.csv", "w") as fh:
         fh.write("quantity,value\n")

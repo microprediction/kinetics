@@ -19,3 +19,9 @@ K_relative_asymmetry,0.0173
 K_vs_brute_force_max_err,4.146e-06
 order_correct_index,1.9364
 order_transposed_index,1.5796
+start_point_mass_stationary_form_order,0.9682
+start_point_mass_general_form_order,1.9632
+start_point_mass_extra_term_max,1.663e-01
+start_stationary_stationary_form_order,1.9557
+start_stationary_general_form_order,1.9557
+start_stationary_extra_term_max,7.286e-17

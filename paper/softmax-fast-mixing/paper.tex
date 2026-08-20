@@ -228,6 +228,34 @@ Finally $p_i^A = c_i + \varepsilon m_i + O(\varepsilon^2)$ by \eqref{eq:p},
 which is \eqref{eq:main}.
 \end{proof}
 
+\begin{proposition}[General start]\label{prop:start}
+Let the environment start from an arbitrary law $\mu_0$ rather than from $\pi$,
+and write $p_i^A(\mu_0) = \int u_i^A \, d\mu_0$. Then
+\begin{equation}\label{eq:start}
+  p_i^A(\mu_0) = \frac{\lbar_i}{\bar\Lambda_A}
+    + \varepsilon\left[m_i
+      - \int D\!\left(\frac{\lbar_i}{\bar\Lambda_A}\tilde\Lambda_A
+        - \tilde\lambda_i\right) d\mu_0\right] + O(\varepsilon^2),
+\end{equation}
+with $m_i$ the constant appearing in the proof of Theorem~\ref{thm:main}. The
+leading softmax term does not depend on the start. The extra term vanishes when
+$\mu_0 = \pi$, because $D$ maps into mean-zero functions, which recovers
+\eqref{eq:main}.
+\end{proposition}
+
+\begin{proof}
+The expansion in the proof of Theorem~\ref{thm:main} is pointwise in $y$, and
+integrating $u^{(1)}_i = -D(c_i\tilde\Lambda_A - \tilde\lambda_i) + m_i$
+against $\mu_0$ instead of $\pi$ leaves the displayed extra term.
+\end{proof}
+
+This is worth stating because it is easy to apply \eqref{eq:main} to a system
+observed away from equilibrium and silently lose the correction. Experiment 40
+measures the loss. From a point-mass start the stationary formula
+\eqref{eq:main} is accurate only to order $0.968$, while \eqref{eq:start}
+restores order $1.963$. Under the invariant law the extra term is
+$7.3\times10^{-17}$ and the two forms agree.
+
 \begin{remark}
 The two terms in the bracket have distinct roles. The first,
 $\sum_{j\in A}K_{ji}$, measures how channel $i$'s rate correlates dynamically
@@ -527,9 +555,11 @@ retain an $O(\varepsilon^2)$ residual, quantified in Table~\ref{tab:kappa},
 where the improvement decays to nothing by $\kappa = 40$. The theorem is
 proved for finite chains, and a formal treatment of reversible diffusions with
 a spectral gap is left open, so the narrow-escape study verifies rather than
-proves that case. Finally the continuum study is one geometry with one window
-arrangement, and while the chain results replicate over twenty environments,
-the physics results do not yet replicate over geometries.
+proves that case. The correction as usually quoted assumes the environment is observed in
+equilibrium, and Proposition~\ref{prop:start} gives the extra term otherwise.
+Finally the continuum study is one geometry with one window arrangement, and
+while the chain results replicate over twenty environments, the physics results
+do not yet replicate over geometries.
 
 One extension looks tractable. The disk's boundary operator diagonalizes in
 Fourier modes, which may render the leading geometric correction analytic
