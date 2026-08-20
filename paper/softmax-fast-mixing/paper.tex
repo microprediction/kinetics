@@ -1,6 +1,7 @@
 \documentclass[11pt]{article}
 \usepackage[margin=1.1in]{geometry}
 \usepackage{amsmath,amssymb,amsthm}
+\usepackage[round]{natbib}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage[hidelinks]{hyperref}
@@ -49,16 +50,21 @@ discretized generator.
 
 A choice among competing options is often modelled by softmax. The rule assigns
 option $i$ a probability proportional to $e^{\theta_i}$, and it appears in
-discrete choice, reinforcement learning, statistical physics, and the output
-layer of essentially every classifier. Its usual justification is
-convenience. Softmax is smooth, normalized, and differentiable, and in the
-Gumbel random-utility model it is exact.
+discrete choice \citep{luce1959,mcfadden1974}, reinforcement learning,
+statistical physics, and the output layer of essentially every classifier
+\citep{bridle1990}. Its usual justification is convenience. Softmax is smooth,
+normalized, and differentiable, and in the Gumbel random-utility model it is
+exact, a representation \citet{yellott1977} showed is the only one consistent
+with Luce's axiom under independent discriminal processes.
 
 Underneath many applications, though, there is real kinetics. A chemical
 reaction fires when one of several channels crosses a barrier first. A
 diffusing particle escapes through whichever window it encounters first. A
-kinetic Monte Carlo (KMC) step selects among escape channels by their rates.
-In these systems the choice is a race, and the race has a mechanism. It is
+kinetic Monte Carlo (KMC) step selects among escape channels by their rates
+\citep{bkl1975,gillespie1977}. In these systems the choice is a race, and the
+race has a mechanism. That a race among competing channels is at once a
+competing-risks model and a random-utility choice model is an old observation
+\citep{marley1992}. It is
 worth asking what that mechanism implies about the choice law, rather than
 assuming softmax and moving on.
 
@@ -66,14 +72,16 @@ This paper answers that for one specific and common situation. The channels
 share a hidden state, and that state mixes fast relative to the rate at which
 channels fire. Catalysis supplies the picture. Adsorbate configurations
 rearrange quickly while the reaction event is rare, so every channel sees an
-environment that has effectively averaged out. Under that separation we show
+environment that has effectively averaged out. Chemical physics calls this
+regime dynamical disorder \citep{zwanzig1990}, and the same logic underlies
+stochastically gated reactions \citep{szabo1982}. Under that separation we show
 two things.
 
 The leading-order result is that softmax is exact in the limit, with
 $\theta_i = \log \lbar_i$ the log of the stationary mean intensity. Fast
 mixing homogenizes the environment, each channel is left with its average
 rate, and the race among constant rates is the exponential race, whose choice
-law is Luce.
+law is Luce \citep{cox1959}.
 
 The first correction is a Green--Kubo term. It is built from
 $K_{jk} = \int_0^\infty \mathrm{Cov}_\pi(\lambda_j(Y_0), \lambda_k(Y_t))\,dt$,
@@ -84,8 +92,12 @@ persists over the timescale on which the environment decorrelates.
 
 The correction is what breaks independence of irrelevant alternatives (IIA).
 Softmax redistributes a removed channel's probability in proportion to the
-survivors' probabilities, which is the IIA prediction and is usually wrong in
-physical systems. The Green--Kubo term supplies the deviation, and it does so
+survivors' probabilities, which is the IIA prediction. Where it has been
+measured, that prediction fails. Diversion ratios in empirical demand work
+depart systematically from proportionality \citep{conlon2021}, shared features
+break IIA in choice experiments \citep{tversky1972}, and the standard
+specification test for logit is built on exactly this restriction
+\citep{hausman1984}. The Green--Kubo term supplies the deviation, and it does so
 for every blocked subset at once.
 
 That last point is the practical one. The pair $(\lbar, K)$ is computed once.
@@ -123,6 +135,9 @@ fire. Small $\varepsilon$ means fast mixing.
 
 Each channel $i \in \{1, \dots, N\}$ fires at intensity $\lambda_i(Y_t) \ge 0$,
 conditionally Poisson given the path of $Y$. The first channel to fire wins.
+The model is a marked Markov-modulated Poisson process \citep{fischer1993}
+observed until its first event, and the $\lambda_i$ are cause-specific hazards
+in the competing-risks sense.
 For an available set $A \subseteq \{1, \dots, N\}$ write
 $\Lambda_A(y) = \sum_{j \in A}\lambda_j(y)$ for the total hazard, and write
 $\lbar_i = \int \lambda_i \, d\pi$ for the stationary mean intensity.
@@ -149,7 +164,11 @@ so the $p_i^A$ are a probability vector on $A$ for every $\varepsilon$.
 
 \section{Homogenization and the Green--Kubo correction}\label{sec:theory}
 
-Write $\tilde\lambda_i = \lambda_i - \lbar_i$ for the fluctuation of the $i$th
+The expansion below is the averaging principle for a fast ergodic driver
+\citep{khasminskii1966} in the operator form of \citet{kurtz1973}, and its
+solvability conditions are the usual cell problem
+\citep[Ch.~9]{pavliotis2008}. Write
+$\tilde\lambda_i = \lambda_i - \lbar_i$ for the fluctuation of the $i$th
 intensity, and $\Pi$ for the projection $\Pi f = (\int f d\pi)\mathbf{1}$ onto
 constants. The deviation operator
 \begin{equation}\label{eq:deviation}
@@ -169,6 +188,22 @@ single linear solve. Note that $K$ need not be symmetric. It is symmetric when
 the environment is reversible, and the verification in Section~\ref{sec:chain}
 deliberately uses a non-reversible chain so that the index placement in the
 theorem is actually tested.
+
+The diagonal of $K$ is not new. For a single channel with a fluctuating rate
+the integral
+$\int_0^\infty \mathrm{Cov}_\pi(\lambda(Y_0), \lambda(Y_t))\,dt$ is the
+classical second-order cumulant correction to an effective decay rate, known
+since \citet{anderson1954} and \citet{kubo1954} as motional narrowing and
+developed as a general expansion by \citet{vankampen1974}. The name
+Green--Kubo is used here in the sense of \citet{green1954} and
+\citet{kubo1957}, an integrated dynamical correlation standing in for a
+transport coefficient.
+
+What that scalar theory cannot see is the object this paper is about. A rate
+correction common to all channels cancels from a ratio, so it leaves the choice
+law untouched. The branching ratio is moved instead by the off-diagonal and
+generally non-symmetric entries $K_{ji}$, and those are what
+Theorem~\ref{thm:main} puts to work.
 
 \begin{theorem}[Homogenized choice law and its first correction]\label{thm:main}
 Let $\bar\Lambda_A = \sum_{j\in A}\lbar_j$ and suppose $\bar\Lambda_A > 0$.
@@ -301,8 +336,10 @@ invertible, $v_i$ is the unique solution of \eqref{eq:resolvent}, which is
 $u_i^A$.
 \end{proof}
 
-The proof needs no positivity of $c$, no time change, and no condition on
-$\varepsilon$. What it says is that a common modulation factors out of the
+A common multiplicative modulation is a shared frailty in the survival sense
+\citep{vaupel1979}, and the invariance it produces is the proportional-hazards
+structure of \citet{cox1972}. The proof needs no positivity of $c$, no time
+change, and no condition on $\varepsilon$. What it says is that a common modulation factors out of the
 competition entirely, which is the proportional-hazards normal form. Experiment
 40 confirms it where the hypotheses are stressed. With $c$ vanishing on four of
 six states, with $c$ ranging over nine orders of magnitude, and at
@@ -313,7 +350,13 @@ This is a stronger statement than the vanishing of the correction, and it is
 practically useful in the opposite direction. It says a measured departure from
 softmax cannot be produced by any amount of shared environmental fluctuation.
 Whatever deviation is observed is evidence of differential structure among the
-channels.
+channels. It is worth setting this against the classical negative results. The
+latent joint law of competing risks is not identified from what one observes
+\citep{tsiatis1975}, and identification must be bought with extra structure
+such as regressor variation \citep{heckman1989}. The statement here runs the
+other way. One large class of environmental dependence, the perfectly shared
+one, leaves no trace whatever in the choice law, so any trace that does appear
+rules that class out.
 
 \paragraph{Low-rank environments give low-rank corrections.} Suppose the
 intensity deviations are driven by $r$ environmental modes,
@@ -327,7 +370,9 @@ giving rank exactly $r$ for $r = 1, \dots, 5$ on a six-state environment and
 rank $5 = \min(10, 5)$ for generic intensities on ten channels. The compressed
 correlated race that appears elsewhere in this
 program therefore has a physical provenance rather than being a modelling
-convenience.
+convenience. The same low-dimensional error-components structure is imposed by
+hand in mixed logit \citep{mcfadden2000}, where it is a specification choice.
+Here it is inherited from the environment.
 
 \section{Verification on finite chains}\label{sec:chain}
 
@@ -423,7 +468,9 @@ covariance to $4.1\times10^{-6}$.
 Finite chains verify the algebra. To test the theorem as a statement about
 physics we take the hidden state to be reflected Brownian motion in the unit
 disk and the channels to be reaction windows on the boundary, bands in which
-channel $i$ fires at rate $\kappa$. The first window to fire wins. Here
+channel $i$ fires at rate $\kappa$. This is the narrow escape geometry
+\citep{schuss2007} with partially reactive patches, and the leading band-area
+law is the well-mixed limit of \citet{berg1977}. The first window to fire wins. Here
 $\kappa$ plays the role of $\varepsilon$, since a slow reaction rate means the
 particle mixes many times before firing.
 
@@ -443,6 +490,13 @@ Laplacian over a polar grid, with the uniform invariant law, reversibility, and
 conservation checked numerically. Layer C is the theory,
 band-area softmax plus the Green--Kubo term from one deviation solve, using the
 same code that passed the chain tests.
+
+Two homogenizations should be kept apart here. Replacing a patchy boundary by
+an effective uniform reactivity is boundary homogenization
+\citep{berezhkovskii2004,lawley2015}, and expansions in a small geometric
+parameter give splitting probabilities among small targets
+\citep{bressloff2020}. The small parameter in this paper is temporal rather
+than geometric, so the two expansions are orthogonal and compose.
 
 Comparing layers B and C tests the theorem on a continuous-physics generator.
 The softmax error decays with measured order $0.93$ and the corrected error
@@ -567,6 +621,37 @@ about three minutes. A regression suite locks every property stated here,
 including the two convergence orders, the exactness of common-mode
 cancellation, the rank bounds, and the runner-up identity.
 
+\section{Related work}
+
+The averaging that produces the leading term is classical
+\citep{khasminskii1966,kurtz1973,pavliotis2008,yin1998}, and the closest recent
+instance is \citet{colantoni2026}, who studies a killing rate modulated by a
+continuous-time Markov chain, gives Feynman--Kac representations, and proves an
+averaging principle in the fast-switching limit. That work stops where this one
+starts. It carries a single killing rate rather than competing channels, so
+there is no branching ratio to correct, and it establishes the limit without the
+first-order term.
+
+The ingredient is classical on the other side too. Motional narrowing
+\citep{anderson1954,kubo1954,vankampen1974} and dynamical disorder
+\citep{zwanzig1990,szabo1982} have used integrated rate autocovariances for
+seventy years, but for effective rates and survival probabilities, in the scalar
+setting where no choice law arises. Recent linear-response work on first-passage
+problems predicts the response of the mean first-passage \emph{time} rather
+than the identity of the winner.
+
+For marked Markov-modulated processes there are matrix-analytic methods
+\citep{fischer1993} that compute mark probabilities exactly, with no expansion
+and no asymptotic regime. Theorem~\ref{thm:main} is the fast-environment asymptotic of
+those same quantities, and what it adds is not the numbers but the structure the
+asymptotic exposes. One pair $(\lbar, K)$ serves every subset, shared modulation
+drops out, and low-rank environments give low-rank corrections.
+
+That a race is at once a competing-risks model and a random-utility model is old
+\citep{marley1992}, as is the race-to-Luce mechanism in other fields. What
+appears not to have been stated is that softmax is the homogenized choice law of
+fast hidden kinetics, with a computable first correction.
+
 \section{Discussion}
 
 The result explains why softmax is a reasonable default in systems with fast
@@ -576,7 +661,8 @@ insensitive to any fluctuation shared across channels.
 
 Four limitations bound the claim. The expansion is in the mixing-to-firing
 timescale ratio and says nothing when channels fire faster than the environment
-relaxes. The correction is first order, so systems at moderate separation
+relaxes, which is the quenched limit of dynamical disorder
+\citep{zwanzig1990}. The correction is first order, so systems at moderate separation
 retain an $O(\varepsilon^2)$ residual, quantified in Table~\ref{tab:kappa},
 where the improvement decays to nothing by $\kappa = 40$. The theorem is
 proved for finite chains, and a formal treatment of reversible diffusions with
@@ -597,5 +683,144 @@ problem. Estimating $K$ from an observed runner-up kernel is an
 underdetermined fit, since $M$ supplies $N(N-1)$ numbers for the $N^2$ entries
 of $K$ and only through the combinations appearing in \eqref{eq:main}, so the
 identifiable part of $K$ has yet to be characterized.
+
+
+\begin{thebibliography}{99}
+
+\bibitem[Anderson(1954)]{anderson1954} P.~W. Anderson. A mathematical model for
+the narrowing of spectral lines by exchange or motion. \emph{Journal of the
+Physical Society of Japan} 9 (1954) 316--339.
+
+\bibitem[Berezhkovskii et~al.(2004)]{berezhkovskii2004} A.~M. Berezhkovskii,
+Yu.~A. Makhnovskii, M.~I. Monine, V.~Yu. Zitserman, S.~Y. Shvartsman. Boundary
+homogenization for trapping by patchy surfaces. \emph{Journal of Chemical
+Physics} 121 (2004) 11390--11394.
+
+\bibitem[Berg and Purcell(1977)]{berg1977} H.~C. Berg, E.~M. Purcell. Physics of
+chemoreception. \emph{Biophysical Journal} 20 (1977) 193--219.
+
+\bibitem[Bortz et~al.(1975)]{bkl1975} A.~B. Bortz, M.~H. Kalos, J.~L. Lebowitz.
+A new algorithm for Monte Carlo simulation of Ising spin systems.
+\emph{Journal of Computational Physics} 17 (1975) 10--18.
+
+\bibitem[Bressloff(2020)]{bressloff2020} P.~C. Bressloff. Asymptotic analysis of
+extended two-dimensional narrow capture problems. arXiv:2010.11885 (2020).
+
+\bibitem[Bridle(1990)]{bridle1990} J.~S. Bridle. Probabilistic interpretation of
+feedforward classification network outputs, with relationships to statistical
+pattern recognition. In \emph{Neurocomputing}, NATO ASI Series F 68 (1990)
+227--236.
+
+\bibitem[Colantoni(2026)]{colantoni2026} F.~Colantoni. Time-dependent Robin heat
+equation via Markovian switching. arXiv:2604.27901 (2026).
+
+\bibitem[Conlon and Mortimer(2021)]{conlon2021} C.~Conlon, J.~H. Mortimer.
+Empirical properties of diversion ratios. \emph{RAND Journal of Economics} 52
+(2021) 693--726.
+
+\bibitem[Cox(1959)]{cox1959} D.~R. Cox. The analysis of exponentially
+distributed life-times with two types of failure. \emph{Journal of the Royal
+Statistical Society B} 21 (1959) 411--421.
+
+\bibitem[Cox(1972)]{cox1972} D.~R. Cox. Regression models and life-tables.
+\emph{Journal of the Royal Statistical Society B} 34 (1972) 187--202.
+
+\bibitem[Fischer and Meier-Hellstern(1993)]{fischer1993} W.~Fischer,
+K.~Meier-Hellstern. The Markov-modulated Poisson process (MMPP) cookbook.
+\emph{Performance Evaluation} 18 (1993) 149--171.
+
+\bibitem[Gillespie(1977)]{gillespie1977} D.~T. Gillespie. Exact stochastic
+simulation of coupled chemical reactions. \emph{Journal of Physical Chemistry}
+81 (1977) 2340--2361.
+
+\bibitem[Green(1954)]{green1954} M.~S. Green. Markoff random processes and the
+statistical mechanics of time-dependent phenomena II. Irreversible processes in
+fluids. \emph{Journal of Chemical Physics} 22 (1954) 398--413.
+
+\bibitem[Hausman and McFadden(1984)]{hausman1984} J.~Hausman, D.~McFadden.
+Specification tests for the multinomial logit model. \emph{Econometrica} 52
+(1984) 1219--1240.
+
+\bibitem[Heckman and Honor\'e(1989)]{heckman1989} J.~J. Heckman, B.~E.
+Honor\'e. The identifiability of the competing risks model. \emph{Biometrika}
+76 (1989) 325--330.
+
+\bibitem[Khas'minskii(1966)]{khasminskii1966} R.~Z. Khas'minskii. A limit
+theorem for the solutions of differential equations with random right-hand
+sides. \emph{Theory of Probability and Its Applications} 11 (1966) 390--406.
+
+\bibitem[Kubo(1954)]{kubo1954} R.~Kubo. Note on the stochastic theory of
+resonance absorption. \emph{Journal of the Physical Society of Japan} 9 (1954)
+935--944.
+
+\bibitem[Kubo(1957)]{kubo1957} R.~Kubo. Statistical-mechanical theory of
+irreversible processes I. \emph{Journal of the Physical Society of Japan} 12
+(1957) 570--586.
+
+\bibitem[Kurtz(1973)]{kurtz1973} T.~G. Kurtz. A limit theorem for perturbed
+operator semigroups with applications to random evolutions. \emph{Journal of
+Functional Analysis} 12 (1973) 55--67.
+
+\bibitem[Lawley and Keener(2015)]{lawley2015} S.~D. Lawley, J.~P. Keener. A new
+derivation of Robin boundary conditions through homogenization of a
+stochastically switching boundary. \emph{SIAM Journal on Applied Dynamical
+Systems} 14 (2015) 1845--1867.
+
+\bibitem[Luce(1959)]{luce1959} R.~D. Luce. \emph{Individual Choice Behavior: A
+Theoretical Analysis}. Wiley, 1959.
+
+\bibitem[Marley and Colonius(1992)]{marley1992} A.~A.~J. Marley, H.~Colonius.
+The `horse race' random utility model for choice probabilities and reaction
+times, and its competing risks interpretation. \emph{Journal of Mathematical
+Psychology} 36 (1992) 1--20.
+
+\bibitem[McFadden(1974)]{mcfadden1974} D.~McFadden. Conditional logit analysis
+of qualitative choice behavior. In P.~Zarembka (ed.), \emph{Frontiers in
+Econometrics}, Academic Press (1974) 105--142.
+
+\bibitem[McFadden and Train(2000)]{mcfadden2000} D.~McFadden, K.~Train. Mixed
+MNL models for discrete response. \emph{Journal of Applied Econometrics} 15
+(2000) 447--470.
+
+\bibitem[Pavliotis and Stuart(2008)]{pavliotis2008} G.~A. Pavliotis, A.~M.
+Stuart. \emph{Multiscale Methods: Averaging and Homogenization}, Texts in
+Applied Mathematics 53, Springer, 2008. Chapter 9, Averaging for Markov chains.
+
+\bibitem[Schuss et~al.(2007)]{schuss2007} Z.~Schuss, A.~Singer, D.~Holcman. The
+narrow escape problem for diffusion in cellular microdomains. \emph{Proceedings
+of the National Academy of Sciences} 104 (2007) 16098--16103.
+
+\bibitem[Szabo et~al.(1982)]{szabo1982} A.~Szabo, D.~Shoup, S.~H. Northrup,
+J.~A. McCammon. Stochastically gated diffusion-influenced reactions.
+\emph{Journal of Chemical Physics} 77 (1982) 4484--4493.
+
+\bibitem[Tsiatis(1975)]{tsiatis1975} A.~Tsiatis. A nonidentifiability aspect of
+the problem of competing risks. \emph{Proceedings of the National Academy of
+Sciences} 72 (1975) 20--22.
+
+\bibitem[Tversky(1972)]{tversky1972} A.~Tversky. Elimination by aspects: a
+theory of choice. \emph{Psychological Review} 79 (1972) 281--299.
+
+\bibitem[van Kampen(1974)]{vankampen1974} N.~G. van Kampen. A cumulant expansion
+for stochastic linear differential equations I. \emph{Physica} 74 (1974)
+215--238.
+
+\bibitem[Vaupel et~al.(1979)]{vaupel1979} J.~W. Vaupel, K.~G. Manton,
+E.~Stallard. The impact of heterogeneity in individual frailty on the dynamics
+of mortality. \emph{Demography} 16 (1979) 439--454.
+
+\bibitem[Yellott(1977)]{yellott1977} J.~I. Yellott Jr. The relationship between
+Luce's choice axiom, Thurstone's theory of comparative judgment, and the double
+exponential distribution. \emph{Journal of Mathematical Psychology} 15 (1977)
+109--144.
+
+\bibitem[Yin and Zhang(1998)]{yin1998} G.~G. Yin, Q.~Zhang.
+\emph{Continuous-Time Markov Chains and Applications: A Singular Perturbation
+Approach}. Springer, 1998.
+
+\bibitem[Zwanzig(1990)]{zwanzig1990} R.~Zwanzig. Rate processes with dynamical
+disorder. \emph{Accounts of Chemical Research} 23 (1990) 148--152.
+
+\end{thebibliography}
 
 \end{document}
