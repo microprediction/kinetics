@@ -35,9 +35,10 @@ softmax in the stationary mean intensities at leading order, and the first
 correction is a Green--Kubo term built from integrated rate autocovariances.
 One pair of objects, the mean intensities and the correlation matrix $K$, then
 predicts every blocked-subset counterfactual by restricting sums, so the whole
-deletion ensemble follows from one calculation. Fluctuations common to all
-channels cancel exactly, so departures from softmax measure differential
-structure alone, and environmental modes of rank $r$ give $K$ of rank $r$, up
+deletion ensemble follows from one calculation. Fluctuations common to all channels cancel exactly, a
+proportional-hazards fact known in competing risks that we recover here for a
+random common factor, so departures from softmax measure differential structure
+alone, and environmental modes of rank $r$ give $K$ of rank $r$, up
 to a cap set by the environment's own dimension. The same correction predicts the runner-up kernel, which is observable in
 any race that reports a finishing order. That observable turns out to identify
 everything about $K$ that the complete set of blocked-subset interventions
@@ -109,10 +110,12 @@ theme running through our related work, that one global computation can contain
 an entire leave-one-out ensemble.
 
 Two structural facts sharpen the result. Fluctuations shared by all channels,
-$\lambda_i(y) = a_i c(y)$, cancel from the correction identically. We show this
-is not merely an asymptotic statement. A common fluctuation is a common time
-change, so Luce holds exactly at every degree of separation, which is the
-proportional-hazards normal form. Separately, if the intensity deviations are
+$\lambda_i(y) = a_i c(y)$, cancel from the correction identically, and not
+merely to the order computed. Luce's law then holds exactly at every degree of
+separation. This is the proportional-hazards normal form, known in competing
+risks since \citet{elandt1976} and in choice theory since \citet{marley1992},
+and what is added here is that the common factor may be a random functional of
+the environment. Separately, if the intensity deviations are
 driven by $r$ environmental modes then $K$ has rank $r$, so the
 correction inherits any low-dimensional structure the physics has.
 
@@ -328,6 +331,22 @@ zero. Then for every $y$, every $\varepsilon$, and every $A$,
 so the win probability is Luce's law from any start, not merely from $\pi$ and
 not merely to the order computed above.
 \end{proposition}
+
+This is a known result in a new setting rather than a new one, and the prior
+statements are worth being precise about. \citet{elandt1976} proved that under
+proportional hazard rates the failure time and the cause of failure are
+independent, and did so without assuming the latent failure times are
+independent. \citet{kochar1991} give an equivalent statement.
+\citet{marley1992} prove the choice-theoretic version as an equivalence, that
+proportional cause-specific hazards hold if and only if the chosen option and
+the time of choice are independent, with the constants of proportionality
+forced to equal the choice probabilities. They also record the explicit
+representation $\Pr[t(x) > t] = \exp(-u(x)\Psi(t))$, which yields
+$u(x)/\sum_y u(y)$ for an arbitrary increasing $\Psi$.
+
+What the present setting adds is only that the common factor may be a random
+functional of the hidden environment rather than a deterministic function of
+time, and the proof below is correspondingly short.
 
 \begin{proof}
 Let $v_i$ be the constant function $a_i / \sum_{j\in A}a_j$. Constants are
@@ -723,8 +742,16 @@ those same quantities, and what it adds is not the numbers but the structure the
 asymptotic exposes. One pair $(\lbar, K)$ serves every subset, shared modulation
 drops out, and low-rank environments give low-rank corrections.
 
-That a race is at once a competing-risks model and a random-utility model is old
-\citep{marley1992}, as is the race-to-Luce mechanism in other fields. What
+That a race is at once a competing-risks model and a random-utility model is
+old. \citet{marley1992} make the identification explicitly, recast the race in
+cause-specific hazards, and prove the proportional-hazards equivalence that
+Proposition~\ref{prop:common} recovers, building on the competing-risks results
+of \citet{elandt1976} and \citet{kochar1991}. Their treatment of dependence
+runs the other way from ours. They record the classical non-identifiability,
+that any well-behaved structure on a fixed choice set admits an independent
+representation, so on a fixed set there is nothing to correct. The correction
+here lives in the comparison across sets, which is exactly where their
+context-free hazard condition bites. What
 appears not to have been stated is that softmax is the homogenized choice law of
 fast hidden kinetics, with a computable first correction.
 
@@ -802,6 +829,15 @@ Statistical Society B} 21 (1959) 411--421.
 
 \bibitem[Cox(1972)]{cox1972} D.~R. Cox. Regression models and life-tables.
 \emph{Journal of the Royal Statistical Society B} 34 (1972) 187--202.
+
+\bibitem[Elandt-Johnson(1976)]{elandt1976} R.~C. Elandt-Johnson.
+Conditional failure time distributions under competing risk theory with
+dependent failure times and proportional hazard rates. \emph{Scandinavian
+Actuarial Journal} 1976 (1976) 37--51.
+
+\bibitem[Kochar and Proschan(1991)]{kochar1991} S.~C. Kochar, F.~Proschan.
+Independence of time and cause of failure in the multiple dependent competing
+risks model. \emph{Statistica Sinica} 1 (1991) 295--299.
 
 \bibitem[Fischer and Meier-Hellstern(1993)]{fischer1993} W.~Fischer,
 K.~Meier-Hellstern. The Markov-modulated Poisson process (MMPP) cookbook.

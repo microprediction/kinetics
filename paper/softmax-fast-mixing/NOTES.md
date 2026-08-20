@@ -1,22 +1,38 @@
 # Open items for this paper
 
-## Two references to read before submission
+## RESOLVED: Proposition 1 is prior art
 
-The prior-art sweep verified identifiers for both, but publishers elided the
-abstracts, so their CONTENT is unread. Both are title-level matches to
-load-bearing claims.
+Both flagged references were obtained and read. The verdict changed the paper.
 
-1. **Elandt-Johnson (1976)**, "Conditional failure time distributions under
-   competing risk theory with dependent failure times and proportional hazard
-   rates", Scandinavian Actuarial Journal 1976(1):37-51,
-   doi:10.1080/03461238.1976.10405934. Title matches Proposition 1
-   (dependent risks + proportional hazards). MUST be read before Proposition 1
-   is presented as new. Currently not cited.
-2. **Marley & Colonius (1992)**, "The 'horse race' random utility model...and
-   its competing risks interpretation", J. Math. Psych. 36(1):1-20,
-   doi:10.1016/0022-2496(92)90050-h. Cited in the introduction for the
-   race/competing-risks/random-utility identification. Safe as a framing
-   citation on title alone, but read it before relying on it further.
+**Marley & Colonius (1992)** contains Proposition 1 twice. Section 4 defines
+the proportional hazard rate condition h^X_x(t) = C_X(x) h_X(t) and proves it
+is EQUIVALENT to independence of the chosen option and the time of choice, with
+the constants forced to equal the choice probabilities. Section 6 gives the
+explicit representation Pr[t(x)>t] = exp(-u(x)Psi(t)) yielding u(x)/sum u(y)
+for arbitrary increasing Psi. Full text recovered from a Wayback snapshot of
+Colonius's Oldenburg faculty directory (the live URL is dead):
+web.archive.org/web/20170705102702id_/http://www.uni-oldenburg.de/fileadmin/user_upload/psycho/ag/kogn/colonius/Marley_colonius_JMP92.pdf
+
+**Elandt-Johnson (1976)** proves, per its abstract, that under proportional
+hazard rates the cause-conditional failure time distribution equals the overall
+one regardless of cause, and crucially WITHOUT assuming independent failure
+times. Sixteen years earlier and in the pure competing-risks setting. Abstract
+obtained via OpenAlex and the T&F landing page through a text proxy; the body
+was not obtained, so whether she displays a_i/sum(a_j) explicitly is
+unconfirmed, though her stated theorem entails it.
+
+**Action taken**: Proposition 1 is now presented as a known result recovered in
+a new setting, with all three citations (adding Kochar & Proschan 1991, which
+Marley & Colonius call an equivalent result). The only thing claimed as added
+is that the common factor may be a random functional of the hidden environment
+rather than a deterministic function of time.
+
+**Still worth doing**: Elandt-Johnson's 1979 review, "Equivalence and
+nonidentifiability in competing risks: A review and critique", NCSU Institute
+of Statistics Mimeo Series No. 1222, is by the same author reviewing exactly
+this material and is the best single target for nailing down the 1976 body. It
+sits behind NCSU's bot wall; a browser session would get it.
+repository.lib.ncsu.edu/items/3d22862d-c325-4e81-9ebf-57c5e05a68fe
 
 ## Positioning that must survive editing
 
