@@ -39,8 +39,9 @@ deletion ensemble follows from one calculation. Fluctuations common to all
 channels cancel exactly, so departures from softmax measure differential
 structure alone, and environmental modes of rank $r$ give $K$ of rank $r$, up
 to a cap set by the environment's own dimension. The same correction predicts the runner-up kernel, which is observable in
-any race that reports a finishing order, so the theory can be tested without
-running interventions. We verify the expansion on finite chains, then on
+any race that reports a finishing order. That observable turns out to identify
+everything about $K$ that the complete set of blocked-subset interventions
+would, while winner-only data identifies almost none of it. We verify the expansion on finite chains, then on
 Brownian narrow escape with reaction windows, where the leading and corrected
 errors decay with measured orders $0.93$ and $1.93$ against an exactly
 discretized generator.
@@ -124,7 +125,9 @@ continuous physics, a reflected Brownian motion in a disk with reaction
 windows, and reports the measured convergence orders together with two
 systematic errors found there.
 Section~\ref{sec:runnerup} shows the correction also predicts the runner-up
-kernel, which makes it testable against ranked data.
+kernel, and Section~\ref{sec:identify} asks what data can reveal about $K$,
+finding that ranked observations of a single race are worth as much as every
+possible intervention.
 
 \section{The shared-state race}\label{sec:model}
 
@@ -608,12 +611,85 @@ the environment is unknown, a measured $M$ constrains the Green--Kubo matrix,
 which is the beginning of estimating $K$ from data rather than computing it from
 a known generator.
 
+\section{What data reveals about $K$}\label{sec:identify}
+
+Everything so far computes $K$ from a known generator. A practitioner rarely
+has the generator. They have races. This section asks what $K$ can be recovered
+from outcomes alone, and the answer has a clean form.
+
+The correction in \eqref{eq:main} is linear in $K$, so stacking it over every
+availability set gives a linear map from $K$ to observable deviations from
+softmax. Its null space is exactly what no amount of choice data can reveal.
+
+\begin{proposition}[Identifiability of $K$]\label{prop:identify}
+Choice probabilities on all availability sets determine $K$ exactly modulo the
+$(N{+}1)$-dimensional family
+\begin{equation}\label{eq:nullfamily}
+  K \;\longmapsto\; K + d\,\lbar^\top + t\,\mathrm{diag}(\lbar),
+  \qquad d \in \R^N,\; t \in \R,
+\end{equation}
+and no smaller family. Exactly $N^2 - N - 1$ combinations of the entries of $K$
+are identified.
+\end{proposition}
+
+\begin{proof}
+Write $B(A,i) = \sum_{j \in A} K_{ji} - c_i \sum_{j,k \in A} K_{jk}$ for the
+bracket in \eqref{eq:main}, with $c_i = \lbar_i / \bar\Lambda_A$. Under
+$K \mapsto K + d\lbar^\top$ the first sum gains $\lbar_i \sum_{j\in A} d_j$ and
+the second gains $\bar\Lambda_A \sum_{j\in A}d_j$, so the change in $B$ is
+$\lbar_i \sum_{j\in A}d_j - c_i \bar\Lambda_A \sum_{j\in A}d_j = 0$. Under
+$K \mapsto K + t\,\mathrm{diag}(\lbar)$ the first sum gains $t\lbar_i$, since
+only the $j=i$ term contributes, and the second gains $t\bar\Lambda_A$, so the
+change is $t\lbar_i - c_i t \bar\Lambda_A = 0$. The two families intersect
+trivially and span $N+1$ dimensions. That the null space is no larger is a rank
+computation, carried out in experiment 41 for $N = 3, \dots, 6$, where the
+identified dimension equals $N^2 - N - 1$ in every case.
+\end{proof}
+
+The two invisible directions have meaning. Adding $d\lbar^\top$ changes how each
+channel's fluctuations correlate with the environment in the direction of the
+mean intensities, and adding $t\,\mathrm{diag}(\lbar)$ rescales each channel's
+own autocorrelation in proportion to its mean rate. Neither moves any branching
+ratio, for the same reason a common rate shift does not.
+
+\paragraph{Which experiments reach the identified part.} The design matters far
+more than the sample size, and the useful comparison is between three ways of
+watching the same system. Winner-only data on the full set is nearly useless
+for this purpose. It supplies $N-1$ independent numbers, so it recovers $N-1$ of
+the $N^2 - N - 1$ identified directions and no more. Running every
+blocked-subset experiment recovers all of them, which is the content of
+Proposition~\ref{prop:identify}.
+
+Between those sits the observation that makes the theory testable. Recording the
+runner-up alongside the winner, on the full set alone, recovers
+\emph{everything} that the complete set of blocked-subset interventions would.
+Experiment 41 confirms this for $N = 4, 5, 6$, where the ranked design and the
+exhaustive intervention design have identical rank, $N^2 - N - 1$, while the
+winner-only design has rank $N-1$. Interventions are often impossible, and a
+finishing order is usually free.
+
+\paragraph{What it costs.} Identification is not estimation. Fitting $K$ by
+least squares on the identified subspace, from shares estimated on pairs and
+triples and then scored on held-out larger subsets, the estimator beats the
+uncorrected softmax law only once roughly $10^6$ races per availability set are
+observed. The reason is a floor rather than a defect of the estimator. The
+correction is $O(\varepsilon)$ while multinomial noise on $n$ races is
+$O(n^{-1/2})$, so the data requirement scales as $\varepsilon^{-2}$. At the
+$\varepsilon = 0.05$ of experiment 41 the correction is $1.2\times10^{-3}$ and
+the crossover duly appears between $10^5$ and $10^6$ races.
+
+This is worth stating plainly because it bounds the practical claim. Where the
+generator is known, the correction is cheap and accurate. Where only outcomes
+are observed, recovering it demands either very many races or the richer
+observable of Section~\ref{sec:runnerup}.
+
 \section{Reproducibility}
 
 Every number in this paper comes from a committed script. Experiment 7 gives
 the chain verification, experiment 9 the narrow-escape study, experiment 39 the
-runner-up bridge, and experiment 40 the replication, the equal-time ablation,
-the rank bounds, and the index-order check. All four run from a clean checkout
+runner-up bridge, experiment 40 the replication, the equal-time ablation, the
+rank bounds, and the index-order check, and experiment 41 the identifiability
+and estimation results. All four run from a clean checkout
 of \url{https://github.com/microprediction/kinetics} with NumPy, SciPy, and
 Matplotlib, and each writes the \texttt{results.csv} the corresponding numbers
 are quoted from. Experiments 7, 39, and 40 take seconds. Experiment 9 takes
@@ -677,12 +753,14 @@ One extension looks tractable. The disk's boundary operator diagonalizes in
 Fourier modes, which may render the leading geometric correction analytic
 rather than numerical.
 
-Section~\ref{sec:runnerup} closes the gap between the computed correction and
-the estimated one, at least in one direction. What remains is the inverse
-problem. Estimating $K$ from an observed runner-up kernel is an
-underdetermined fit, since $M$ supplies $N(N-1)$ numbers for the $N^2$ entries
-of $K$ and only through the combinations appearing in \eqref{eq:main}, so the
-identifiable part of $K$ has yet to be characterized.
+Sections~\ref{sec:runnerup} and~\ref{sec:identify} close the gap between the
+computed correction and the estimated one. The identifiable part of $K$ is
+characterized exactly, and ranked observations reach all of it. What remains is
+statistical rather than structural. The $\varepsilon^{-2}$ sample requirement
+is severe at small $\varepsilon$, which is precisely the regime where the
+expansion is most accurate, so the theory is easiest to trust where it is
+hardest to fit. Whether the runner-up design also improves the constant in that
+rate, and not merely the rank, is open.
 
 
 \begin{thebibliography}{99}
