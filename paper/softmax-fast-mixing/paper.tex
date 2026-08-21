@@ -381,18 +381,22 @@ Substituting into the bracket in \eqref{eq:main} gives
 $a_i \gamma \sum_{j\in A} a_j - (a_i/\sum_{j\in A}a_j)\gamma
 (\sum_{j\in A}a_j)^2 = 0$. The correction vanishes identically.
 
-\begin{proposition}[Proportional hazards satisfy the Choice Axiom exactly]\label{prop:common}
+\begin{remark}[Proportional hazards satisfy the Choice Axiom
+exactly]\label{rem:common}
 Suppose $\lambda_i(y) = a_i c(y)$ with $a_i > 0$ and $c \ge 0$ not identically
 zero. Then for every $y$, every $\varepsilon$, and every $A$,
 \[
   u_i^A(y) = \frac{a_i}{\sum_{j \in A} a_j} ,
 \]
 so the arrival probability satisfies the Choice Axiom from any start, not
-merely from $\pi$ and not merely to the order computed above.
-\end{proposition}
+merely from $\pi$ and not merely to the order computed above. The
+verification is one line. The constant $v_i = a_i/\sum_{j\in A}a_j$
+satisfies $\Lambda_A v_i = a_i c(y) = \lambda_i$ and is annihilated by $L$,
+so it solves \eqref{eq:resolvent}, and the killed resolvent is invertible.
+\end{remark}
 
-This is a known result in a new setting rather than a new one, and the prior
-statements are worth being precise about. \citet{elandt1976} proved that under
+This is a known result in a new setting, which is why it is a remark and not
+a proposition. \citet{elandt1976} proved that under
 proportional hazard rates the failure time and the cause of failure are
 independent, and did so without assuming the latent failure times are
 independent. \citet{kochar1991} give an equivalent statement.
@@ -405,17 +409,7 @@ $u(x)/\sum_y u(y)$ for an arbitrary increasing $\Psi$.
 
 The present setting adds only that the common factor may be a random
 functional of the hidden environment rather than a deterministic function of
-time, and the proof below is correspondingly short.
-
-\begin{proof}
-Let $v_i$ be the constant function $a_i / \sum_{j\in A}a_j$. Constants are
-annihilated by $L$, and
-$\Lambda_A v_i = c(y)\big(\sum_{j\in A}a_j\big) \cdot a_i /
-\sum_{j\in A}a_j = a_i c(y) = \lambda_i$, so
-$(\Lambda_A - L/\varepsilon)v_i = \lambda_i$. Since the killed resolvent is
-invertible, $v_i$ is the unique solution of \eqref{eq:resolvent}, which is
-$u_i^A$.
-\end{proof}
+time.
 
 In survival analysis a random multiplier on a hazard is called a frailty
 \citep{vaupel1979}, and a common multiplicative modulation is a frailty
@@ -762,7 +756,7 @@ $1.1\times10^{-16}$ at $\varepsilon = 0.3$. The regression suite carries the
 same check at $\varepsilon = 3.0$, where the environment is ten times slower
 than the channels rather than faster and the expansion has no claim at all,
 and Luce still holds to $10^{-12}$. That is the content of
-Proposition~\ref{prop:common}. Rank-two
+Remark~\ref{rem:common}. Rank-two
 environmental loadings give $K$ with singular values
 $[0.022, 0.002, 0, 0]$, so the rank is exactly two.
 
@@ -967,7 +961,7 @@ driver, with no asymptotic regime.
 That a race is at once a competing-risks model and a random-utility model is
 old. \citet{marley1992} make the identification explicitly, recasting a
 Thurstonian race in cause-specific hazards, and prove the proportional-hazards equivalence that
-Proposition~\ref{prop:common} recovers. \citet{kochar1991} prove the
+Remark~\ref{rem:common} recovers. \citet{kochar1991} prove the
 competing-risks equivalence,\footnote{Their abstract: time and identity of
 first failure are independent ``if and only if the cause specific hazard rates
 of the components are proportional.''} and \citet{elandt1976} proved the
