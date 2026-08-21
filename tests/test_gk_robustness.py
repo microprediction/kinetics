@@ -129,3 +129,51 @@ def test_proportional_hazards_is_exact_pointwise_under_stress():
         for eps in (1e-3, 0.3, 3.0, 100.0):
             u = np.linalg.solve(L / eps - np.diag(lam[A].sum(0)), -lam[A].T)
             assert np.abs(u - luce[None, :]).max() < 1e-12
+
+
+def test_mode_count_estimator():
+    """exp42: the driver's mode count is recovered exactly, and the fat set
+    explains the rank anomaly (whole t-free family has rank r+1)."""
+    import importlib
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "experiments"
+                          / "exp42_mode_count"))
+    mc = importlib.import_module("run_mode_count")
+    rng = np.random.default_rng(5)
+    for r in (1, 3):
+        L, pi, lam = mc.environment(rng, 9, 7, r)
+        lam_bar, K = mc.kubo(L, pi, lam)
+        K_obs = K + np.outer(rng.normal(size=7), lam_bar) + 0.4 * np.diag(lam_bar)
+        t_hat, M = mc.fat_solve(K_obs, lam_bar, r + 1)
+        assert abs(t_hat + 0.4) < 1e-6
+        r_hat, sv = mc.mode_count(M, lam_bar)
+        assert r_hat == r
+        # the fat set: random members of the t-free family have rank r+1
+        svf = np.linalg.svd(K + np.outer(rng.normal(size=7), lam_bar),
+                            compute_uv=False)
+        assert int((svf > 1e-10 * svf.max()).sum()) == r + 1
+
+
+def test_remainder_bound_dominates():
+    """The explicit constant eps^2 ||Lam u2||/Lam_min bounds the true error."""
+    rng = np.random.default_rng(404)
+    L, pi, _ = rb.environment(rng, 7, 4, 0.0)
+    lam = rng.uniform(0.4, 2.0, (4, 7))
+    m = 7
+    Pi = np.outer(np.ones(m), pi)
+    dev = lambda g: np.linalg.solve(Pi - L, g - pi @ g)
+    lb = lam @ pi; Lb = lb.sum(); c = lb / Lb
+    lt = lam - lb[:, None]; Lam = lam.sum(0)
+    u1t = np.column_stack([-dev(c[i]*(Lam-Lb) - lt[i]) for i in range(4)])
+    m1 = -np.array([pi @ (Lam*u1t[:, i]) for i in range(4)]) / Lb
+    u1 = u1t + m1
+    u2t = np.column_stack([-dev(Lam*u1[:, i]) for i in range(4)])
+    m2 = -np.array([pi @ (Lam*u2t[:, i]) for i in range(4)]) / Lb
+    u2 = u2t + m2
+    C = np.abs(Lam[:, None]*u2).max() / Lam.min()
+    for eps in (0.2, 0.05, 0.01):
+        u = np.linalg.solve(L/eps - np.diag(Lam), -lam.T)
+        U = c[None, :] + eps*u1 + eps**2*u2
+        # defect is exactly -eps^2 Lam u2
+        defect = (L/eps) @ U - Lam[:, None]*U + lam.T
+        assert np.abs(defect + eps**2 * (Lam[:, None] * u2)).max() < 1e-9
+        assert np.abs(u - U).max() <= C * eps**2

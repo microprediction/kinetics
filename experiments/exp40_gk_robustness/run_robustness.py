@@ -18,6 +18,11 @@ Part C. RANK BOUND. Rank-r loadings give rank(K) <= r, but there is a second
 cap: deviations live in the mean-zero subspace of the environment, so
 rank(K) <= min(N, m-1) whatever the loadings. Verify both.
 
+Part H. REMAINDER BOUND. The two-corrector truncation U has defect exactly
+-eps^2 Lam u2, and the killed resolvent is bounded by 1/Lam_min uniformly in
+eps, so ||u - U|| <= eps^2 ||Lam u2|| / Lam_min with an explicit constant.
+Verify the defect is eps-independent and the bound dominates at every eps.
+
 Part G. PROPORTIONAL HAZARDS UNDER STRESS. Proposition 1 claims lambda_i =
 a_i c(y) gives Luce exactly, pointwise in the start state, for any c >= 0 and
 any eps. Stress it: let c vanish on most states, span nine orders of magnitude,
@@ -292,6 +297,42 @@ def main() -> None:
             luce = a[A2] / a[A2].sum()
             worst = max(worst, np.abs(u - luce[None, :]).max())   # pointwise in y
     rows += [("prop_hazards_worst_pointwise_dev", f"{worst:.3e}")]
+
+    # ---- Part H: remainder bound ------------------------------------------
+    rngh = np.random.default_rng(404)
+    Lh, pih, lamh = environment(rngh, 7, 4, 0.0)
+    lamh = rngh.uniform(0.4, 2.0, (4, 7))
+    mh = 7
+    Pih = np.outer(np.ones(mh), pih)
+    devh = lambda g: np.linalg.solve(Pih - Lh, g - pih @ g)
+    lbh = lamh @ pih
+    Lbh = lbh.sum()
+    ch = lbh / Lbh
+    lth = lamh - lbh[:, None]
+    Lamh = lamh.sum(0)
+    u1t = np.column_stack([-devh(ch[i] * (Lamh - Lbh) - lth[i]) for i in range(4)])
+    m1h = -np.array([pih @ (Lamh * u1t[:, i]) for i in range(4)]) / Lbh
+    u1h = u1t + m1h
+    u2t = np.column_stack([-devh(Lamh * u1h[:, i]) for i in range(4)])
+    m2h = -np.array([pih @ (Lamh * u2t[:, i]) for i in range(4)]) / Lbh
+    u2h = u2t + m2h
+    C_bound = np.abs(Lamh[:, None] * u2h).max() / Lamh.min()
+    worst_ratio = 0.0
+    defect_dev = 0.0
+    rho_ref = None
+    for eps in (0.2, 0.1, 0.05, 0.02, 0.01):
+        Uh = ch[None, :] + eps * u1h + eps**2 * u2h
+        defect = (Lh / eps) @ Uh - Lamh[:, None] * Uh + lamh.T
+        rho = defect / eps**2
+        if rho_ref is None:
+            rho_ref = rho
+        defect_dev = max(defect_dev, np.abs(rho - rho_ref).max())
+        uh = np.linalg.solve(Lh / eps - np.diag(Lamh), -lamh.T)
+        err = np.abs(uh - Uh).max()
+        worst_ratio = max(worst_ratio, err / (C_bound * eps**2))
+    rows += [("remainder_constant", f"{C_bound:.4f}"),
+             ("remainder_defect_eps_independence", f"{defect_dev:.3e}"),
+             ("remainder_worst_err_over_bound", f"{worst_ratio:.4f}")]
 
     with open(HERE / "results.csv", "w") as fh:
         fh.write("quantity,value\n")

@@ -100,16 +100,15 @@ measurement of it:
 - CERTIFICATE (exact, already in the paper): common-gain drivers produce
   identically zero departure (verified 1e-16 through the identified
   projection), so any nonzero departure certifies differential structure.
-- MODE COUNTING (empirical, one open anomaly): the driver's mode count r is
-  NOT the rank of the projected departure (projection smears the spectrum;
-  measured rank 7 for all r). The right object is minimum rank over the
-  equivalence class K + d lam^T + t diag(lam). A class-constrained
-  alternating low-rank fit flags r in every trial via "first machine-zero
-  residual at rho = r+1"; the rank-r member (the true K) is in the search
-  space yet is never found even with 12 restarts. Understand why before
-  claiming anything: possibly the rank-r member is an isolated point of the
-  feasible set while rank-(r+1) members form an attracting manifold.
-  Scripts in the scratchpad; promote to exp42 when resolved.
+- MODE COUNTING (RESOLVED 2026-08-22, now experiment 42): the anomaly was
+  geometry, as suspected. {K + d lam^T} is an N-dimensional subfamily whose
+  members ALL have rank r+1 (verified: 100/100 random d), which is the fat
+  set the optimizer finds; rank <= r needs d in col(K), codimension N-r,
+  which it never hits. The estimator is algebraic, no optimization: one fat
+  solve at rank r+1 recovers t to machine precision (the diag direction is
+  not in the fat set), then the combinations lam_k M_j - lam_j M_k cancel d
+  exactly and span col(K), so their numerical rank IS r. Exact for r=1..5
+  with trailing singular values at 1e-13.
 - Application sketch: fit the exacta board of a trained neural TPP (RMTPP /
   Neural Hawkes / Transformer Hawkes), read off effective latent dimension.
 

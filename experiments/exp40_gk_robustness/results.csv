@@ -37,3 +37,6 @@ subset_gk_order_max,2.0012
 subset_softmax_order_min,0.4015
 subset_softmax_order_max,1.0423
 prop_hazards_worst_pointwise_dev,5.468e-14
+remainder_constant,0.3309
+remainder_defect_eps_independence,3.738e-10
+remainder_worst_err_over_bound,0.0757

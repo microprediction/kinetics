@@ -280,6 +280,49 @@ Finally $p_i^A = c_i + \varepsilon m_i + O(\varepsilon^2)$ by \eqref{eq:p},
 which is \eqref{eq:main}.
 \end{proof}
 
+\begin{lemma}[Remainder bound]\label{lem:remainder}
+Suppose the state space is finite and $\Lambda_A(y) \ge \Lambda_{\min} > 0$
+for every $y$. Let $u^{(1)}, u^{(2)}$ be the correctors constructed in the
+proof of Theorem~\ref{thm:main} and $U = c + \varepsilon u^{(1)} +
+\varepsilon^2 u^{(2)}$. Then the defect of $U$ is exactly
+$(L/\varepsilon - \Lambda_A)U + \lambda = -\varepsilon^2 \Lambda_A u^{(2)}$,
+and
+\[
+  \left\| u^A - U \right\|_\infty
+  \;\le\; \varepsilon^2 \,
+  \frac{\|\Lambda_A u^{(2)}\|_\infty}{\Lambda_{\min}} .
+\]
+The $O(\varepsilon^2)$ of Theorem~\ref{thm:main} is therefore a proven bound
+with an explicit constant, and repeating the construction one order deeper
+proves the $O(\varepsilon^3)$ remainder of the corrected law, and so on.
+\end{lemma}
+
+\begin{proof}
+The terms of orders $\varepsilon^{-1}$, $\varepsilon^0$, and $\varepsilon^1$
+in the defect vanish by the construction of $c$, $u^{(1)}$, and $u^{(2)}$,
+leaving only $-\varepsilon^2\Lambda_A u^{(2)}$. Subtracting the equations for
+$u^A$ and $U$ gives
+$u^A - U = -(\Lambda_A - L/\varepsilon)^{-1}\varepsilon^2\Lambda_A u^{(2)}$.
+The killed resolvent is bounded uniformly in $\varepsilon$. For any $f$,
+\[
+  \left((\Lambda_A - L/\varepsilon)^{-1} f\right)(y)
+  = \mathbb{E}_y \int_0^\infty
+    e^{-\int_0^t \Lambda_A(Y^\varepsilon_s)\,ds} f(Y^\varepsilon_t)\, dt ,
+\]
+and bounding the exponential by $e^{-\Lambda_{\min} t}$ gives
+$\|(\Lambda_A - L/\varepsilon)^{-1} f\|_\infty \le
+\|f\|_\infty / \Lambda_{\min}$.
+\end{proof}
+
+The constant is computable. On the four-channel instance committed with
+experiment 40 it equals $0.33$, the defect is $\varepsilon$-independent to
+$4\times10^{-10}$, and the bound dominates the measured error at every
+$\varepsilon$ in the sweep with a slack factor of at least $13$. The hypothesis $\Lambda_{\min} > 0$ is
+used only for the resolvent bound. The expansion itself survives a total
+hazard vanishing on part of the space, as the stress tests of experiment 40
+show, but the constant then requires the mean killing time in place of
+$1/\Lambda_{\min}$.
+
 \begin{proposition}[General start]\label{prop:start}
 Let the environment start from an arbitrary law $\mu_0$ rather than from $\pi$,
 and write $p_i^A(\mu_0) = \int u_i^A \, d\mu_0$. Then
@@ -778,8 +821,9 @@ artifact.
 Every number in this paper comes from a committed script. Experiment 7 gives
 the chain verification, experiment 9 the narrow-escape study, experiment 39 the
 runner-up bridge, experiment 40 the replication, the equal-time ablation, the
-rank bounds, and the index-order check, and experiment 41 the identifiability
-and estimation results. All four run from a clean checkout
+rank bounds, the index-order check, and the remainder-bound verification,
+experiment 41 the identifiability and estimation results, and experiment 42
+the mode-count estimator. All four run from a clean checkout
 of \url{https://github.com/microprediction/kinetics} with NumPy, SciPy, and
 Matplotlib, and each writes the \texttt{results.csv} the corresponding numbers
 are quoted from. Experiments 7, 39, and 40 take seconds. Experiment 9 takes
