@@ -243,45 +243,83 @@ longer exponential. The relabelling $\theta_i = \log\lbar_i$ is a change of
 coordinates, not a derived exponential family.
 
 \begin{proof}
-Multiply \eqref{eq:resolvent} by $\varepsilon$ to get
-$(L - \varepsilon\Lambda_A)u_i^A = -\varepsilon\lambda_i$, expand
+Multiply \eqref{eq:resolvent} by $\varepsilon$,
+\[
+  (L - \varepsilon\Lambda_A)\, u_i^A = -\varepsilon\lambda_i ,
+\]
+substitute the expansion
 $u_i^A = u^{(0)}_i + \varepsilon u^{(1)}_i + \varepsilon^2 u^{(2)}_i +
-O(\varepsilon^3)$, and collect powers of $\varepsilon$.
+O(\varepsilon^3)$, and collect powers of $\varepsilon$:
+\begin{align}
+  \varepsilon^0 &: \quad L u^{(0)}_i = 0, \label{eq:order0}\\
+  \varepsilon^1 &: \quad L u^{(1)}_i = \Lambda_A u^{(0)}_i - \lambda_i ,
+  \label{eq:order1}\\
+  \varepsilon^2 &: \quad L u^{(2)}_i = \Lambda_A u^{(1)}_i .
+  \label{eq:order2}
+\end{align}
 
-At order $\varepsilon^0$, $L u^{(0)}_i = 0$, so $u^{(0)}_i$ is a constant
-$c_i$ by ergodicity.
+\emph{Order $\varepsilon^0$.} By ergodicity the kernel of $L$ is the
+constants, so $u^{(0)}_i \equiv c_i$ for some number $c_i$.
 
-At order $\varepsilon^1$ the equation reads
-$L u^{(1)}_i = \Lambda_A c_i - \lambda_i$. A solution exists only if the right
-side is orthogonal to $\pi$, which forces $\bar\Lambda_A c_i = \lbar_i$ and
-gives the leading term. The right side is then
-$c_i\tilde\Lambda_A - \tilde\lambda_i$ with
-$\tilde\Lambda_A = \sum_{j\in A}\tilde\lambda_j$, and inverting with $LD = -I$
-on mean-zero functions gives
+\emph{Order $\varepsilon^1$.} An equation $Lg = h$ has a solution only when
+$\int h \, d\pi = 0$. Applied to \eqref{eq:order1} with
+$u^{(0)}_i = c_i$,
+\begin{align*}
+  0 &= \int \left(\Lambda_A c_i - \lambda_i\right) d\pi
+     = \bar\Lambda_A\, c_i - \lbar_i ,
+  &&\text{hence}\quad c_i = \frac{\lbar_i}{\bar\Lambda_A},
+\end{align*}
+which is the leading softmax term. With this $c_i$ the right side of
+\eqref{eq:order1} is mean zero and splits into fluctuations,
+\begin{align*}
+  \Lambda_A c_i - \lambda_i
+  &= \left(\bar\Lambda_A + \tilde\Lambda_A\right) c_i
+     - \left(\lbar_i + \tilde\lambda_i\right)
+  = c_i \tilde\Lambda_A - \tilde\lambda_i ,
+  &&\tilde\Lambda_A = \textstyle\sum_{j\in A}\tilde\lambda_j .
+\end{align*}
+Inverting with $LD = -I$ on mean-zero functions,
 \[
-  u^{(1)}_i = -D\!\left(c_i \tilde\Lambda_A - \tilde\lambda_i\right) + m_i ,
+  u^{(1)}_i = -D\!\left(c_i \tilde\Lambda_A - \tilde\lambda_i\right)
+              + m_i ,
 \]
-where the constant $m_i = \int u^{(1)}_i d\pi$ is fixed at the next order.
+where the constant $m_i = \int u^{(1)}_i \, d\pi$ is not yet determined,
+because $D$ maps into mean-zero functions and any constant can be added.
 
-At order $\varepsilon^2$ the equation is
-$L u^{(2)}_i = \Lambda_A u^{(1)}_i$, whose solvability condition is
-$\int \Lambda_A u^{(1)}_i \, d\pi = 0$. The constant part of $\Lambda_A$
-contributes $\bar\Lambda_A m_i$, the constant $m_i$ integrates against
-$\tilde\Lambda_A$ to zero, and what remains is
-\[
-  0 = \bar\Lambda_A m_i
-      - \int \tilde\Lambda_A \, D\!\left(c_i\tilde\Lambda_A
-        - \tilde\lambda_i\right) d\pi .
-\]
-Using \eqref{eq:K}, $\int \tilde\Lambda_A D \tilde\lambda_i \, d\pi
-= \sum_{j\in A} K_{ji}$ and
-$\int \tilde\Lambda_A D \tilde\Lambda_A \, d\pi = \sum_{j,k\in A} K_{jk}$, so
+\emph{Order $\varepsilon^2$.} The same solvability requirement applied to
+\eqref{eq:order2} is $\int \Lambda_A u^{(1)}_i \, d\pi = 0$. Substitute
+$\Lambda_A = \bar\Lambda_A + \tilde\Lambda_A$ and the two parts of
+$u^{(1)}_i$, and evaluate the four resulting terms:
+\begin{align*}
+  \int \bar\Lambda_A\, m_i \, d\pi &= \bar\Lambda_A\, m_i ,
+  &&\text{(constant times constant)}\\
+  \int \tilde\Lambda_A\, m_i \, d\pi &= 0 ,
+  &&\text{($\tilde\Lambda_A$ is mean zero)}\\
+  -\int \bar\Lambda_A \, D\!\left(c_i\tilde\Lambda_A
+    - \tilde\lambda_i\right) d\pi &= 0 ,
+  &&\text{($D$ maps into mean zero)}\\
+  -\int \tilde\Lambda_A \, D\!\left(c_i\tilde\Lambda_A
+    - \tilde\lambda_i\right) d\pi
+  &= -c_i \!\!\sum_{j,k\in A}\!\! K_{jk}
+     + \sum_{j\in A} K_{ji} ,
+  &&\text{(by \eqref{eq:K})}
+\end{align*}
+where the last line uses
+$\int \tilde\Lambda_A D \tilde\lambda_i \, d\pi
+= \sum_{j\in A} \int \tilde\lambda_j D\tilde\lambda_i \, d\pi
+= \sum_{j\in A} K_{ji}$ and its double-sum analogue. Adding the four terms
+and solving for $m_i$,
 \[
   m_i = -\frac{1}{\bar\Lambda_A}
         \left[\sum_{j\in A}K_{ji}
         - \frac{\lbar_i}{\bar\Lambda_A}\sum_{j,k\in A}K_{jk}\right].
 \]
-Finally $p_i^A = c_i + \varepsilon m_i + O(\varepsilon^2)$ by \eqref{eq:p},
+Finally, integrating the expansion against $\pi$ and using that the $D$-part
+of $u^{(1)}_i$ is mean zero,
+\[
+  p_i^A = \int u_i^A \, d\pi
+        = c_i + \varepsilon\, m_i + O(\varepsilon^2),
+\]
 which is \eqref{eq:main}.
 \end{proof}
 
@@ -303,20 +341,45 @@ proves the $O(\varepsilon^3)$ remainder of the corrected law, and so on.
 \end{lemma}
 
 \begin{proof}
-The terms of orders $\varepsilon^{-1}$, $\varepsilon^0$, and $\varepsilon^1$
-in the defect vanish by the construction of $c$, $u^{(1)}$, and $u^{(2)}$,
-leaving only $-\varepsilon^2\Lambda_A u^{(2)}$. Subtracting the equations for
-$u^A$ and $U$ gives
-$u^A - U = -(\Lambda_A - L/\varepsilon)^{-1}\varepsilon^2\Lambda_A u^{(2)}$.
-The killed resolvent is bounded uniformly in $\varepsilon$. For any $f$,
+Apply the operator to the truncation term by term:
+\begin{align*}
+  \left(\tfrac{L}{\varepsilon} - \Lambda_A\right) U + \lambda
+  &= \tfrac{1}{\varepsilon}\, L c
+     + \left(L u^{(1)} - \Lambda_A c + \lambda\right)
+     + \varepsilon \left(L u^{(2)} - \Lambda_A u^{(1)}\right)
+     - \varepsilon^2\, \Lambda_A u^{(2)} .
+\end{align*}
+The first bracket vanishes because $c$ is constant. The second vanishes by
+\eqref{eq:order1}, the equation $u^{(1)}$ was built to solve. The third
+vanishes by \eqref{eq:order2}. What remains is the displayed defect,
 \[
-  \left((\Lambda_A - L/\varepsilon)^{-1} f\right)(y)
-  = \mathbb{E}_y \int_0^\infty
-    e^{-\int_0^t \Lambda_A(Y^\varepsilon_s)\,ds} f(Y^\varepsilon_t)\, dt ,
+  \left(\tfrac{L}{\varepsilon} - \Lambda_A\right) U + \lambda
+  = -\varepsilon^2\, \Lambda_A u^{(2)} .
 \]
-and bounding the exponential by $e^{-\Lambda_{\min} t}$ gives
-$\|(\Lambda_A - L/\varepsilon)^{-1} f\|_\infty \le
-\|f\|_\infty / \Lambda_{\min}$.
+Subtracting this from the exact equation
+$(L/\varepsilon - \Lambda_A)\,u^A + \lambda = 0$ gives
+\[
+  \left(\tfrac{L}{\varepsilon} - \Lambda_A\right)\!\left(u^A - U\right)
+  = \varepsilon^2\, \Lambda_A u^{(2)},
+  \qquad\text{so}\qquad
+  u^A - U
+  = -\left(\Lambda_A - \tfrac{L}{\varepsilon}\right)^{-1}
+    \varepsilon^2\, \Lambda_A u^{(2)} .
+\]
+The killed resolvent is bounded uniformly in $\varepsilon$. For any bounded
+$f$, the Feynman--Kac representation and the bound
+$\Lambda_A \ge \Lambda_{\min}$ give
+\begin{align*}
+  \left|\left(\Lambda_A - \tfrac{L}{\varepsilon}\right)^{-1}
+  f\,(y)\right|
+  &= \left| \mathbb{E}_y \int_0^\infty
+    e^{-\int_0^t \Lambda_A(Y^\varepsilon_s)\,ds}
+    f(Y^\varepsilon_t)\, dt \right| \\
+  &\le \|f\|_\infty \int_0^\infty e^{-\Lambda_{\min} t}\, dt
+   = \frac{\|f\|_\infty}{\Lambda_{\min}} ,
+\end{align*}
+independently of how fast the generator runs. Applying this with
+$f = \varepsilon^2 \Lambda_A u^{(2)}$ gives the bound.
 \end{proof}
 
 The constant is computable. On the four-channel instance committed with
@@ -492,8 +555,13 @@ leading-order law of the exacta $(i, j)$ as
 the sequential ranking model of \citet{plackett1975}, whose paired-comparison
 ancestor is \citet{bradley1952} and whose choice-theoretic basis is the Choice
 Axiom. The expansion therefore corrects Plackett--Luce for orders of arrival
-exactly as it corrects the Choice Axiom for winners, and substituting the
-corrected shares into \eqref{eq:runnerup} gains an order.
+exactly as it corrects the Choice Axiom for winners. Concretely, predicting
+$M_{ij}$ by the Plackett--Luce kernel above leaves an error of order
+$\varepsilon$, while substituting the corrected shares of
+Theorem~\ref{thm:main}, for the full set and for the set with $i$ deleted,
+into the identity \eqref{eq:runnerup} leaves an error of order
+$\varepsilon^2$. The correction buys the same extra power of $\varepsilon$
+for second place that it buys for first.
 
 Experiment 39 verifies this on the same chains. The identity
 \eqref{eq:runnerup} holds to $1.8\times10^{-15}$, the exactly computed kernel
@@ -533,14 +601,36 @@ are identified.
 
 \begin{proof}
 Write $B(A,i) = \sum_{j \in A} K_{ji} - c_i \sum_{j,k \in A} K_{jk}$ for the
-bracket in \eqref{eq:main}, with $c_i = \lbar_i / \bar\Lambda_A$. Under
-$K \mapsto K + d\lbar^\top$ the first sum gains $\lbar_i \sum_{j\in A} d_j$ and
-the second gains $\bar\Lambda_A \sum_{j\in A}d_j$, so the change in $B$ is
-$\lbar_i \sum_{j\in A}d_j - c_i \bar\Lambda_A \sum_{j\in A}d_j = 0$. Under
-$K \mapsto K + t\,\mathrm{diag}(\lbar)$ the first sum gains $t\lbar_i$, since
-only the $j=i$ term contributes, and the second gains $t\bar\Lambda_A$, so the
-change is $t\lbar_i - c_i t \bar\Lambda_A = 0$. The two families intersect
-trivially and span $N+1$ dimensions. That the null space is no larger is a rank
+bracket in \eqref{eq:main}, with $c_i = \lbar_i / \bar\Lambda_A$. Under the
+shift $K \mapsto K + d\lbar^\top$, meaning $K_{jk} \mapsto K_{jk} + d_j
+\lbar_k$, the two sums change by
+\begin{align*}
+  \sum_{j\in A} K_{ji}
+  &\;\longmapsto\; \sum_{j\in A} K_{ji}
+    + \lbar_i \sum_{j\in A} d_j ,\\
+  \sum_{j,k\in A} K_{jk}
+  &\;\longmapsto\; \sum_{j,k\in A} K_{jk}
+    + \Big(\sum_{k\in A}\lbar_k\Big) \sum_{j\in A} d_j
+  = \sum_{j,k\in A} K_{jk}
+    + \bar\Lambda_A \sum_{j\in A} d_j ,
+\end{align*}
+so the bracket changes by
+\[
+  \lbar_i \sum_{j\in A} d_j
+  - \frac{\lbar_i}{\bar\Lambda_A}\,\bar\Lambda_A \sum_{j\in A} d_j
+  = 0 .
+\]
+Under $K \mapsto K + t\,\mathrm{diag}(\lbar)$, only diagonal entries move,
+so the first sum gains its $j = i$ term and the second gains its full trace
+over $A$:
+\[
+  B(A,i) \;\longmapsto\; B(A,i)
+  + t\,\lbar_i - \frac{\lbar_i}{\bar\Lambda_A}\, t\,\bar\Lambda_A
+  = B(A,i) .
+\]
+Both families are therefore invisible on every availability set. They
+intersect trivially, since $d\lbar^\top$ is diagonal only for $d = 0$, and
+span $N + 1$ dimensions. That the null space is no larger is a rank
 computation, carried out in experiment 41 for $N = 3, \dots, 6$, where the
 identified dimension equals $N^2 - N - 1$ in every case.
 \end{proof}
@@ -608,14 +698,30 @@ of dimension $2N$, and $N^2 - 2N$ combinations of $K$ are identified.
 \end{proposition}
 
 \begin{proof}
-The correction of $\mathrm{diag}(\eta)$ on a set $A$ is
-$-\big[\eta_i - c_i \sum_{l\in A}\eta_l\big]/\bar\Lambda_A$, and the
-first-order effect of the rate shift is
-$+\big[\eta_i - c_i \sum_{l\in A}\eta_l\big]/\bar\Lambda_A$. They cancel
-for every $A$ and every $i$. The displayed family contains the known-rate
-family of Proposition~\ref{prop:identify}, and its dimension matches the
-numerically computed null space of the all-experiments design at every $N$
-tested, so it is the whole of it.
+Two first-order effects must cancel on every availability set $A$. First, by
+the diagonal computation in the proof of Proposition~\ref{prop:identify},
+shifting $K$ by $-\mathrm{diag}(\eta)$ changes the correction term of
+channel $i \in A$ by
+\[
+  +\frac{1}{\bar\Lambda_A}
+  \left[\eta_i - c_i \sum_{l\in A}\eta_l\right].
+\]
+Second, shifting the rates by $\lbar \mapsto \lbar + \varepsilon\eta$
+moves the leading-order share $c_i = \lbar_i / \bar\Lambda_A$ by
+$\varepsilon$ times
+\begin{align*}
+  \frac{\partial c_i}{\partial \lbar_l}\,\eta_l \;\text{summed over }
+  l \in A
+  &= \frac{\eta_i}{\bar\Lambda_A}
+    - \frac{\lbar_i}{\bar\Lambda_A^2} \sum_{l\in A}\eta_l
+  = -\frac{1}{\bar\Lambda_A}
+    \left[ -\eta_i + c_i \sum_{l\in A}\eta_l\right],
+\end{align*}
+the exact negative of the first effect, for every $A$ and every $i$. So the
+substitution changes no first-order observable. The displayed family contains
+the known-rate family of Proposition~\ref{prop:identify}, and its dimension
+matches the numerically computed null space of the all-experiments design at
+every $N$ tested, so it is the whole of it.
 \end{proof}
 
 The gauge closes a loop. The diagonal $K_{ii}$ is each channel's own
@@ -639,13 +745,21 @@ If the driver satisfies detailed balance then $K = K^\top$.
 \end{proposition}
 
 \begin{proof}
-Detailed balance makes $L$ self-adjoint in $\ell^2(\pi)$, hence so is
-$e^{tL}$, and
-$\mathrm{Cov}_\pi(\lambda_j(Y_0), \lambda_k(Y_t)) =
-\langle \tilde\lambda_j, e^{tL}\tilde\lambda_k\rangle_\pi =
-\langle e^{tL}\tilde\lambda_j, \tilde\lambda_k\rangle_\pi$, which is the
-same covariance with $j$ and $k$ exchanged. Integrating over $t$ gives
-$K_{jk} = K_{kj}$.
+Detailed balance, $\pi(y) L(y, y') = \pi(y') L(y', y)$, is exactly the
+statement that $L$ is self-adjoint in the inner product
+$\langle f, g\rangle_\pi = \int f g \, d\pi$, and self-adjointness
+passes to the semigroup $e^{tL}$. For a stationary start the covariance is an
+inner product with the semigroup between the two observables, so
+\begin{align*}
+  \mathrm{Cov}_\pi\!\left(\lambda_j(Y_0), \lambda_k(Y_t)\right)
+  &= \langle \tilde\lambda_j,\, e^{tL}\tilde\lambda_k\rangle_\pi
+  &&\text{(Markov property)}\\
+  &= \langle e^{tL}\tilde\lambda_j,\, \tilde\lambda_k\rangle_\pi
+  &&\text{(self-adjointness)}\\
+  &= \mathrm{Cov}_\pi\!\left(\lambda_k(Y_0), \lambda_j(Y_t)\right).
+  &&\text{(same formula, $j$ and $k$ exchanged)}
+\end{align*}
+Integrating over $t \in [0, \infty)$ gives $K_{jk} = K_{kj}$.
 \end{proof}
 
 The asymmetry of $K$ is therefore a signature of a driver held out of
