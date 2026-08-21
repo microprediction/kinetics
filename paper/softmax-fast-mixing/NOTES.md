@@ -58,3 +58,16 @@ averaging, single rate, leading order only. Cited in Related work. Keep it.
   layered numerics, no data, no estimation) fits SIAM Multiscale Modeling and
   Simulation or Journal of Statistical Physics, and fails choice modelling and
   machine learning on the estimation gap alone.
+
+## Saturation claim: justification and referee exposure
+
+The intro says the order of arrivals "saturates at second place... at this
+order of the expansion". Support: exp41 shows rank(winner+runner-up design) =
+rank(all blocked-subset experiments) = N^2-N-1, the identified cap. The reason
+deeper prefixes cannot exceed the cap is that, at first order, prefix
+probabilities are functions of subset shares via chaining the inheritance
+identity q_j^(-i) = p_j + p_i M_ij through successive deletions. That chaining
+is not spelled out in the paper; a referee could ask for it. At second order
+(the eps^2 term involves a third-order correlation tensor T_jkl) deeper places
+plausibly DO add information — open question, connects to the higher-order
+remark candidate.
