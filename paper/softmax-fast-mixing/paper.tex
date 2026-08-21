@@ -56,19 +56,22 @@ In chemical kinetics a reaction escapes through one of several channels while
 the surrounding configuration rearranges underneath, which is the picture
 behind every kinetic Monte Carlo (KMC) selection \citep{bkl1975,gillespie1977},
 and a diffusing particle finding one of several windows is its continuum
-version. In credit risk it is the standard model of correlated default.
-Obligors default at intensities driven by a shared macroeconomic state
-\citep{lando1998}, a first-to-default basket prices the first arrival, and a
-second-to-default tranche turns on the identity of the second. In neuroscience,
-neurons race to threshold under a shared cortical state, and which cell fires
-first carries stimulus information on its own \citep{thorpe1996}, with the
-race-to-choice reading going back to \citet{bundesen1990}.
+version. In a distributed system a request is sent to $N$ redundant servers and
+the first response wins, with response rates driven by shared congestion, and
+the same race reruns billions of times a day \citep{dean2013}. In
+neuroscience, neurons race to threshold under a shared cortical state, and
+which cell fires first carries stimulus information on its own
+\citep{thorpe1996}, with the race-to-choice reading going back to
+\citet{bundesen1990}.
 
-The three fields share a predicament. The rates' common driver is exactly what
-cannot be observed, and blocking channels, the experiment that would probe it,
-ranges from expensive to impossible. What is cheap in all three is the order in
-which things happen. Defaults are public record, spike trains are recorded
-wholesale, and event sequences are the raw output of any simulation.
+The three fields share a predicament and an asset. The rates' common driver is
+exactly what cannot be observed, and blocking channels, the experiment that
+would probe it, ranges from costly to impossible. What all three have instead
+is replication with the order of events logged for free: simulation runs,
+served requests, stimulus trials. Replication is what the identification
+results below consume, which is why these examples fit and a
+single-realization system, one economy carrying correlated defaults along one
+macroeconomic path, does not.
 
 The passive observer's data is the order of arrivals, and the question is how
 far down that order the information reaches. Our main result is that it
@@ -157,9 +160,12 @@ Conditionally on the driver the arrivals are Poisson, so the whole is a doubly
 stochastic Poisson process \citep{cox1955} with $N$ marks, observed until its
 first event. When $Y$ is a finite chain it is the marked Markov-modulated
 Poisson process of the queueing literature \citep{fischer1993}, and the
-$\lambda_i$ are cause-specific hazards in the competing-risks sense. Note this
-is an arrival process and not a Thurstonian race. Nothing here is an argmin of
-latent performances.
+$\lambda_i$ are cause-specific hazards in the competing-risks sense. The same
+marked structure is the standard model of correlated default in credit risk
+\citep{lando1998}, though there it runs along a single macroeconomic path,
+whereas the identification questions of Section~\ref{sec:identify} presume
+replication. Note this is an arrival process and not a Thurstonian race.
+Nothing here is an argmin of latent performances.
 For an available set $A \subseteq \{1, \dots, N\}$ write
 $\Lambda_A(y) = \sum_{j \in A}\lambda_j(y)$ for the total hazard, and write
 $\lbar_i = \int \lambda_i \, d\pi$ for the stationary mean intensity.
@@ -895,6 +901,9 @@ Statistical Society B} 21 (1959) 411--421.
 
 \bibitem[Cox(1972)]{cox1972} D.~R. Cox. Regression models and life-tables.
 \emph{Journal of the Royal Statistical Society B} 34 (1972) 187--202.
+
+\bibitem[Dean and Barroso(2013)]{dean2013} J.~Dean, L.~A. Barroso. The tail
+at scale. \emph{Communications of the ACM} 56 (2013) 74--80.
 
 \bibitem[Elandt-Johnson(1976)]{elandt1976} R.~C. Elandt-Johnson.
 Conditional failure time distributions under competing risk theory with
