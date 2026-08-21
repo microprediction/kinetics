@@ -193,12 +193,14 @@ the environment is reversible, and the verification in Section~\ref{sec:chain}
 deliberately uses a non-reversible chain so that the index placement in the
 theorem is actually tested.
 
-The diagonal of $K$ is not new. For a single channel with a fluctuating rate
-the integral
-$\int_0^\infty \mathrm{Cov}_\pi(\lambda(Y_0), \lambda(Y_t))\,dt$ is the
-classical second-order cumulant correction to an effective decay rate, known
-since \citet{anderson1954} and \citet{kubo1954} as motional narrowing and
-developed as a general expansion by \citet{vankampen1974}. The name Green--Kubo comes from statistical physics, where formulas of
+The diagonal of $K$ is not new. Spectroscopists observed in the 1950s that
+when a decaying system's rate fluctuates quickly, the decay behaves as if run
+at the average rate, with a correction given by the time-integrated
+autocovariance of the rate, the phenomenon called motional narrowing
+\citep{anderson1954,kubo1954} and later organized into a general expansion by
+\citet{vankampen1974}. For a single channel, the integral
+$\int_0^\infty \mathrm{Cov}_\pi(\lambda(Y_0), \lambda(Y_t))\,dt$ is
+exactly that correction. The name Green--Kubo comes from statistical physics, where formulas of
 \citet{green1954} and \citet{kubo1957} express transport coefficients, a
 diffusion constant or a viscosity, as time integrals of correlation functions
 computed in equilibrium. $K$ has exactly that form, so we borrow the name.
@@ -367,9 +369,10 @@ invertible, $v_i$ is the unique solution of \eqref{eq:resolvent}, which is
 $u_i^A$.
 \end{proof}
 
-A common multiplicative modulation is a shared frailty in the survival sense
-\citep{vaupel1979}, and the invariance it produces is the proportional-hazards
-structure of \citet{cox1972}. The proof needs no positivity of $c$, no time
+In survival analysis a shared random multiplier on everyone's hazard is
+called a frailty \citep{vaupel1979}, and a common multiplicative modulation is
+exactly that. The invariance it produces is the proportional-hazards structure
+of \citet{cox1972}. The proof needs no positivity of $c$, no time
 change, and no condition on $\varepsilon$. What it says is that a common modulation factors out of the
 competition entirely, which is the proportional-hazards normal form. Experiment
 40 confirms it where the hypotheses are stressed. With $c$ vanishing on four of
@@ -427,7 +430,8 @@ where $q^{(-i)}$ is the deletion counterfactual. The companion work shows
 $M$ is exactly the object that identifies single deletions, and that
 winner-only data constrains it not at all. The identity itself is familiar
 from static discrete choice, where it is the accounting behind diversion
-ratios \citep{conlon2021}. What matters here is that it holds exactly at
+ratios, the fractions of a removed product's demand that flow to each
+substitute \citep{conlon2021}. What matters here is that it holds exactly at
 every $\varepsilon$, which is what lets the expansion be applied to both of
 its sides.
 
@@ -565,7 +569,9 @@ can be checked without simulation error. Experiment 7 runs a six-state
 chain with ten channels.
 
 \paragraph{Setup.} The generator has independent unit-mean exponential
-off-diagonal rates, giving a non-reversible chain with spectral gap $2.63$. Channel
+off-diagonal rates, giving a non-reversible chain whose spectral gap, the
+slowest relaxation rate of the environment and so the reciprocal of its mixing
+time, is $2.63$. Channel
 intensities are lognormal with log-scale $0.8$, giving
 $\bar\Lambda_A = 11.4$ on the full set. The seed is $5$ and the sweep covers
 thirteen values of $\varepsilon$ from $10^{-3}$ to $1$. The dimensionless
@@ -686,9 +692,11 @@ $50{,}000$ trajectories.
 
 Experiment 9 separates three layers so that no error source can hide in
 another. Layer A is a real Brownian simulation with independent per-step
-firing. Layer B is an exact killed-resolvent solve on a finite-volume Neumann
-Laplacian over a polar grid, with the uniform invariant law, reversibility, and
-conservation checked numerically. Layer C is the theory,
+firing. Layer B replaces the disk by a polar grid of cells and Brownian motion by the
+conservative jump process between neighbouring cells that discretizes it, a
+finite-volume Neumann Laplacian, on which the killed-resolvent solve is exact.
+The uniform invariant law, reversibility, and conservation are checked
+numerically rather than assumed. Layer C is the theory,
 band-area softmax plus the Green--Kubo term from one deviation solve, using the
 same code that passed the chain tests.
 
@@ -798,9 +806,10 @@ setting where no choice law arises. Recent linear-response work on first-passage
 problems predicts the response of the mean first-passage \emph{time} rather
 than the identity of the winner.
 
-For marked Markov-modulated processes there are matrix-analytic methods
-\citep{fischer1993} that compute mark probabilities exactly, with no expansion
-and no asymptotic regime. Theorem~\ref{thm:main} is the fast-environment asymptotic of
+For marked Markov-modulated processes, queueing theory computes mark
+probabilities exactly by linear algebra on the joint generator, the
+matrix-analytic method \citep{fischer1993}, with no expansion and no
+asymptotic regime. Theorem~\ref{thm:main} is the fast-environment asymptotic of
 those same quantities, and what it adds is not the numbers but the structure the
 asymptotic exposes. One pair $(\lbar, K)$ serves every subset, shared modulation
 drops out, and low-rank environments give low-rank corrections.
@@ -842,8 +851,8 @@ and the identification analysis says what an observer can hope to recover.
 The shape of the failure connects to an empirical literature. In this model the
 departure from proportional redistribution is a derived consequence of the
 shared driver, given in closed form by $K$. In choice data the same departure
-is an observed regularity, documented in diversion ratios estimated from
-demand data \citep{conlon2021}, in choice experiments with shared features
+is an observed regularity. It is documented in measured diversion ratios
+\citep{conlon2021}, in choice experiments with shared features
 \citep{tversky1972}, and in the specification test built on the proportional
 restriction \citep{hausman1984}. Those observations concern human choice, not
 arrival processes, and nothing here explains them. The model supplies one
@@ -854,8 +863,10 @@ insensitive to any fluctuation shared across channels.
 
 Four limitations bound the claim. The expansion is in the mixing-to-firing
 timescale ratio and says nothing when channels fire faster than the environment
-relaxes, which is the quenched limit of dynamical disorder
-\citep{zwanzig1990}. The correction is first order, so systems at moderate separation
+relaxes. That is the opposite, quenched limit of dynamical disorder
+\citep{zwanzig1990}, in which each realization runs at frozen random rates
+and outcomes average over the frozen values instead of the rates averaging
+first. The correction is first order, so systems at moderate separation
 retain an $O(\varepsilon^2)$ residual, quantified in Table~\ref{tab:kappa},
 where the improvement decays to nothing by $\kappa = 40$. The theorem is
 proved for finite chains, and a formal treatment of reversible diffusions with
