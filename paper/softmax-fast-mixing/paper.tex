@@ -18,7 +18,7 @@
 \newcommand{\Prob}{\mathbb{P}}
 \newcommand{\lbar}{\bar{\lambda}}
 
-\title{First and Second Place Identify a Doubly Stochastic Race}
+\title{Homogenization and Partial Identification\\ for Competing Cox Processes}
 \author{Peter Cotton\thanks{Code and machine verification for every claim in this
 paper: \url{https://github.com/microprediction/kinetics} (experiments 7 and 9).
 Web companion: \url{https://kinetics.microprediction.org}.}}
@@ -28,27 +28,27 @@ Web companion: \url{https://kinetics.microprediction.org}.}}
 \maketitle
 
 \begin{abstract}
-Consider $N$ processes racing to fire whose rates are driven by a hidden state
-they all share, so that conditionally on that state the race is a doubly
-stochastic Poisson process with $N$ marks. We ask what the races reveal about
-the driver. Recording who won and who came second, in the full race alone,
-recovers everything the choice law can ever reveal about it, matching what one
-would learn from every possible experiment in which channels are blocked and
-the race is rerun. Winner-only data recovers $N-1$ numbers where the full
-answer has $N^2-N-1$. Underlying this is a homogenization result. When the
-driver mixes faster than the channels fire, the winning probabilities converge
-to softmax in the stationary mean rates, with a first correction governed by
-the time-integrated covariance $K$ of the rates, and $K$ is identified exactly
-modulo an explicit $(N{+}1)$-dimensional family. One pair of objects then
-predicts every blocked-set counterfactual, and a driver with $r$ modes gives
-$K$ of rank $r$. We verify the expansion on finite chains and on Brownian
-narrow escape.
+Consider $N$ competing arrival streams whose rates are driven by a hidden state
+they share, so that conditionally on that state each is Poisson and the whole
+is a doubly stochastic process with $N$ marks. Only the first arrival is
+recorded. When the driver mixes faster than the streams fire, the probability
+that stream $i$ arrives first converges to softmax in the stationary mean
+rates, with a first correction governed by the time-integrated covariance $K$
+of the rates. We then ask what observation reveals about $K$. It is identified
+only in part, exactly modulo an explicit $(N{+}1)$-dimensional family, so
+$N^2-N-1$ combinations are knowable and the rest are invisible to any
+experiment. Which experiment is run matters more than how long it runs.
+Recording the second arrival as well as the first, on the full set alone,
+reaches every knowable combination, matching what blocking streams and
+rerunning would give, while first-arrival data alone reaches $N-1$. One pair of
+objects then predicts every blocked-set counterfactual, and a driver with $r$
+modes gives $K$ of rank $r$.
 \end{abstract}
 
 \section{Introduction}
 
-Consider $N$ processes racing to fire, where the firing rates are not constants
-but are driven by a hidden state that all of them share. Conditional on the
+Consider $N$ streams of arrivals whose rates are not constants but are driven
+by a hidden state that all of them share. Conditional on the
 path of that state each process is Poisson, so this is a doubly stochastic, or
 Cox, process in the sense of \citet{cox1955}, with $N$ marks and a common
 driver. Only the first firing is recorded. Chemistry supplies the picture, in
@@ -58,16 +58,21 @@ kinetic Monte Carlo (KMC) step selects a move \citep{bkl1975,gillespie1977} or
 a diffusing particle finds one of several windows.
 
 The shared driver is the interesting part and the unobservable one. It makes
-the channels' rates fluctuate together, which is what breaks independence of
-irrelevant alternatives (IIA), and it is exactly what an experimenter cannot
-see. So the question is how much of it can be recovered from the races
+the streams' rates fluctuate together, which is what breaks independence of
+irrelevant alternatives (IIA). Under IIA a removed stream's share is
+redistributed in proportion to the survivors', and where that has been measured
+it fails, in diversion ratios estimated from demand data
+\citep{conlon2021}, in choice experiments with shared features
+\citep{tversky1972}, and in the specification test built on exactly this
+restriction \citep{hausman1984}. The driver is also exactly what an
+experimenter cannot see. So the question is how much of it can be recovered from the arrivals
 themselves.
 
 Our main result is that the answer is a great deal, and from surprisingly
-little data. Recording who won and who came second, in the full race alone,
+little data. Recording who won and who came second, from the full set alone,
 recovers everything about the driver that the choice law can ever reveal. It
 matches what one would learn from running every possible experiment in which
-some channels are blocked and the race is rerun. Winner-only data, by contrast,
+some streams are blocked and the process is rerun. Winner-only data, by contrast,
 recovers almost nothing, $N-1$ numbers where the full answer has $N^2-N-1$.
 Finishing orders are usually recorded already and interventions are usually
 impossible, so this is the difference between a feasible measurement and an
@@ -94,7 +99,7 @@ are the ones that, like a rate shift applied to every channel at once, move no
 branching ratio and so change nothing an observer of winners could ever see.
 
 The bridge from second place to $K$ is an identity that costs nothing. Deleting
-a channel changes the outcome only in those races the deleted channel won, and
+a channel changes the outcome only in those realizations the deleted stream arrived first, and
 in those the runner-up inherits, so
 $q^{(-i)}_j = p_j + p_i M_{ij}$ exactly, at every degree of timescale
 separation. Second-place frequencies are thus deletion experiments that have
@@ -107,7 +112,7 @@ is the proportional-hazards normal form and is classical
 \citep{elandt1976,marley1992}. And a driver with $r$ modes gives $K$ of rank
 $r$.
 
-Section~\ref{sec:model} sets up the race and its killed resolvent.
+Section~\ref{sec:model} sets up the arrival process and its killed resolvent.
 Section~\ref{sec:theory} proves the homogenization expansion and places it
 against the motional-narrowing literature, where the diagonal of $K$ has been
 known for seventy years. Section~\ref{sec:properties} collects the structural
@@ -117,7 +122,7 @@ Sections~\ref{sec:chain} and~\ref{sec:escape} verify everything, first on
 finite chains where every quantity is an exact linear solve, then on reflected
 Brownian motion in a disk with boundary reaction windows.
 
-\section{The shared-state race}\label{sec:model}
+\section{Competing arrivals under a shared driver}\label{sec:model}
 
 Let $Y_t$ be an ergodic Markov process on a state space with generator
 $L/\varepsilon$ and invariant law $\pi$. The parameter $\varepsilon$ is the
@@ -386,7 +391,7 @@ of the environment, so $\mathrm{rank}(K) \le \min(N, m-1)$ for an environment
 with $m$ states, whatever the loadings are. Experiment 40 attains both bounds,
 giving rank exactly $r$ for $r = 1, \dots, 5$ on a six-state environment and
 rank $5 = \min(10, 5)$ for generic intensities on ten channels. The compressed
-correlated race that appears elsewhere in this
+correlated competition that appears elsewhere in this
 program therefore has a physical provenance rather than being a modelling
 convenience. The same low-dimensional error-components structure is imposed by
 hand in mixed logit \citep{mcfadden2000}, where it is a specification choice.
@@ -417,7 +422,7 @@ therefore predicts $M$ itself. At leading order the prediction is
 \begin{equation}\label{eq:Mluce}
   M_{ij} = \frac{\lbar_j}{\bar\Lambda_A - \lbar_i} + O(\varepsilon) ,
 \end{equation}
-which says the runner-up is drawn from the race among the remaining channels,
+which says the second arrival is drawn from the competition among the remaining streams,
 the IIA prediction. Substituting the corrected shares into \eqref{eq:runnerup}
 gains an order.
 
@@ -429,8 +434,8 @@ $0.967$ for the Luce prediction \eqref{eq:Mluce} and $1.967$ with the
 Green--Kubo correction. At $\varepsilon = 0.005$ the maximum error over
 off-diagonal entries falls from $3.0\times10^{-4}$ to $2.1\times10^{-6}$.
 
-This matters for testing the theory. The runner-up is observed in any race that
-reports a finishing order, so the correction can be checked against ordinary
+This matters for testing the theory. The second arrival is observed wherever an order of arrivals is
+recorded, so the correction can be checked against ordinary
 ranked data rather than against interventions. It also runs the other way. Where
 the environment is unknown, a measured $M$ constrains the Green--Kubo matrix,
 which is the beginning of estimating $K$ from data rather than computing it from
@@ -439,7 +444,7 @@ a known generator.
 \section{What data reveals about $K$}\label{sec:identify}
 
 Everything so far computes $K$ from a known generator. A practitioner rarely
-has the generator. They have races. This section asks what $K$ can be recovered
+has the generator. They have observed arrivals. This section asks what $K$ can be recovered
 from outcomes alone, and the answer has a clean form.
 
 The correction in \eqref{eq:main} is linear in $K$, so stacking it over every
@@ -496,16 +501,16 @@ finishing order is usually free.
 \paragraph{What it costs.} Identification is not estimation. Fitting $K$ by
 least squares on the identified subspace, from shares estimated on pairs and
 triples and then scored on held-out larger subsets, the estimator beats the
-uncorrected softmax law only once roughly $10^6$ races per availability set are
+uncorrected softmax law only once roughly $10^6$ observed arrivals per availability set are
 observed. The reason is a floor rather than a defect of the estimator. The
-correction is $O(\varepsilon)$ while multinomial noise on $n$ races is
+correction is $O(\varepsilon)$ while multinomial noise on $n$ observations is
 $O(n^{-1/2})$, so the data requirement scales as $\varepsilon^{-2}$. At the
 $\varepsilon = 0.05$ of experiment 41 the correction is $1.2\times10^{-3}$ and
-the crossover duly appears between $10^5$ and $10^6$ races.
+the crossover duly appears between $10^5$ and $10^6$ observations.
 
 This is worth stating plainly because it bounds the practical claim. Where the
 generator is known, the correction is cheap and accurate. Where only outcomes
-are observed, recovering it demands either very many races or the richer
+are observed, recovering it demands either very many observations or the richer
 observable of Section~\ref{sec:runnerup}.
 
 \section{Verification on finite chains}\label{sec:chain}
@@ -740,8 +745,8 @@ asymptotic exposes. One pair $(\lbar, K)$ serves every subset, shared modulation
 drops out, and low-rank environments give low-rank corrections.
 
 That a race is at once a competing-risks model and a random-utility model is
-old. \citet{marley1992} make the identification explicitly, recast the race in
-cause-specific hazards, and prove the proportional-hazards equivalence that
+old. \citet{marley1992} make the identification explicitly, recasting a
+Thurstonian race in cause-specific hazards, and prove the proportional-hazards equivalence that
 Proposition~\ref{prop:common} recovers, building on the competing-risks results
 of \citet{elandt1976} and \citet{kochar1991}. Their treatment of dependence
 runs the other way from ours. They record the classical non-identifiability,
