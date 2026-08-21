@@ -112,3 +112,18 @@ measurement of it:
   Scripts in the scratchpad; promote to exp42 when resolved.
 - Application sketch: fit the exacta board of a trained neural TPP (RMTPP /
   Neural Hawkes / Transformer Hawkes), read off effective latent dimension.
+
+## Higher orders and the initial state (verified 2026-08-22)
+
+From a stationary start the eps^2 coefficient m2 is a pure pi-functional
+(iterated deviation solves: time-weighted covariance D^2 and triple
+correlations); slope 2.99 verified. From a general start mu0, order eps^k
+picks up exactly the mu0-average of that order's mean-zero corrector:
+eps gets mu0.(-D(c LamT - lt)) (Prop 3, in the paper), eps^2 gets
+mu0.(-D(Lam u1)) -- the start probed through two nested relaxation solves;
+with both, point-mass starts reach slope 2.99, and both extras vanish to
+4e-17 under pi. No boundary layer at any order: the observable solves a
+static resolvent equation, so the expansion is regular and no matched
+asymptotics is needed. Candidate for a short "higher orders" remark in the
+paper alongside the earlier eps^2 verification (order-3 slope, mass
+conserved at every order, subset-uniformity persists at O(N^3) tensor cost).
