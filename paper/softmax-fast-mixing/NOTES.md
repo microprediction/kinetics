@@ -89,3 +89,26 @@ filtering on one path; Ruan et al. dependent Poisson race.
 Caveat: arXiv API and Semantic Scholar rate-limited both agents (429), so
 2024-2026 arXiv-only preprints are undersampled. Rerun a preprint-focused
 sweep before submission.
+
+## Departure from Luce as a structural diagnostic (Peter's suggestion, 2026-08-22)
+
+Where the arrival model applies (incl. neural temporal point processes, whose
+softmax-mark x timing-density factorization IS the proportional-hazards
+condition), departure from Luce is not just evidence of hidden structure but a
+measurement of it:
+
+- CERTIFICATE (exact, already in the paper): common-gain drivers produce
+  identically zero departure (verified 1e-16 through the identified
+  projection), so any nonzero departure certifies differential structure.
+- MODE COUNTING (empirical, one open anomaly): the driver's mode count r is
+  NOT the rank of the projected departure (projection smears the spectrum;
+  measured rank 7 for all r). The right object is minimum rank over the
+  equivalence class K + d lam^T + t diag(lam). A class-constrained
+  alternating low-rank fit flags r in every trial via "first machine-zero
+  residual at rho = r+1"; the rank-r member (the true K) is in the search
+  space yet is never found even with 12 restarts. Understand why before
+  claiming anything: possibly the rank-r member is an isolated point of the
+  feasible set while rank-(r+1) members form an attracting manifold.
+  Scripts in the scratchpad; promote to exp42 when resolved.
+- Application sketch: fit the exacta board of a trained neural TPP (RMTPP /
+  Neural Hawkes / Transformer Hawkes), read off effective latent dimension.
