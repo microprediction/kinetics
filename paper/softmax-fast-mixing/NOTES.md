@@ -126,3 +126,31 @@ static resolvent equation, so the expansion is regular and no matched
 asymptotics is needed. Candidate for a short "higher orders" remark in the
 paper alongside the earlier eps^2 verification (order-3 slope, mass
 conserved at every order, subset-uniformity persists at O(N^3) tensor cost).
+
+## Exacta-board estimation pipeline (status 2026-08-22, open)
+
+The class-exact estimator (exp42) is exact. The FULL pipeline from sampled
+exacta boards is not yet correct. Findings, all with exact (infinite-data)
+inputs, so none of this is sampling noise:
+
+1. Naive version (lam-bar := p-hat, fit K from the N deletion systems):
+   design rank deficient. Spending the winner frequencies on lam-bar throws
+   away the N-1 winner directions; spectrum tail ~0.3, eps-INDEPENDENT.
+2. Corrected version (substitute the first-order relation
+   lam-bar = p-hat - D_full K into the deletion equations): design rank
+   reaches the full N^2-N-1, tail drops to ~0.08, but the fitted K-hat still
+   only aligns with the projected truth at cosine 0.82 / best-scale residual
+   0.58, eps-INDEPENDENT. A first-order term is missing from the linear
+   model of the experiment. The Jc sign (both signs tried) is not it.
+   Scale convention verified: pipeline estimates eps*K/s with s the total
+   mean rate (alpha = 1.12 at the /s convention).
+3. DECISIVE NEXT TEST: generate synthetic data exactly from the linear model
+   (q = c + D*(epsK), p = lam + D_full*(epsK), known lam), run the pipeline.
+   If K is recovered exactly, the design algebra is right and the residual
+   is real second-order structure in the resolvent that the deletion
+   identity linearization misses; if not, the bug is in the design rows.
+   Exploratory code: experiments/exp42_mode_count/exploratory_exacta_pipeline.py
+
+Finite-data footnote: at eps=0.05 the (still-wrong) pipeline fails at up to
+1e8 races; do not quote any race-count requirement until the infinite-data
+version is exact.
