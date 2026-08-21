@@ -139,8 +139,8 @@ Poisson process of the queueing literature \citep{fischer1993}, and the
 $\lambda_i$ are cause-specific hazards in the competing-risks sense. The same
 marked structure appears in reduced-form credit risk \citep{lando1998}, though
 an economy supplies a single realization, whereas the identification questions
-of Section~\ref{sec:identify} presume replication. Note this is an arrival process and not a Thurstonian race.
-Nothing here is an argmin of latent performances.
+of Section~\ref{sec:identify} presume replication. The arrivals are events of a point process, not the
+argmin of latent performances, so this is not a Thurstonian race.
 For an available set $A \subseteq \{1, \dots, N\}$ write
 $\Lambda_A(y) = \sum_{j \in A}\lambda_j(y)$ for the total hazard, and write
 $\lbar_i = \int \lambda_i \, d\pi$ for the stationary mean intensity.
@@ -169,11 +169,10 @@ so the $p_i^A$ are a probability vector on $A$ for every $\varepsilon$.
 
 The expansion below is the averaging principle for a fast ergodic driver
 \citep{khasminskii1966}, in the operator form of \citet{kurtz1973}. The proof
-pattern is standard in multiscale analysis \citep[Ch.~9]{pavliotis2008} and
-needs one fact stated plainly. An equation $Lg = h$ on the driver's state
-space has a solution only when $h$ averages to zero under $\pi$, and it is
-these solvability requirements, imposed order by order, that pin down every
-coefficient of the expansion. Write
+pattern is standard in multiscale analysis \citep[Ch.~9]{pavliotis2008}. An
+equation $Lg = h$ on the driver's state space has a solution only when $h$
+averages to zero under $\pi$, and these solvability requirements, imposed
+order by order, pin down every coefficient of the expansion. Write
 $\tilde\lambda_i = \lambda_i - \lbar_i$ for the fluctuation of the $i$th
 intensity, and $\Pi$ for the projection $\Pi f = (\int f d\pi)\mathbf{1}$ onto
 constants. The deviation operator
@@ -225,16 +224,17 @@ In particular $p_i^A \to \lbar_i / \bar\Lambda_A$, the softmax law in the
 log mean intensities $\theta_i = \log\lbar_i$.
 \end{theorem}
 
-Three literatures arrive at this same limiting law by different routes, so its
-name needs care. It is Luce's choice model
+Three literatures arrive at this same limiting law by different routes. It is Luce's choice model
 \citep{luce1959}, the conditional logit of \citet{mcfadden1974}, and the
 softmax output layer of \citet{bridle1990}. In the random-utility tradition it
 follows from Gumbel noise, and \citet{yellott1977} showed that representation
 is the only one consistent with the Choice Axiom under independent
-discriminal processes. Here it arrives from neither an axiom nor a noise family but from
-fast mixing, and for constant rates it is already in \citet{cox1959}. A reader
-should take $\theta_i = \log\lbar_i$ as a relabelling rather than a derived
-exponential family.
+discriminal processes. Here fast mixing collapses the doubly stochastic race to the classical
+exponential race run at the averaged rates, which is \citet{cox1959}, so the
+leading order travels the oldest route of all. The content of
+Theorem~\ref{thm:main} begins at order $\varepsilon$, where the race is no
+longer exponential. The relabelling $\theta_i = \log\lbar_i$ is a change of
+coordinates, not a derived exponential family.
 
 \begin{proof}
 Multiply \eqref{eq:resolvent} by $\varepsilon$ to get
@@ -382,7 +382,7 @@ This is a stronger statement than the vanishing of the correction, and it is
 practically useful in the opposite direction. It says a measured departure from
 softmax cannot be produced by any amount of shared environmental fluctuation.
 Whatever deviation is observed is evidence of differential structure among the
-channels. It is worth setting this against the classical negative results. The
+channels. The classical negative results run in the opposite direction. The
 latent joint law of competing risks is not identified from what one observes
 \citep{tsiatis1975}, and identification must be bought with extra structure
 such as regressor variation \citep{heckman1989}. The statement here runs the
@@ -660,7 +660,8 @@ $\kappa$ plays the role of $\varepsilon$, since a slow reaction rate means the
 particle mixes many times before firing.
 
 Here the driver is the physical system itself rather than an external
-environment, so the correspondence with Section~\ref{sec:model} needs stating. The hidden state $Y_t$ is the particle's position in the disk, and
+environment. In the language of Section~\ref{sec:model}, the hidden state
+$Y_t$ is the particle's position in the disk, and
 its generator is the reflecting Laplacian. The channels are the windows, and
 window $i$ fires at rate $\lambda_i(y) = \kappa\, g_i(y)$, where $g_i$ is the
 fraction of the neighbourhood of $y$ lying inside window $i$'s band, so
@@ -692,7 +693,7 @@ conservation checked numerically. Layer C is the theory,
 band-area softmax plus the Green--Kubo term from one deviation solve, using the
 same code that passed the chain tests.
 
-Two homogenizations should be kept apart here. Replacing a patchy boundary by
+Two distinct homogenizations meet in this geometry. Replacing a patchy boundary by
 an effective uniform reactivity is boundary homogenization
 \citep{berezhkovskii2004,lawley2015}, and expansions in a small geometric
 parameter give splitting probabilities among small targets
