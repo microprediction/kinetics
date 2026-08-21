@@ -28,22 +28,20 @@ Web companion: \url{https://kinetics.microprediction.org}.}}
 \maketitle
 
 \begin{abstract}
-Consider $N$ channels that fire at random times, with rates driven by a hidden
-state they all share. Conditionally on that state each channel is Poisson, so
-the whole is a doubly stochastic process with $N$ marks, and an observer sees
-only which channels fire and in what order. We ask what such an observer can
-learn about the driver when it mixes fast relative to the firing rates, and we
-answer to first order in that timescale ratio. At that order, seeing the first
-two arrivals is as informative as blocking channels and rerunning the process,
-which is the strongest experiment available, while seeing only the winner
-recovers $N-1$ quantities where the first two recover $N^2-N-1$. Behind this
-is an asymptotic result. When the driver mixes faster than the channels fire,
-the probability
-that channel $i$ fires first converges to the law of Luce's Choice Axiom in
-the stationary mean rates, and we give the first correction. The correction is
-governed by the time-integrated covariance $K$ of the rates. It supplies the
-departure from independence of irrelevant alternatives, and observation
-identifies it only modulo an explicit $(N{+}1)$-dimensional family.
+Consider $N$ channels firing at random times, with rates driven by a hidden
+state they all share. Conditionally on that state each channel is Poisson, and
+an observer records which channels fire and in what order. When the driver
+mixes fast relative to the firing rates, the probability that channel $i$
+fires first approaches the law of Luce's Choice Axiom in the stationary mean
+rates. We give the first correction in the timescale ratio, governed by the
+time-integrated covariance $K$ of the rates, and every claim below holds at
+that order. Recording the first two arrivals recovers all $N^2-2N$ observable
+combinations of $K$, matching what blocking channels and rerunning the
+process would give, while the winner alone recovers none of them. The
+diagonal of $K$ is unobservable, absorbed into the rates, so only correlated
+modulation leaves a trace. And $K$ is symmetric when the driver satisfies
+detailed balance, so its observable asymmetry certifies a driver held out of
+equilibrium, visible with three channels and never with two.
 \end{abstract}
 
 \section{Introduction}
