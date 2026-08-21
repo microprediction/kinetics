@@ -50,25 +50,34 @@ Consider $N$ channels that fire at random times, whose rates are not constants
 but are driven by a hidden state all of them share. Conditionally on the path
 of that state each channel is Poisson, so the whole is a doubly stochastic, or
 Cox, process in the sense of \citet{cox1955}, with $N$ marks and a common
-driver. Chemistry supplies the picture, in which a reaction escapes through one
-of several channels while the surrounding configuration rearranges underneath,
-and the same structure appears whenever a kinetic Monte Carlo (KMC) step
-selects a move \citep{bkl1975,gillespie1977} or a diffusing particle finds one
-of several windows.
+driver. Three fields use this model under three names.
 
-An observer of such a process sees firings, not the driver. The natural
-experiment is to block some channels and run it again, which is how
-substitution is measured when it can be measured at all, and it is often
-impossible. The natural passive alternative is simply to record more of each
-realization, not just which channel fired first but which fired second.
+In chemical kinetics a reaction escapes through one of several channels while
+the surrounding configuration rearranges underneath, which is the picture
+behind every kinetic Monte Carlo (KMC) selection \citep{bkl1975,gillespie1977},
+and a diffusing particle finding one of several windows is its continuum
+version. In credit risk it is the standard model of correlated default.
+Obligors default at intensities driven by a shared macroeconomic state
+\citep{lando1998}, a first-to-default basket prices the first arrival, and a
+second-to-default tranche turns on the identity of the second. In neuroscience,
+neurons race to threshold under a shared cortical state, and which cell fires
+first carries stimulus information on its own \citep{thorpe1996}, with the
+race-to-choice reading going back to \citet{bundesen1990}.
 
-Our main result compares the two, and they turn out to be equivalent. Recording
-the first two arrivals, in the full system alone, recovers everything about the
-driver that the choice law can ever reveal, matching what every possible
-blocking experiment would yield. Recording only the winner recovers $N-1$
-quantities where the full answer has $N^2-N-1$. Orders of arrival are usually
-written down already and interventions usually cannot be run, so the difference
-is between a feasible measurement and an infeasible one.
+The three fields share a predicament. The rates' common driver is exactly what
+cannot be observed, and blocking channels, the experiment that would probe it,
+ranges from expensive to impossible. What is cheap in all three is the order in
+which things happen. Defaults are public record, spike trains are recorded
+wholesale, and event sequences are the raw output of any simulation.
+
+The passive observer's data is the order of arrivals, and the question is how
+far down that order the information reaches. Our main result is that it
+saturates at second place. Recording the first two arrivals, in the full system
+alone, recovers everything about the driver that arrival probabilities can ever
+reveal, matching what every possible channel-blocking experiment would yield,
+and watching for third place and beyond adds nothing at this order of the
+expansion. Recording only the winner recovers $N-1$ quantities where the full
+answer has $N^2-N-1$.
 
 The shared driver is the interesting part and the unobservable one. It makes
 the channels' rates fluctuate together, which is what breaks independence of
@@ -467,7 +476,7 @@ the environment is unknown, a measured $M$ constrains the Green--Kubo matrix,
 which is the beginning of estimating $K$ from data rather than computing it from
 a known generator.
 
-\section{What data reveals about $K$}\label{sec:identify}
+\section{The exacta board suffices}\label{sec:identify}
 
 Everything so far computes $K$ from a known generator. A practitioner rarely
 has the generator. They have observed arrivals. This section asks what $K$ can be recovered
@@ -866,16 +875,19 @@ feedforward classification network outputs, with relationships to statistical
 pattern recognition. In \emph{Neurocomputing}, NATO ASI Series F 68 (1990)
 227--236.
 
+\bibitem[Bundesen(1990)]{bundesen1990} C.~Bundesen. A theory of visual
+attention. \emph{Psychological Review} 97 (1990) 523--547.
+
 \bibitem[Colantoni(2026)]{colantoni2026} F.~Colantoni. Time-dependent Robin heat
 equation via Markovian switching. arXiv:2604.27901 (2026).
-
-\bibitem[Cox(1955)]{cox1955} D.~R. Cox. Some statistical methods connected
-with series of events. \emph{Journal of the Royal Statistical Society B} 17
-(1955) 129--164.
 
 \bibitem[Conlon and Mortimer(2021)]{conlon2021} C.~Conlon, J.~H. Mortimer.
 Empirical properties of diversion ratios. \emph{RAND Journal of Economics} 52
 (2021) 693--726.
+
+\bibitem[Cox(1955)]{cox1955} D.~R. Cox. Some statistical methods connected
+with series of events. \emph{Journal of the Royal Statistical Society B} 17
+(1955) 129--164.
 
 \bibitem[Cox(1959)]{cox1959} D.~R. Cox. The analysis of exponentially
 distributed life-times with two types of failure. \emph{Journal of the Royal
@@ -888,10 +900,6 @@ Statistical Society B} 21 (1959) 411--421.
 Conditional failure time distributions under competing risk theory with
 dependent failure times and proportional hazard rates. \emph{Scandinavian
 Actuarial Journal} 1976 (1976) 37--51.
-
-\bibitem[Kochar and Proschan(1991)]{kochar1991} S.~C. Kochar, F.~Proschan.
-Independence of time and cause of failure in the multiple dependent competing
-risks model. \emph{Statistica Sinica} 1 (1991) 295--299.
 
 \bibitem[Fischer and Meier-Hellstern(1993)]{fischer1993} W.~Fischer,
 K.~Meier-Hellstern. The Markov-modulated Poisson process (MMPP) cookbook.
@@ -917,6 +925,10 @@ Honor\'e. The identifiability of the competing risks model. \emph{Biometrika}
 theorem for the solutions of differential equations with random right-hand
 sides. \emph{Theory of Probability and Its Applications} 11 (1966) 390--406.
 
+\bibitem[Kochar and Proschan(1991)]{kochar1991} S.~C. Kochar, F.~Proschan.
+Independence of time and cause of failure in the multiple dependent competing
+risks model. \emph{Statistica Sinica} 1 (1991) 295--299.
+
 \bibitem[Kubo(1954)]{kubo1954} R.~Kubo. Note on the stochastic theory of
 resonance absorption. \emph{Journal of the Physical Society of Japan} 9 (1954)
 935--944.
@@ -928,6 +940,9 @@ irreversible processes I. \emph{Journal of the Physical Society of Japan} 12
 \bibitem[Kurtz(1973)]{kurtz1973} T.~G. Kurtz. A limit theorem for perturbed
 operator semigroups with applications to random evolutions. \emph{Journal of
 Functional Analysis} 12 (1973) 55--67.
+
+\bibitem[Lando(1998)]{lando1998} D.~Lando. On Cox processes and credit risky
+securities. \emph{Review of Derivatives Research} 2 (1998) 99--120.
 
 \bibitem[Lawley and Keener(2015)]{lawley2015} S.~D. Lawley, J.~P. Keener. A new
 derivation of Robin boundary conditions through homogenization of a
@@ -965,6 +980,10 @@ of the National Academy of Sciences} 104 (2007) 16098--16103.
 \bibitem[Szabo et~al.(1982)]{szabo1982} A.~Szabo, D.~Shoup, S.~H. Northrup,
 J.~A. McCammon. Stochastically gated diffusion-influenced reactions.
 \emph{Journal of Chemical Physics} 77 (1982) 4484--4493.
+
+\bibitem[Thorpe et~al.(1996)]{thorpe1996} S.~Thorpe, D.~Fize, C.~Marlot.
+Speed of processing in the human visual system. \emph{Nature} 381 (1996)
+520--522.
 
 \bibitem[Tsiatis(1975)]{tsiatis1975} A.~Tsiatis. A nonidentifiability aspect of
 the problem of competing risks. \emph{Proceedings of the National Academy of
