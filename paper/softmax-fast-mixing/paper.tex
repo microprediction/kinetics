@@ -18,7 +18,7 @@
 \newcommand{\Prob}{\mathbb{P}}
 \newcommand{\lbar}{\bar{\lambda}}
 
-\title{Homogenization and Partial Identification\\ for Competing Cox Processes}
+\title{An Asymptotic Correction to Luce's Law\\ for Competing Cox Processes}
 \author{Peter Cotton\thanks{Code and machine verification for every claim in this
 paper: \url{https://github.com/microprediction/kinetics} (experiments 7 and 9).
 Web companion: \url{https://kinetics.microprediction.org}.}}
@@ -28,27 +28,27 @@ Web companion: \url{https://kinetics.microprediction.org}.}}
 \maketitle
 
 \begin{abstract}
-Consider $N$ competing arrival streams whose rates are driven by a hidden state
-they share, so that conditionally on that state each is Poisson and the whole
-is a doubly stochastic process with $N$ marks. Only the first arrival is
-recorded. When the driver mixes faster than the streams fire, the probability
-that stream $i$ arrives first converges to softmax in the stationary mean
-rates, with a first correction governed by the time-integrated covariance $K$
-of the rates. We then ask what observation reveals about $K$. It is identified
-only in part, exactly modulo an explicit $(N{+}1)$-dimensional family, so
-$N^2-N-1$ combinations are knowable and the rest are invisible to any
-experiment. Which experiment is run matters more than how long it runs.
-Recording the second arrival as well as the first, on the full set alone,
-reaches every knowable combination, matching what blocking streams and
-rerunning would give, while first-arrival data alone reaches $N-1$. One pair of
-objects then predicts every blocked-set counterfactual, and a driver with $r$
-modes gives $K$ of rank $r$.
+Consider $N$ channels that fire at random times, with rates driven by a hidden
+state they share, so that conditionally on that state each is Poisson and the
+whole is a doubly stochastic process with $N$ marks. Only the first arrival is
+recorded. When the driver mixes faster than the channels fire, the probability
+that channel $i$ arrives first converges to Luce's law in the stationary mean
+rates. We give the first correction. It is governed by the time-integrated
+covariance $K$ of the rates, a dynamical rather than a static quantity, and it
+is what breaks independence of irrelevant alternatives. One pair of objects
+then predicts every blocked-set counterfactual by restricting sums, a driver
+with $r$ modes gives $K$ of rank $r$, and fluctuations common to all channels
+cancel exactly. We then ask what observation reveals about $K$, and it is
+identified only in part, modulo an explicit $(N{+}1)$-dimensional family.
+Recording the second arrival as well as the first reaches every identified
+combination, matching what blocking channels and rerunning would give, while
+first-arrival data alone reaches $N-1$ of them.
 \end{abstract}
 
 \section{Introduction}
 
-Consider $N$ streams of arrivals whose rates are not constants but are driven
-by a hidden state that all of them share. Conditional on the
+Consider $N$ channels that fire at random times, whose rates are not constants
+but are driven by a hidden state all of them share. Conditional on the
 path of that state each process is Poisson, so this is a doubly stochastic, or
 Cox, process in the sense of \citet{cox1955}, with $N$ marks and a common
 driver. Only the first firing is recorded. Chemistry supplies the picture, in
@@ -58,7 +58,7 @@ kinetic Monte Carlo (KMC) step selects a move \citep{bkl1975,gillespie1977} or
 a diffusing particle finds one of several windows.
 
 The shared driver is the interesting part and the unobservable one. It makes
-the streams' rates fluctuate together, which is what breaks independence of
+the channels' rates fluctuate together, which is what breaks independence of
 irrelevant alternatives (IIA). Under IIA a removed stream's share is
 redistributed in proportion to the survivors', and where that has been measured
 it fails, in diversion ratios estimated from demand data
@@ -72,7 +72,7 @@ Our main result is that the answer is a great deal, and from surprisingly
 little data. Recording who won and who came second, from the full set alone,
 recovers everything about the driver that the choice law can ever reveal. It
 matches what one would learn from running every possible experiment in which
-some streams are blocked and the process is rerun. Winner-only data, by contrast,
+some channels are blocked and the process is rerun. Winner-only data, by contrast,
 recovers almost nothing, $N-1$ numbers where the full answer has $N^2-N-1$.
 Finishing orders are usually recorded already and interventions are usually
 impossible, so this is the difference between a feasible measurement and an
@@ -131,9 +131,13 @@ fire. Small $\varepsilon$ means fast mixing.
 
 Each channel $i \in \{1, \dots, N\}$ fires at intensity $\lambda_i(Y_t) \ge 0$,
 conditionally Poisson given the path of $Y$. The first channel to fire wins.
-The model is a marked Markov-modulated Poisson process \citep{fischer1993}
-observed until its first event, and the $\lambda_i$ are cause-specific hazards
-in the competing-risks sense.
+Conditionally on the driver the arrivals are Poisson, so the whole is a doubly
+stochastic Poisson process \citep{cox1955} with $N$ marks, observed until its
+first event. When $Y$ is a finite chain it is the marked Markov-modulated
+Poisson process of the queueing literature \citep{fischer1993}, and the
+$\lambda_i$ are cause-specific hazards in the competing-risks sense. Note this
+is an arrival process and not a Thurstonian race. Nothing here is an argmin of
+latent performances.
 For an available set $A \subseteq \{1, \dots, N\}$ write
 $\Lambda_A(y) = \sum_{j \in A}\lambda_j(y)$ for the total hazard, and write
 $\lbar_i = \int \lambda_i \, d\pi$ for the stationary mean intensity.
@@ -422,7 +426,7 @@ therefore predicts $M$ itself. At leading order the prediction is
 \begin{equation}\label{eq:Mluce}
   M_{ij} = \frac{\lbar_j}{\bar\Lambda_A - \lbar_i} + O(\varepsilon) ,
 \end{equation}
-which says the second arrival is drawn from the competition among the remaining streams,
+which says the second arrival is drawn from the competition among the remaining channels,
 the IIA prediction. Substituting the corrected shares into \eqref{eq:runnerup}
 gains an order.
 
@@ -613,6 +617,23 @@ channel $i$ fires at rate $\kappa$. This is the narrow escape geometry
 law is the well-mixed limit of \citet{berg1977}. The first window to fire wins. Here
 $\kappa$ plays the role of $\varepsilon$, since a slow reaction rate means the
 particle mixes many times before firing.
+
+The correspondence with Section~\ref{sec:model} is worth spelling out, since
+the driver here is the physical system itself rather than an external
+environment. The hidden state $Y_t$ is the particle's position in the disk, and
+its generator is the reflecting Laplacian. The channels are the windows, and
+window $i$ fires at rate $\lambda_i(y) = \kappa\, g_i(y)$, where $g_i$ is the
+fraction of the neighbourhood of $y$ lying inside window $i$'s band, so
+$\lambda_i$ is supported near the boundary and vanishes in the interior. Two
+consequences follow. The mean rates $\lbar_i$ are proportional to band areas,
+which is why the leading law is band-area softmax. And $K$ is built from how
+long the particle's excursions keep it near one window rather than another,
+which is a purely geometric quantity.
+
+The small parameter is $\kappa$ rather than $\varepsilon$. Slow reaction means
+the particle explores the whole disk many times before anything fires, so small
+$\kappa$ is the fast-mixing limit, and blocking a channel means switching a
+window off.
 
 \paragraph{Setup.} Sixteen boundary windows on the unit circle, six clustered
 within about $50$ degrees and the rest scattered, drawn with seed $42$. Angular
