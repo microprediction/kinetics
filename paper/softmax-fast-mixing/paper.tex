@@ -18,7 +18,7 @@
 \newcommand{\Prob}{\mathbb{P}}
 \newcommand{\lbar}{\bar{\lambda}}
 
-\title{Identifying the Environment of a Race}
+\title{First and Second Place Identify a Doubly Stochastic Race}
 \author{Peter Cotton\thanks{Code and machine verification for every claim in this
 paper: \url{https://github.com/microprediction/kinetics} (experiments 7 and 9).
 Web companion: \url{https://kinetics.microprediction.org}.}}
@@ -28,83 +28,93 @@ Web companion: \url{https://kinetics.microprediction.org}.}}
 \maketitle
 
 \begin{abstract}
-When $N$ channels compete under a shared hidden state that mixes faster than
-the channels fire, the winning probability is softmax in the stationary mean
-intensities, and the first correction is a Green--Kubo matrix $K$ of integrated
-rate autocovariances. We ask what an observer of races can learn about $K$.
-Choice probabilities determine it exactly modulo an explicit
-$(N{+}1)$-dimensional family, so $N^2 - N - 1$ combinations are identified and
-no experiment reveals the rest. Which experiment matters more than how many
-races it contains. Winner-only data reaches $N-1$ of those directions, every
-blocked-subset intervention reaches all of them, and so does recording the
-runner-up alongside the winner, from a single race and without intervening. The
-same pair $(\lbar, K)$ predicts every counterfactual by restricting sums, and
-rank-$r$ environments give rank-$r$ corrections. We verify the expansion on
-finite chains and on Brownian narrow escape, where leading and corrected errors
-decay with measured orders $0.93$ and $1.93$.
+Consider $N$ processes racing to fire whose rates are driven by a hidden state
+they all share, so that conditionally on that state the race is a doubly
+stochastic Poisson process with $N$ marks. We ask what the races reveal about
+the driver. Recording who won and who came second, in the full race alone,
+recovers everything the choice law can ever reveal about it, matching what one
+would learn from every possible experiment in which channels are blocked and
+the race is rerun. Winner-only data recovers $N-1$ numbers where the full
+answer has $N^2-N-1$. Underlying this is a homogenization result. When the
+driver mixes faster than the channels fire, the winning probabilities converge
+to softmax in the stationary mean rates, with a first correction governed by
+the time-integrated covariance $K$ of the rates, and $K$ is identified exactly
+modulo an explicit $(N{+}1)$-dimensional family. One pair of objects then
+predicts every blocked-set counterfactual, and a driver with $r$ modes gives
+$K$ of rank $r$. We verify the expansion on finite chains and on Brownian
+narrow escape.
 \end{abstract}
 
 \section{Introduction}
 
-Suppose you watch a system that only ever reveals which of several competing
-processes finished first. A reaction fires through one of many channels. A
-diffusing particle escapes through one of many windows. A kinetic Monte Carlo
-(KMC) step selects one of many moves \citep{bkl1975,gillespie1977}. Behind the
-competition sits an environment the observer cannot see, and the channels share
-it, so their rates fluctuate together. The question this paper answers is what
-those races reveal about that shared environment.
+Consider $N$ processes racing to fire, where the firing rates are not constants
+but are driven by a hidden state that all of them share. Conditional on the
+path of that state each process is Poisson, so this is a doubly stochastic, or
+Cox, process in the sense of \citet{cox1955}, with $N$ marks and a common
+driver. Only the first firing is recorded. Chemistry supplies the picture, in
+which a reaction escapes through one of several channels while the surrounding
+configuration rearranges underneath, and the same structure appears whenever a
+kinetic Monte Carlo (KMC) step selects a move \citep{bkl1975,gillespie1977} or
+a diffusing particle finds one of several windows.
 
-The answer needs a model of how the environment enters the choice law, so we
-begin there. When the environment mixes faster than the channels fire, the
-winning probability is softmax in the stationary mean intensities, which is the
-averaging limit \citep{khasminskii1966,kurtz1973}. The first correction is
-built from
-$K_{jk} = \int_0^\infty \mathrm{Cov}_\pi(\lambda_j(Y_0), \lambda_k(Y_t))\,dt$,
-the time-integrated covariance of the firing intensities. This is a dynamical
-object rather than a static one, and it is what breaks independence of
-irrelevant alternatives (IIA). Softmax redistributes a removed channel's
-probability in proportion to the survivors', and where that has been measured
-it fails \citep{conlon2021,tversky1972,hausman1984}. The matrix $K$ says by how
-much.
+The shared driver is the interesting part and the unobservable one. It makes
+the channels' rates fluctuate together, which is what breaks independence of
+irrelevant alternatives (IIA), and it is exactly what an experimenter cannot
+see. So the question is how much of it can be recovered from the races
+themselves.
 
-$K$ is therefore the thing worth learning, and the central results of this
-paper concern its identifiability. Choice probabilities determine $K$ exactly
-modulo an explicit family of dimension $N+1$, so $N^2 - N - 1$ combinations of
-its entries are identified and nothing reveals the remainder. The invisible
-directions are not an artifact. They are the ones that, like a rate shift
-common to all channels, move no branching ratio at all.
+Our main result is that the answer is a great deal, and from surprisingly
+little data. Recording who won and who came second, in the full race alone,
+recovers everything about the driver that the choice law can ever reveal. It
+matches what one would learn from running every possible experiment in which
+some channels are blocked and the race is rerun. Winner-only data, by contrast,
+recovers almost nothing, $N-1$ numbers where the full answer has $N^2-N-1$.
+Finishing orders are usually recorded already and interventions are usually
+impossible, so this is the difference between a feasible measurement and an
+infeasible one.
 
-What is more useful is that the experimental design matters far more than the
-sample size. Winner-only data on the full set is nearly worthless for this
-purpose, reaching $N-1$ of the identified directions. Running every possible
-blocked-subset intervention reaches all $N^2 - N - 1$. So does recording the
-runner-up alongside the winner, on the full set alone. A finishing order is
-usually free, interventions usually are not, and the two carry the same
-information about the environment.
+Making that precise requires knowing how the driver enters the choice law, and
+that is a homogenization question. When the driver mixes faster than the
+channels fire, the winning probabilities converge to softmax in the stationary
+mean intensities. The first correction is governed by
+\begin{equation}\label{eq:Kintro}
+  K_{jk} = \int_0^\infty \mathrm{Cov}_\pi\!\left(\lambda_j(Y_0),
+  \lambda_k(Y_t)\right) dt ,
+\end{equation}
+the time-integrated covariance of the firing rates. It is a dynamical
+quantity. Two channels whose rates move together at any instant contribute
+nothing unless that agreement persists over the time the driver takes to
+forget itself.
 
-The bridge to that result is an identity. Removing a channel changes the
-outcome only in the races that channel won, and there the runner-up inherits,
-so $q^{(-i)}_j = p_j + p_i M_{ij}$ exactly, for every degree of separation.
-Applying the expansion to the full set and to its subsets therefore predicts
-the runner-up kernel, one order better than the IIA prediction does.
+$K$ is therefore the object to be identified, and it is identified only in
+part. Choice probabilities determine $K$ modulo an explicit family of dimension
+$N+1$, leaving $N^2-N-1$ combinations knowable and the rest permanently
+invisible. The invisible directions are not a defect of any experiment. They
+are the ones that, like a rate shift applied to every channel at once, move no
+branching ratio and so change nothing an observer of winners could ever see.
 
-Three structural facts make the correction usable rather than merely true. The
-pair $(\lbar, K)$ does not depend on which channels are available, so every
-blocked-subset counterfactual follows from one calculation by restricting sums.
-Fluctuations shared by all channels cancel exactly, which is the
-proportional-hazards normal form and is classical
-\citep{elandt1976,marley1992}. And environmental modes of rank $r$ give $K$ of
-rank $r$, so the correction inherits whatever low-dimensional structure the
-physics has.
+The bridge from second place to $K$ is an identity that costs nothing. Deleting
+a channel changes the outcome only in those races the deleted channel won, and
+in those the runner-up inherits, so
+$q^{(-i)}_j = p_j + p_i M_{ij}$ exactly, at every degree of timescale
+separation. Second-place frequencies are thus deletion experiments that have
+already been run.
 
-Section~\ref{sec:model} sets up the shared-state race and the killed
-resolvent. Section~\ref{sec:theory} states and proves the expansion, and places
-it against the motional-narrowing literature, where the diagonal of $K$ has
-been known for seventy years. Section~\ref{sec:properties} collects the
-structural properties, Section~\ref{sec:runnerup} the runner-up bridge, and
-Section~\ref{sec:identify} the identifiability and design results.
+Three further properties make the correction usable. One pair $(\lbar, K)$
+serves every availability set, so the whole deletion ensemble follows from a
+single calculation. Fluctuations shared by all channels cancel exactly, which
+is the proportional-hazards normal form and is classical
+\citep{elandt1976,marley1992}. And a driver with $r$ modes gives $K$ of rank
+$r$.
+
+Section~\ref{sec:model} sets up the race and its killed resolvent.
+Section~\ref{sec:theory} proves the homogenization expansion and places it
+against the motional-narrowing literature, where the diagonal of $K$ has been
+known for seventy years. Section~\ref{sec:properties} collects the structural
+properties, Section~\ref{sec:runnerup} the second-place identity, and
+Section~\ref{sec:identify} the identification and design results.
 Sections~\ref{sec:chain} and~\ref{sec:escape} verify everything, first on
-finite chains where each quantity is an exact linear solve, then on reflected
+finite chains where every quantity is an exact linear solve, then on reflected
 Brownian motion in a disk with boundary reaction windows.
 
 \section{The shared-state race}\label{sec:model}
@@ -806,6 +816,10 @@ pattern recognition. In \emph{Neurocomputing}, NATO ASI Series F 68 (1990)
 
 \bibitem[Colantoni(2026)]{colantoni2026} F.~Colantoni. Time-dependent Robin heat
 equation via Markovian switching. arXiv:2604.27901 (2026).
+
+\bibitem[Cox(1955)]{cox1955} D.~R. Cox. Some statistical methods connected
+with series of events. \emph{Journal of the Royal Statistical Society B} 17
+(1955) 129--164.
 
 \bibitem[Conlon and Mortimer(2021)]{conlon2021} C.~Conlon, J.~H. Mortimer.
 Empirical properties of diversion ratios. \emph{RAND Journal of Economics} 52
