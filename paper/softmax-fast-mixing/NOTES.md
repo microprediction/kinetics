@@ -199,3 +199,24 @@ inference (Skinner-Dunkel, Harunari et al.) with an observable at the extreme
 of coarseness: no clocks, no trajectories, only orders across replications.
 OPEN: quantitative link between the witness and entropy production rate;
 finite-data estimation of the witness (needs the exact pipeline).
+
+## Full citation read-through (2026-08-22, four readers, 58/58 resolved)
+
+Every reference obtained at least to abstract level; ~20 full texts fetched
+(saved in the session scratchpad). Verdicts: zero misattributions threatening
+a result. The Prop 2 chain is airtight (Kochar-Proschan state the iff
+verbatim; Elandt-Johnson's abstract confirms "without the assumption of
+independence"; Marley-Colonius full text forces constants = choice probs).
+Zhao Thm 1 exactly supports top-2 mixture insufficiency. Bunch confirms the
+N+1 covariance count (his full-model count is N+2 - scoped in text).
+Corrections applied: title gains "Correlated" (Peter; also the theorem -
+independent modulation is pure gauge); Yellott scoped to 3+ alternatives;
+Thorpe softened to what 1996 shows; Berg-Purcell regime distinguished
+(their law is diffusion-limited, perimeter-scaling); fischer1993 does not
+cover marks - He-Neuts 1998 added; Lawley credited for temporal switching
+not patchiness; Hausman-Ruud softened to estimate drift; Tversky softened to
+similarity effects; Vaupel frailty nuance; motional-narrowing
+frequency-vs-rate parenthetical; five verbatim-quote footnotes added at the
+load-bearing attributions (Yellott, Kochar-Proschan, Elandt-Johnson,
+Zwanzig). Remaining unverifiable: tversky1972 full text (APA walled),
+cox1959 rate-ratio formula not eyeballed (secondary support extensive).

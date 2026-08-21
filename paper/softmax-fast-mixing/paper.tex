@@ -18,7 +18,7 @@
 \newcommand{\Prob}{\mathbb{P}}
 \newcommand{\lbar}{\bar{\lambda}}
 
-\title{An Asymptotic Correction to Luce's Choice Axiom\\ for Competing Cox Processes}
+\title{An Asymptotic Correction to Luce's Choice Axiom\\ for Competing Correlated Cox Processes}
 \author{Peter Cotton\thanks{Code and machine verification for every claim in this
 paper: \url{https://github.com/microprediction/kinetics} (experiments 7 and 9).
 Web companion: \url{https://kinetics.microprediction.org}.}}
@@ -61,9 +61,9 @@ and a diffusing particle finding one of several windows is its continuum
 version. In a distributed system a request is sent to $N$ redundant servers and
 the first response wins, with response rates driven by shared congestion, and
 the same race reruns billions of times a day \citep{dean2013}. In
-neuroscience, neurons race to threshold under a shared cortical state, and
-which cell fires first carries stimulus information on its own
-\citep{thorpe1996}, with the race-to-choice reading going back to
+neuroscience, neurons race to threshold under a shared cortical state, and visual
+categorization completes fast enough that the earliest spikes must be carrying
+the information \citep{thorpe1996}, with the race-to-choice reading going back to
 \citet{bundesen1990}.
 
 The three fields share a predicament and an asset. The rates' common driver is
@@ -133,9 +133,10 @@ Each channel $i \in \{1, \dots, N\}$ fires at intensity $\lambda_i(Y_t) \ge 0$,
 conditionally Poisson given the path of $Y$. The first channel to fire wins.
 Conditionally on the driver the arrivals are Poisson, so the whole is a doubly
 stochastic Poisson process \citep{cox1955,grandell1976} with $N$ marks,
-observed until its first event. When $Y$ is a finite chain it is the marked Markov-modulated
-Poisson process of the queueing literature \citep{fischer1993}, and the
-$\lambda_i$ are cause-specific hazards in the competing-risks sense. The same
+observed until its first event. When $Y$ is a finite chain it is a
+Markov-modulated Poisson process \citep{fischer1993} carrying marks in the
+sense of \citet{heneuts1998}, and the $\lambda_i$ are cause-specific hazards
+in the competing-risks sense. The same
 marked structure appears in reduced-form credit risk \citep{lando1998}, though
 an economy supplies a single realization, whereas the identification questions
 of Section~\ref{sec:identify} presume replication. The arrivals are events of a point process, not the
@@ -196,7 +197,8 @@ theorem is actually tested.
 The diagonal of $K$ is not new. Spectroscopists observed in the 1950s that
 when a decaying system's rate fluctuates quickly, the decay behaves as if run
 at the average rate, with a correction given by the time-integrated
-autocovariance of the rate, the phenomenon called motional narrowing
+autocovariance of the rate (the fluctuating quantity there is a transition
+frequency, an imaginary rate), the phenomenon called motional narrowing
 \citep{anderson1954,kubo1954} and later organized into a general expansion by
 \citet{vankampen1974}. For a single channel, the integral
 $\int_0^\infty \mathrm{Cov}_\pi(\lambda(Y_0), \lambda(Y_t))\,dt$ is
@@ -232,8 +234,10 @@ Three literatures arrive at this same limiting law by different routes. It is Lu
 \citep{luce1959}, the conditional logit of \citet{mcfadden1974}, and the
 softmax output layer of \citet{bridle1990}. In the random-utility tradition it
 follows from Gumbel noise, and \citet{yellott1977} showed that representation
-is the only one consistent with the Choice Axiom under independent
-discriminal processes. Here fast mixing collapses the doubly stochastic race to the classical
+is the only one consistent with the Choice Axiom once three or more
+alternatives are compared, though not for pairs.\footnote{For pairs other
+distributions serve equally; \citet{yellott1977} shows that for triple
+comparisons ``the double exponential representation is unique.''} Here fast mixing collapses the doubly stochastic race to the classical
 exponential race run at the averaged rates, which is \citet{cox1959}, so the
 leading order travels the oldest route of all. The content of
 Theorem~\ref{thm:main} begins at order $\varepsilon$, where the race is no
@@ -415,9 +419,9 @@ invertible, $v_i$ is the unique solution of \eqref{eq:resolvent}, which is
 $u_i^A$.
 \end{proof}
 
-In survival analysis a shared random multiplier on everyone's hazard is
-called a frailty \citep{vaupel1979}, and a common multiplicative modulation is
-exactly that. The invariance it produces is the proportional-hazards structure
+In survival analysis a random multiplier on a hazard is called a frailty
+\citep{vaupel1979}, and a common multiplicative modulation is a frailty
+shared by every channel. The invariance it produces is the proportional-hazards structure
 of \citet{cox1972}. The proof needs no positivity of $c$, no time
 change, and no condition on $\varepsilon$. What it says is that a common modulation factors out of the
 competition entirely, which is the proportional-hazards normal form. Experiment
@@ -559,7 +563,8 @@ Invisible families are the norm when hidden structure is watched through a
 narrow window. Aggregated Markov models admit whole classes of generators
 producing identical observations \citep{kienker1989}, and in Thurstonian
 choice the utility covariance is estimable only after normalizations that
-remove exactly $N+1$ parameters \citep{dansie1985,bunch1991}. Whether that
+remove exactly $N+1$ of the covariance parameters
+\citep{dansie1985,bunch1991}. Whether that
 count agreeing with the family here is structural or coincidental we leave
 open. In the other direction, the sufficiency of two places is special to this
 model. For finite mixtures of Plackett--Luce models, top-two data is known not
@@ -580,7 +585,8 @@ order in $\varepsilon$ to which all of this section applies. The comparison
 has an instructive null. Under the Choice Axiom the ranking likelihood
 factorizes into successive applications of the same law, so second choices add
 efficiency but no new parameters \citep{beggs1981}, and the ranked
-specification test built on that factorization is rejected in practice
+specification test built on that factorization detects failures in practice,
+with estimates drifting as lower ranks are added
 \citep{hausmanruud1987}. Here the factorization fails at order $\varepsilon$,
 and the failure is exactly what carries the new information. Empirical demand
 estimation reached the same moral by another route. Second-choice survey data
@@ -781,8 +787,10 @@ Finite chains verify the algebra. To test the expansion as a statement about
 physics we take the hidden state to be reflected Brownian motion in the unit
 disk and the channels to be reaction windows on the boundary, bands in which
 channel $i$ fires at rate $\kappa$. This is the narrow escape geometry
-\citep{schuss2007} with partially reactive patches, and the leading band-area
-law is the well-mixed limit of \citet{berg1977}. The first window to fire wins. Here
+\citep{schuss2007} with partially reactive patches, and the leading law, proportional
+to band areas in the slow-reaction regime, is the reaction-limited counterpart
+of the diffusion-limited patch capture of \citet{berg1977}, whose classical
+law scales with patch size rather than area. The first window to fire wins. Here
 $\kappa$ plays the role of $\varepsilon$, since a slow reaction rate means the
 particle mixes many times before firing.
 
@@ -822,10 +830,11 @@ numerically rather than assumed. Layer C is the theory,
 band-area softmax plus the Green--Kubo term from one deviation solve, using the
 same code that passed the chain tests.
 
-Two distinct homogenizations meet in this geometry. Replacing a patchy boundary by
-an effective uniform reactivity is boundary homogenization
-\citep{berezhkovskii2004,lawley2015}, and expansions in a small geometric
-parameter give splitting probabilities among small targets
+Two distinct homogenizations meet in this geometry. Replacing a patchy
+boundary by an effective uniform reactivity is boundary homogenization
+\citep{berezhkovskii2004}, the same effective-Robin reduction arises for
+boundaries that switch randomly in time \citep{lawley2015}, and expansions in
+a small geometric parameter give splitting probabilities among small targets
 \citep{bressloff2020}. The small parameter in this paper is temporal rather
 than geometric, so the two expansions are orthogonal and compose.
 
@@ -925,15 +934,17 @@ first-order term.
 The ingredient is classical on the other side too. Motional narrowing
 \citep{anderson1954,kubo1954,vankampen1974} and dynamical disorder
 \citep{zwanzig1990,szabo1982} have used integrated rate autocovariances for
-seventy years, but for effective rates and survival probabilities, in the scalar
+seventy years,\footnote{In the fast limit \citet{zwanzig1990} notes the
+fluctuating rate ``can be replaced by its time average,'' which is the leading
+order here.} but for effective rates and survival probabilities, in the scalar
 setting where no choice law arises. Recent linear-response work on first-passage
 problems predicts the response of the mean first-passage \emph{time} rather
 than the identity of the winner.
 
-For marked Markov-modulated processes, queueing theory computes mark
-probabilities exactly by linear algebra on the joint generator, the
-matrix-analytic method \citep{fischer1993}, with no expansion and no
-asymptotic regime. Theorem~\ref{thm:main} is the fast-environment asymptotic of
+For Markov-modulated processes with marked transitions, queueing theory
+computes mark probabilities exactly by linear algebra on the joint generator
+\citep{fischer1993,heneuts1998}, with no expansion and no asymptotic
+regime. Theorem~\ref{thm:main} is the fast-environment asymptotic of
 those same quantities, and what it adds is not the numbers but the structure the
 asymptotic exposes. One pair $(\lbar, K)$ serves every subset, shared modulation
 drops out, and low-rank environments give low-rank corrections.
@@ -958,8 +969,13 @@ driver, with no asymptotic regime.
 That a race is at once a competing-risks model and a random-utility model is
 old. \citet{marley1992} make the identification explicitly, recasting a
 Thurstonian race in cause-specific hazards, and prove the proportional-hazards equivalence that
-Proposition~\ref{prop:common} recovers, building on the competing-risks results
-of \citet{elandt1976} and \citet{kochar1991}. Their treatment of dependence
+Proposition~\ref{prop:common} recovers. \citet{kochar1991} prove the
+competing-risks equivalence,\footnote{Their abstract: time and identity of
+first failure are independent ``if and only if the cause specific hazard rates
+of the components are proportional.''} and \citet{elandt1976} proved the
+forward direction earlier, with dependent failure times
+allowed.\footnote{Her abstract: the result ``is also valid without the
+assumption of independence.''} Their treatment of dependence
 runs the other way from ours. They record the classical non-identifiability,
 that any well-behaved structure on a fixed choice set admits an independent
 representation, so on a fixed set there is nothing to correct. The correction
@@ -978,8 +994,8 @@ The shape of the failure connects to an empirical literature. In this model the
 departure from proportional redistribution is a derived consequence of the
 shared driver, given in closed form by $K$. In choice data the same departure
 is an observed regularity. It is documented in measured diversion ratios
-\citep{conlon2021}, in choice experiments with shared features
-\citep{tversky1972}, and in the specification test built on the proportional
+\citep{conlon2021}, in similarity effects among options with shared
+features \citep{tversky1972}, and in the specification test built on the proportional
 restriction \citep{hausman1984}. Those observations concern human choice, not
 arrival processes, and nothing here explains them. The model supplies one
 mechanism by which such departures arise and a measurement of what they reveal
@@ -1127,6 +1143,10 @@ Specification tests for the multinomial logit model. \emph{Econometrica} 52
 \bibitem[Hausman and Ruud(1987)]{hausmanruud1987} J.~Hausman, P.~Ruud.
 Specifying and testing econometric models for rank-ordered data.
 \emph{Journal of Econometrics} 34 (1987) 83--104.
+
+\bibitem[He and Neuts(1998)]{heneuts1998} Q.-M. He, M.~F. Neuts. Markov
+chains with marked transitions. \emph{Stochastic Processes and their
+Applications} 74 (1998) 37--52.
 
 \bibitem[Heckman and Honor\'e(1989)]{heckman1989} J.~J. Heckman, B.~E.
 Honor\'e. The identifiability of the competing risks model. \emph{Biometrika}
