@@ -71,3 +71,21 @@ is not spelled out in the paper; a referee could ask for it. At second order
 (the eps^2 term involves a third-order correlation tensor T_jkl) deeper places
 plausibly DO add information — open question, connects to the higher-order
 remark candidate.
+
+## Cox-framing prior-art sweeps (2026-08-22)
+
+Two agents swept credit/econometrics and point-process/ranking/physics under
+the new framing. NO ANTICIPATION of either main result in any strand. All
+added citations carry Crossref/OpenAlex-verified identifiers.
+
+Flags absorbed into the paper: Beggs-Cardell-Hausman exploded logit +
+Hausman-Ruud rejection (the ranked IIA null); Dansie/Bunch MNP normalization
+removing exactly N+1 parameters (same count as our family — left open whether
+structural); Kienker gauge classes; Zhao-Xia top-2 insufficiency for PL
+mixtures (contrast); diversion-ratio familiarity of the deletion identity;
+Rydén/Fredkin-Rice timestamps-vs-marks-only positioning; Duffie et al. frailty
+filtering on one path; Ruan et al. dependent Poisson race.
+
+Caveat: arXiv API and Semantic Scholar rate-limited both agents (429), so
+2024-2026 arXiv-only preprints are undersampled. Rerun a preprint-focused
+sweep before submission.

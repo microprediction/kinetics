@@ -133,8 +133,8 @@ fire. Small $\varepsilon$ means fast mixing.
 Each channel $i \in \{1, \dots, N\}$ fires at intensity $\lambda_i(Y_t) \ge 0$,
 conditionally Poisson given the path of $Y$. The first channel to fire wins.
 Conditionally on the driver the arrivals are Poisson, so the whole is a doubly
-stochastic Poisson process \citep{cox1955} with $N$ marks, observed until its
-first event. When $Y$ is a finite chain it is the marked Markov-modulated
+stochastic Poisson process \citep{cox1955,grandell1976} with $N$ marks,
+observed until its first event. When $Y$ is a finite chain it is the marked Markov-modulated
 Poisson process of the queueing literature \citep{fischer1993}, and the
 $\lambda_i$ are cause-specific hazards in the competing-risks sense. The same
 marked structure appears in reduced-form credit risk \citep{lando1998}, though
@@ -168,9 +168,12 @@ so the $p_i^A$ are a probability vector on $A$ for every $\varepsilon$.
 \section{Homogenization and the Green--Kubo correction}\label{sec:theory}
 
 The expansion below is the averaging principle for a fast ergodic driver
-\citep{khasminskii1966} in the operator form of \citet{kurtz1973}, and its
-solvability conditions are the usual cell problem
-\citep[Ch.~9]{pavliotis2008}. Write
+\citep{khasminskii1966}, in the operator form of \citet{kurtz1973}. The proof
+pattern is standard in multiscale analysis \citep[Ch.~9]{pavliotis2008} and
+needs one fact stated plainly. An equation $Lg = h$ on the driver's state
+space has a solution only when $h$ averages to zero under $\pi$, and it is
+these solvability requirements, imposed order by order, that pin down every
+coefficient of the expansion. Write
 $\tilde\lambda_i = \lambda_i - \lbar_i$ for the fluctuation of the $i$th
 intensity, and $\Pi$ for the projection $\Pi f = (\int f d\pi)\mathbf{1}$ onto
 constants. The deviation operator
@@ -397,7 +400,9 @@ at most $r$. There is a second cap. Deviations live in the mean-zero subspace
 of the environment, so $\mathrm{rank}(K) \le \min(N, m-1)$ for an environment
 with $m$ states, whatever the loadings are. Experiment 40 attains both bounds,
 giving rank exactly $r$ for $r = 1, \dots, 5$ on a six-state environment and
-rank $5 = \min(10, 5)$ for generic intensities on ten channels. The compressed
+rank $5 = \min(10, 5)$ for generic intensities on ten channels. Rank
+constraints of this kind, imposed on what a partially observed Markov system
+can show, go back to \citet{fredkin1986}. The compressed
 correlated competition that appears elsewhere in this
 program therefore has a physical provenance rather than being a modelling
 convenience. The same low-dimensional error-components structure is imposed by
@@ -422,7 +427,11 @@ approximation,
 \end{equation}
 where $q^{(-i)}$ is the deletion counterfactual. The companion work shows
 $M$ is exactly the object that identifies single deletions, and that
-winner-only data constrains it not at all.
+winner-only data constrains it not at all. The identity itself is familiar
+from static discrete choice, where it is the accounting behind diversion
+ratios \citep{conlon2021}. What matters here is that it holds exactly at
+every $\varepsilon$, which is what lets the expansion be applied to both of
+its sides.
 
 Applying Theorem~\ref{thm:main} to the full set and to $A \setminus \{i\}$
 therefore predicts $M$ itself. At leading order the prediction is
@@ -497,6 +506,16 @@ channel's fluctuations correlate with the environment in the direction of the
 mean intensities, and adding $t\,\mathrm{diag}(\lbar)$ rescales each channel's
 own autocorrelation in proportion to its mean rate. Neither moves any branching
 ratio, for the same reason a common rate shift does not.
+
+Invisible families are the norm when hidden structure is watched through a
+narrow window. Aggregated Markov models admit whole classes of generators
+producing identical observations \citep{kienker1989}, and in Thurstonian
+choice the utility covariance is estimable only after normalizations that
+remove exactly $N+1$ parameters \citep{dansie1985,bunch1991}. Whether that
+count agreeing with the family here is structural or coincidental we leave
+open. In the other direction, the sufficiency of two places is special to this
+model. For finite mixtures of Plackett--Luce models, top-two data is known not
+to suffice \citep{zhao2019}.
 
 \paragraph{Which experiments reach the identified part.} The design matters far
 more than the sample size, and the useful comparison is between three ways of
@@ -788,6 +807,21 @@ those same quantities, and what it adds is not the numbers but the structure the
 asymptotic exposes. One pair $(\lbar, K)$ serves every subset, shared modulation
 drops out, and low-rank environments give low-rank corrections.
 
+A separate literature identifies hidden structure from timed events.
+Markov-modulated Poisson processes and aggregated Markov chains are
+identifiable, up to explicit equivalence, from fully timestamped observation
+\citep{ryden1996,fredkin1986}, and stochastic thermodynamics infers hidden
+network properties from sequences of visible transitions
+\citep{skinner2021,harunari2022}. The observable here is poorer, order of
+arrivals across replications with no clocks, and the marks-only question
+appears not to have been asked. In credit risk the direction of inference is
+the reverse of pricing. \citet{duffie2009} estimate a hidden frailty from
+default arrivals by filtering along the single observed path, while the
+basket-default literature prices order-of-arrival claims without asking what
+observing them identifies. In psychology, dependent Poisson race models
+\citep{ruan2008} break IIA through shared event streams rather than a mixing
+driver, with no asymptotic regime.
+
 That a race is at once a competing-risks model and a random-utility model is
 old. \citet{marley1992} make the identification explicitly, recasting a
 Thurstonian race in cause-specific hazards, and prove the proportional-hazards equivalence that
@@ -887,6 +921,9 @@ feedforward classification network outputs, with relationships to statistical
 pattern recognition. In \emph{Neurocomputing}, NATO ASI Series F 68 (1990)
 227--236.
 
+\bibitem[Bunch(1991)]{bunch1991} D.~S. Bunch. Estimability in the multinomial
+probit model. \emph{Transportation Research Part B} 25 (1991) 1--12.
+
 \bibitem[Bundesen(1990)]{bundesen1990} C.~Bundesen. A theory of visual
 attention. \emph{Psychological Review} 97 (1990) 523--547.
 
@@ -908,8 +945,16 @@ Statistical Society B} 21 (1959) 411--421.
 \bibitem[Cox(1972)]{cox1972} D.~R. Cox. Regression models and life-tables.
 \emph{Journal of the Royal Statistical Society B} 34 (1972) 187--202.
 
+\bibitem[Dansie(1985)]{dansie1985} B.~R. Dansie. Parameter estimability in the
+multinomial probit model. \emph{Transportation Research Part B} 19 (1985)
+526--528.
+
 \bibitem[Dean and Barroso(2013)]{dean2013} J.~Dean, L.~A. Barroso. The tail
 at scale. \emph{Communications of the ACM} 56 (2013) 74--80.
+
+\bibitem[Duffie et~al.(2009)Duffie, Eckner, Horel, and Saita]{duffie2009}
+D.~Duffie, A.~Eckner, G.~Horel, L.~Saita. Frailty correlated default.
+\emph{Journal of Finance} 64 (2009) 2089--2123.
 
 \bibitem[Elandt-Johnson(1976)]{elandt1976} R.~C. Elandt-Johnson.
 Conditional failure time distributions under competing risk theory with
@@ -920,13 +965,25 @@ Actuarial Journal} 1976 (1976) 37--51.
 K.~Meier-Hellstern. The Markov-modulated Poisson process (MMPP) cookbook.
 \emph{Performance Evaluation} 18 (1993) 149--171.
 
+\bibitem[Fredkin and Rice(1986)]{fredkin1986} D.~R. Fredkin, J.~A. Rice. On
+aggregated Markov processes. \emph{Journal of Applied Probability} 23 (1986)
+208--214.
+
 \bibitem[Gillespie(1977)]{gillespie1977} D.~T. Gillespie. Exact stochastic
 simulation of coupled chemical reactions. \emph{Journal of Physical Chemistry}
 81 (1977) 2340--2361.
 
+\bibitem[Grandell(1976)]{grandell1976} J.~Grandell. \emph{Doubly Stochastic
+Poisson Processes}. Lecture Notes in Mathematics 529, Springer, 1976.
+
 \bibitem[Green(1954)]{green1954} M.~S. Green. Markoff random processes and the
 statistical mechanics of time-dependent phenomena II. Irreversible processes in
 fluids. \emph{Journal of Chemical Physics} 22 (1954) 398--413.
+
+\bibitem[Harunari et~al.(2022)Harunari, Dutta, Polettini, and
+Rold\'an]{harunari2022} P.~E. Harunari, A.~Dutta, M.~Polettini, \'E.~Rold\'an.
+What to learn from a few visible transitions' statistics? \emph{Physical
+Review X} 12 (2022) 041026.
 
 \bibitem[Hausman and McFadden(1984)]{hausman1984} J.~Hausman, D.~McFadden.
 Specification tests for the multinomial logit model. \emph{Econometrica} 52
@@ -943,6 +1000,10 @@ Honor\'e. The identifiability of the competing risks model. \emph{Biometrika}
 \bibitem[Khas'minskii(1966)]{khasminskii1966} R.~Z. Khas'minskii. A limit
 theorem for the solutions of differential equations with random right-hand
 sides. \emph{Theory of Probability and Its Applications} 11 (1966) 390--406.
+
+\bibitem[Kienker(1989)]{kienker1989} P.~Kienker. Equivalence of aggregated
+Markov models of ion-channel gating. \emph{Proceedings of the Royal Society of
+London B} 236 (1989) 269--309.
 
 \bibitem[Kochar and Proschan(1991)]{kochar1991} S.~C. Kochar, F.~Proschan.
 Independence of time and cause of failure in the multiple dependent competing
@@ -992,9 +1053,23 @@ Applied Mathematics 53, Springer, 2008. Chapter 9, Averaging for Markov chains.
 permutations. \emph{Journal of the Royal Statistical Society C} 24 (1975)
 193--202.
 
+\bibitem[Ruan et~al.(2008)Ruan, MacEachern, Otter, and Dean]{ruan2008}
+S.~Ruan, S.~N. MacEachern, T.~Otter, A.~Dean. The dependent Poisson race model
+and modeling dependence in conjoint choice experiments. \emph{Psychometrika}
+73 (2008) 261--288.
+
+\bibitem[Ryd\'en(1996)]{ryden1996} T.~Ryd\'en. On identifiability and order of
+continuous-time aggregated Markov chains, Markov-modulated Poisson processes,
+and phase-type distributions. \emph{Journal of Applied Probability} 33 (1996)
+640--653.
+
 \bibitem[Schuss et~al.(2007)]{schuss2007} Z.~Schuss, A.~Singer, D.~Holcman. The
 narrow escape problem for diffusion in cellular microdomains. \emph{Proceedings
 of the National Academy of Sciences} 104 (2007) 16098--16103.
+
+\bibitem[Skinner and Dunkel(2021)]{skinner2021} D.~J. Skinner, J.~Dunkel.
+Estimating entropy production from waiting time distributions. \emph{Physical
+Review Letters} 127 (2021) 198101.
 
 \bibitem[Szabo et~al.(1982)]{szabo1982} A.~Szabo, D.~Shoup, S.~H. Northrup,
 J.~A. McCammon. Stochastically gated diffusion-influenced reactions.
@@ -1027,6 +1102,10 @@ exponential distribution. \emph{Journal of Mathematical Psychology} 15 (1977)
 \bibitem[Yin and Zhang(1998)]{yin1998} G.~G. Yin, Q.~Zhang.
 \emph{Continuous-Time Markov Chains and Applications: A Singular Perturbation
 Approach}. Springer, 1998.
+
+\bibitem[Zhao and Xia(2019)]{zhao2019} Z.~Zhao, L.~Xia. Learning mixtures of
+Plackett--Luce models from structured partial orders. In \emph{Advances in
+Neural Information Processing Systems} 32 (2019).
 
 \bibitem[Zwanzig(1990)]{zwanzig1990} R.~Zwanzig. Rate processes with dynamical
 disorder. \emph{Accounts of Chemical Research} 23 (1990) 148--152.
