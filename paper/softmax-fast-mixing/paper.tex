@@ -497,23 +497,54 @@ other way. One large class of environmental dependence, the perfectly shared
 one, leaves no trace whatever in the choice law, so any trace that does appear
 rules that class out.
 
-\paragraph{Low-rank environments give low-rank corrections.} Suppose the
-intensity deviations are driven by $r$ environmental modes,
-$\lambda_i - \lbar_i = b_i^\top z(y)$ with $z$ taking values in $\R^r$ and
-$\int z \, d\pi = 0$. Then $K = B \Gamma B^\top$ with $B$ the $N \times r$
-matrix of loadings and $\Gamma_{ab} = \int z_a (D z_b) d\pi$, so $K$ has rank
-at most $r$. There is a second cap. Deviations live in the mean-zero subspace
-of the environment, so $\mathrm{rank}(K) \le \min(N, m-1)$ for an environment
-with $m$ states, whatever the loadings are. Experiment 40 attains both bounds,
-giving rank exactly $r$ for $r = 1, \dots, 5$ on a six-state environment and
-rank $5 = \min(10, 5)$ for generic intensities on ten channels. Rank
-constraints of this kind, imposed on what a partially observed Markov system
-can show, go back to \citet{fredkin1986}. The compressed
-correlated competition that appears elsewhere in this
-program therefore has a physical provenance rather than being a modelling
-convenience. The same low-dimensional error-components structure is imposed by
-hand in mixed logit \citep{mcfadden2000}, where it is a specification choice.
-Here it is inherited from the environment.
+\paragraph{Low-rank environments give low-rank corrections.} This property
+rewards a slower look, because it is what makes the driver's dimensionality
+measurable. Suppose the intensity deviations are driven by $r$ environmental
+modes,
+\[
+  \lambda_i(y) - \lbar_i = b_i^\top z(y)
+  = \sum_{a=1}^{r} b_{ia}\, z_a(y),
+  \qquad \int z \, d\pi = 0 ,
+\]
+so every channel listens to the same $r$ signals $z_1, \dots, z_r$, each
+through its own loadings $b_i$. Substituting into the definition \eqref{eq:K}
+and pulling the loadings outside the integral,
+\begin{align*}
+  K_{jk}
+  &= \int \tilde\lambda_j \, \big(D \tilde\lambda_k\big)\, d\pi
+   = \int \Big(\sum_{a} b_{ja}\, z_a\Big)\,
+     D\Big(\sum_{b} b_{kb}\, z_b\Big)\, d\pi \\
+  &= \sum_{a,b} b_{ja}\, b_{kb} \int z_a \, (D z_b)\, d\pi
+   = \big(B\, \Gamma\, B^\top\big)_{jk},
+  \qquad \Gamma_{ab} = \int z_a \, (D z_b)\, d\pi .
+\end{align*}
+Here $\Gamma$ is the modes' own $r \times r$ integrated-covariance matrix,
+the same Green--Kubo object one level down, describing the hidden signals
+rather than the channels. A product of an $N \times r$, an $r \times r$, and
+an $r \times N$ matrix has rank at most $r$, no matter how many channels
+listen.
+
+A second cap belongs to the environment rather than to the loadings. Every
+deviation $\tilde\lambda_i$ is a mean-zero function on the driver's $m$
+states, and such functions form a space of dimension $m - 1$. $K$ factors
+through that space, so
+\[
+  \mathrm{rank}(K) \;\le\; \min(N,\, r,\, m-1)
+\]
+whatever the loadings are. A six-state environment cannot present more than
+five independent modes, however many channels watch it. Experiment 40 attains
+both bounds, giving rank exactly $r$ for $r = 1, \dots, 5$ on a six-state
+environment and rank $5 = \min(10, 5)$ for generic intensities on ten
+channels. Rank constraints of this kind, imposed on what a partially observed
+Markov system can show, go back to \citet{fredkin1986}.
+
+The consequence runs in the useful direction. The rank of the observable part
+of $K$ counts the driver's effective modes, so the dimensionality of the
+hidden environment is in principle measurable from arrival data, and
+experiment 42 develops that count into an exact estimator on the observable
+class. In mixed logit the same low-dimensional factor structure is imposed by
+hand as a specification choice \citep{mcfadden2000}. Here it is inherited
+from the environment.
 
 \section{The correction predicts the runner-up}\label{sec:runnerup}
 
