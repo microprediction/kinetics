@@ -213,6 +213,32 @@ all channels cancels from a ratio and leaves the choice law untouched, so the
 choice law is moved only by the off-diagonal and generally non-symmetric
 entries $K_{ji}$. Theorem~\ref{thm:main} is about those entries.
 
+Each channel also carries an operational clock, its compensator
+$\Theta_i(t) = \int_0^t \lambda_i(Y_s)\,ds$. The random time-change theorem
+for point processes \citep{meyer1971,papangelou1972} states that channel
+$i$'s arrivals, read against the clock $\Theta_i$, form a unit-rate Poisson
+process. For the stationary driver with generator $\mathcal{L}/\varepsilon$
+the clocks concentrate, $\Theta_i(t) = \lbar_i t$ plus a fluctuation of order
+$\sqrt{\varepsilon t}$, and the fluctuations satisfy a joint central limit
+theorem whose covariance is $K$ up to symmetrization,
+\[
+  \frac{1}{t}\,\mathrm{Cov}_\pi\!\big(\Theta_j(t),\,\Theta_k(t)\big)
+  \;\longrightarrow\; \varepsilon\,\big(K_{jk} + K_{kj}\big),
+  \qquad t \to \infty.
+\]
+So $\varepsilon K$ is the diffusion matrix of the vector of clocks, and the
+first-order correction below is a functional of the clock-fluctuation
+covariance. In this reading the structural results that follow are statements
+about clocks. When every channel is modulated by the same factor the $N$
+clocks are one shared clock, a time change carries the system to a
+constant-rate race, and the correction must vanish
+(Section~\ref{sec:properties}). The shared-clock covariance is
+$K \propto \lbar\lbar^{\top}$, which is the member $d \propto \lbar$ of the
+invisible family $\{d\lbar^{\top}\}$ in
+Section~\ref{sec:identify}. A shared time change is one direction of the
+null space. The remaining null direction $\mathrm{diag}(\lbar)$ is private
+clock jitter, invisible for the reason the rate gauge makes exact.
+
 \begin{theorem}[Homogenized choice law and its first correction]\label{thm:main}
 Let $\bar\Lambda_A = \sum_{j\in A}\lbar_j$ and suppose $\bar\Lambda_A > 0$.
 Then as $\varepsilon \to 0$,
@@ -1353,8 +1379,16 @@ Econometrics}, Academic Press (1974) 105--142.
 MNL models for discrete response. \emph{Journal of Applied Econometrics} 15
 (2000) 447--470.
 
+\bibitem[Meyer(1971)]{meyer1971} P.-A. Meyer. D\'emonstration simplifi\'ee
+d'un th\'eor\`eme de Knight. In \emph{S\'eminaire de Probabilit\'es V},
+Lecture Notes in Mathematics 191, Springer, 1971, 191--195.
+
 \bibitem[Onsager(1931)]{onsager1931} L.~Onsager. Reciprocal relations in
 irreversible processes I. \emph{Physical Review} 37 (1931) 405--426.
+
+\bibitem[Papangelou(1972)]{papangelou1972} F.~Papangelou. Integrability of
+expected increments of point processes and a related random change of scale.
+\emph{Transactions of the American Mathematical Society} 165 (1972) 483--506.
 
 \bibitem[Pavliotis and Stuart(2008)]{pavliotis2008} G.~A. Pavliotis, A.~M.
 Stuart. \emph{Multiscale Methods: Averaging and Homogenization}, Texts in

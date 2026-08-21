@@ -250,3 +250,63 @@ def test_onsager_reciprocity_and_witness():
         Kp = K + np.outer(rng2.normal(size=N), lb) + np.diag(rng2.normal(size=N))
         v1, _, _ = on.invariants(Kp, lb)
         assert np.abs(v1 - v_driven).max() < 1e-12
+
+
+def test_K_is_the_clock_fluctuation_covariance():
+    """The compensators Theta_i(t) = int lam_i(Y_s) ds satisfy a joint CLT
+    whose covariance is the symmetrized K: Cov(Theta_j, Theta_k)/t ->
+    eps*(K_jk + K_kj). Checked against the exact finite-t double integral,
+    non-reversible chain, at two eps values to confirm the eps scaling."""
+    rng = np.random.default_rng(3)
+    m, n = 6, 3
+    L, pi, lam = rb.environment(rng, m, n, 0.7)
+    lam_bar, K, lam_t = rb.kubo(L, pi, lam)
+    evals, R = np.linalg.eig(L)
+    Rinv = np.linalg.inv(R)
+
+    def J(kappa, t):
+        # int_0^t (t - s) e^{kappa s} ds
+        if abs(kappa) < 1e-13:
+            return t * t / 2
+        return (np.exp(kappa * t) - 1) / kappa**2 - t / kappa
+
+    t = 100.0
+    for eps in (0.05, 0.01):
+        C = np.zeros((n, n))
+        for j in range(n):
+            for k in range(n):
+                ajk = ((pi * lam_t[j]) @ R) * (Rinv @ lam_t[k])
+                akj = ((pi * lam_t[k]) @ R) * (Rinv @ lam_t[j])
+                C[j, k] = np.real(sum((ajk[l] + akj[l]) * J(evals[l] / eps, t)
+                                      for l in range(m)))
+        target = eps * (K + K.T)
+        rel = np.abs(C / t - target).max() / np.abs(target).max()
+        assert rel < 25 * eps / t, rel   # finite-t tail is O(eps^2/t)
+
+
+def test_shared_clock_is_one_null_direction():
+    """Common-mode rates give K exactly proportional to lbar lbar^T, the
+    d = gamma*lbar member of the invisible family; every subset's first-order
+    bracket annihilates it."""
+    import itertools
+
+    rng = np.random.default_rng(9)
+    m, n = 6, 5
+    L, pi, _ = rb.environment(rng, m, n, 0.7)
+    a = rng.uniform(0.5, 2.0, n)
+    c = np.exp(rng.normal(0, 0.7, m))
+    lam = np.outer(a, c)
+    lam_bar, K, _ = rb.kubo(L, pi, lam)
+    P = np.outer(lam_bar, lam_bar)
+    coef = (K * P).sum() / (P * P).sum()
+    assert np.linalg.norm(K - coef * P) < 1e-12 * np.linalg.norm(K)
+    worst = 0.0
+    for r in range(2, n + 1):
+        for A in itertools.combinations(range(n), r):
+            A = list(A)
+            cA = lam_bar[A] / lam_bar[A].sum()
+            for pos, i in enumerate(A):
+                B = (sum(P[j, i] for j in A)
+                     - cA[pos] * sum(P[j, k] for j in A for k in A))
+                worst = max(worst, abs(B))
+    assert worst < 1e-12
