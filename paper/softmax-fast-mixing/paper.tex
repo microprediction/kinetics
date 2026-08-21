@@ -18,7 +18,7 @@
 \newcommand{\Prob}{\mathbb{P}}
 \newcommand{\lbar}{\bar{\lambda}}
 
-\title{An Asymptotic Correction to the Luce Choice Axiom\\ for Competing Cox Processes}
+\title{An Asymptotic Correction to Luce's Choice Axiom\\ for Competing Cox Processes}
 \author{Peter Cotton\thanks{Code and machine verification for every claim in this
 paper: \url{https://github.com/microprediction/kinetics} (experiments 7 and 9).
 Web companion: \url{https://kinetics.microprediction.org}.}}
@@ -28,41 +28,47 @@ Web companion: \url{https://kinetics.microprediction.org}.}}
 \maketitle
 
 \begin{abstract}
-Watching which of $N$ competing channels fires first, and which fires second,
-is as informative about the hidden state driving them as blocking channels and
-rerunning the process. Passive observation of an exacta buys what intervention
-buys. Watching only the winner is far weaker, reaching $N-1$ of the $N^2-N-1$
-recoverable quantities against all of them. The setting is a doubly stochastic
-process with $N$ marks, in which the channels' rates are driven by a state they
-share, so that conditionally on that state each is Poisson. When the driver
-mixes faster than the channels fire, the probability that channel $i$ fires
-first converges to the law of Luce's Choice Axiom in the stationary mean rates.
-We give the first correction, governed by the time-integrated covariance $K$ of
-the rates. It is what breaks independence of irrelevant alternatives, it is
-identified only modulo an explicit $(N{+}1)$-dimensional family, and one pair of
-objects built from it predicts every blocked-set counterfactual.
+Consider $N$ channels that fire at random times, with rates driven by a hidden
+state they all share. Conditionally on that state each channel is Poisson, so
+the whole is a doubly stochastic process with $N$ marks, and an observer sees
+only which channels fire and in what order. We ask what such an observer can
+learn about the driver. Seeing the first two arrivals turns out to be as
+informative as blocking channels and rerunning the process, which is the
+strongest experiment available, while seeing only the winner recovers $N-1$
+quantities where the first two recover $N^2-N-1$. Behind this is an asymptotic
+result. When the driver mixes faster than the channels fire, the probability
+that channel $i$ fires first converges to the law of Luce's Choice Axiom in the
+stationary mean rates, and we give the first correction. It is governed by the
+time-integrated covariance $K$ of the rates, it is what breaks independence of
+irrelevant alternatives, and it is identified only modulo an explicit
+$(N{+}1)$-dimensional family.
 \end{abstract}
 
 \section{Introduction}
 
-Watching a race and recording the winner tells you very little about why it was
-won. Recording the exacta, the first two finishers in order, tells you a great
-deal more, and this paper makes that precise in a setting where the comparison
-can be made exactly. For $N$ channels firing at random times under a shared
-hidden driver, the first two arrivals carry as much information about that
-driver as blocking channels and rerunning the process, which is the strongest
-experiment available. The winner alone carries almost none of it, $N-1$
-recoverable quantities against $N^2-N-1$.
+Consider $N$ channels that fire at random times, whose rates are not constants
+but are driven by a hidden state all of them share. Conditionally on the path
+of that state each channel is Poisson, so the whole is a doubly stochastic, or
+Cox, process in the sense of \citet{cox1955}, with $N$ marks and a common
+driver. Chemistry supplies the picture, in which a reaction escapes through one
+of several channels while the surrounding configuration rearranges underneath,
+and the same structure appears whenever a kinetic Monte Carlo (KMC) step
+selects a move \citep{bkl1975,gillespie1977} or a diffusing particle finds one
+of several windows.
 
-The setting is as follows. Consider $N$ channels that fire at random times,
-whose rates are not constants but are driven by a hidden state all of them
-share. Conditionally on the path of that state each channel is Poisson, so the
-whole is a doubly stochastic, or Cox, process in the sense of \citet{cox1955},
-with $N$ marks and a common driver. Chemistry supplies the picture, in which a
-reaction escapes through one of several channels while the surrounding
-configuration rearranges underneath, and the same structure appears whenever a
-kinetic Monte Carlo (KMC) step selects a move \citep{bkl1975,gillespie1977} or
-a diffusing particle finds one of several windows.
+An observer of such a process sees firings, not the driver. The natural
+experiment is to block some channels and run it again, which is how
+substitution is measured when it can be measured at all, and it is often
+impossible. The natural passive alternative is simply to record more of each
+realization, not just which channel fired first but which fired second.
+
+Our main result compares the two, and they turn out to be equivalent. Recording
+the first two arrivals, in the full system alone, recovers everything about the
+driver that the choice law can ever reveal, matching what every possible
+blocking experiment would yield. Recording only the winner recovers $N-1$
+quantities where the full answer has $N^2-N-1$. Orders of arrival are usually
+written down already and interventions usually cannot be run, so the difference
+is between a feasible measurement and an infeasible one.
 
 The shared driver is the interesting part and the unobservable one. It makes
 the channels' rates fluctuate together, which is what breaks independence of
@@ -433,9 +439,18 @@ therefore predicts $M$ itself. At leading order the prediction is
 \begin{equation}\label{eq:Mluce}
   M_{ij} = \frac{\lbar_j}{\bar\Lambda_A - \lbar_i} + O(\varepsilon) ,
 \end{equation}
-which says the second arrival is drawn from the competition among the remaining channels,
-the IIA prediction. Substituting the corrected shares into \eqref{eq:runnerup}
-gains an order.
+which says the second arrival is drawn from the competition among the
+remaining channels, the IIA prediction. Multiplying by $p_i$ identifies the
+leading-order law of the exacta $(i, j)$ as
+\[
+  \frac{\lbar_i}{\bar\Lambda_A} \cdot
+  \frac{\lbar_j}{\bar\Lambda_A - \lbar_i} ,
+\]
+the sequential ranking model of \citet{plackett1975}, whose paired-comparison
+ancestor is \citet{bradley1952} and whose choice-theoretic basis is the Choice
+Axiom. The expansion therefore corrects Plackett--Luce for orders of arrival
+exactly as it corrects the Choice Axiom for winners, and substituting the
+corrected shares into \eqref{eq:runnerup} gains an order.
 
 Experiment 39 verifies this on the same chains. The identity
 \eqref{eq:runnerup} holds to $1.8\times10^{-15}$, the exactly computed kernel
@@ -839,6 +854,10 @@ chemoreception. \emph{Biophysical Journal} 20 (1977) 193--219.
 A new algorithm for Monte Carlo simulation of Ising spin systems.
 \emph{Journal of Computational Physics} 17 (1975) 10--18.
 
+\bibitem[Bradley and Terry(1952)]{bradley1952} R.~A. Bradley, M.~E. Terry.
+Rank analysis of incomplete block designs I. The method of paired comparisons.
+\emph{Biometrika} 39 (1952) 324--345.
+
 \bibitem[Bressloff(2020)]{bressloff2020} P.~C. Bressloff. Asymptotic analysis of
 extended two-dimensional narrow capture problems. arXiv:2010.11885 (2020).
 
@@ -934,6 +953,10 @@ MNL models for discrete response. \emph{Journal of Applied Econometrics} 15
 \bibitem[Pavliotis and Stuart(2008)]{pavliotis2008} G.~A. Pavliotis, A.~M.
 Stuart. \emph{Multiscale Methods: Averaging and Homogenization}, Texts in
 Applied Mathematics 53, Springer, 2008. Chapter 9, Averaging for Markov chains.
+
+\bibitem[Plackett(1975)]{plackett1975} R.~L. Plackett. The analysis of
+permutations. \emph{Journal of the Royal Statistical Society C} 24 (1975)
+193--202.
 
 \bibitem[Schuss et~al.(2007)]{schuss2007} Z.~Schuss, A.~Singer, D.~Holcman. The
 narrow escape problem for diffusion in cellular microdomains. \emph{Proceedings
