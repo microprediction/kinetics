@@ -430,19 +430,37 @@ $\sum_{i\in A}p_i^A = 1$ at each order.
 \section{Three structural properties}\label{sec:properties}
 
 \paragraph{One computation answers every counterfactual.} The pair
-$(\lbar, K)$ does not depend on $A$. Every blocked-set counterfactual is
-obtained from \eqref{eq:main} by restricting the sums to the surviving set.
+$(\lbar, K)$ does not depend on $A$. Blocking a channel removes a competitor
+but does not touch the driver, so the surviving rates keep the mean levels and
+the pairwise co-movement they always had. All that changes is which pairs
+compete, and \eqref{eq:main} registers exactly that change by restricting its
+sums to the surviving set.
 For a system with $N$ channels this reduces $2^N$ separate resolvent solves to
 one deviation solve and $O(N^2)$ stored numbers, at the cost of the
 $O(\varepsilon^2)$ error the expansion carries.
 
 \paragraph{Common-mode fluctuations cancel.} Suppose
 $\lambda_i(y) = a_i c(y)$, so that every channel is modulated by the same
-environmental factor. Then $\tilde\lambda_i = a_i \tilde{c}$ and
-$K_{jk} = a_j a_k \gamma$ with $\gamma = \int \tilde c \, (D\tilde c)\, d\pi$.
-Substituting into the bracket in \eqref{eq:main} gives
-$a_i \gamma \sum_{j\in A} a_j - (a_i/\sum_{j\in A}a_j)\gamma
-(\sum_{j\in A}a_j)^2 = 0$. The correction vanishes identically.
+environmental factor. The physical mechanism is visible before any algebra.
+Given that some channel fires at an instant when the driver sits at $y$, the
+probability that it is channel $i$ is the ratio
+\[
+  \frac{\lambda_i(y)}{\Lambda_A(y)}
+  = \frac{a_i\, c(y)}{c(y) \sum_{j\in A} a_j}
+  = \frac{a_i}{\sum_{j\in A} a_j} ,
+\]
+and $c(y)$ cancels pointwise, at every state, not merely on average. A common
+factor is a fluctuating clock speed. It decides when the race ends and has no
+say in who wins, so no observable built from arrival identities can depend on
+it. The algebra agrees. Here $\tilde\lambda_i = a_i \tilde{c}$ and
+$K_{jk} = a_j a_k \gamma$ with $\gamma = \int \tilde c \, (D\tilde c)\, d\pi$,
+and substituting into the bracket in \eqref{eq:main},
+\[
+  a_i\, \gamma \sum_{j\in A} a_j
+  - \frac{a_i}{\sum_{j\in A}a_j}\, \gamma \Big(\sum_{j\in A}a_j\Big)^{2}
+  = 0 .
+\]
+The correction vanishes identically.
 
 \begin{remark}[Proportional hazards satisfy the Choice Axiom
 exactly]\label{rem:common}
@@ -752,8 +770,12 @@ every $N$ tested, so it is the whole of it.
 
 The diagonal $K_{ii}$ is each channel's own
 integrated autocovariance, which Section~\ref{sec:theory} identified as the
-classical motional-narrowing correction to an effective rate. The proposition
-says this absorption is exact at first order. When the rates are estimated,
+classical motional-narrowing correction to an effective rate. A channel's
+private fluctuation makes its arrivals burstier without changing how it
+co-moves with any rival, and at first order burstiness is indistinguishable
+from a slightly different mean rate. Who beats whom is moved only by
+co-movement between channels. The proposition says this absorption is exact
+at first order. When the rates are estimated,
 the diagonal of $K$ is not merely classical but unobservable, and everything
 an experiment can see lives in the off-diagonal, the cross-channel dynamical
 correlations. The practical consequences are unchanged in both readings.
