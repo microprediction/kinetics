@@ -105,8 +105,8 @@ $K$ is the object to be identified, and the mechanism behind the sufficiency
 of second place is an identity. Deleting a channel changes the outcome only in
 those realizations the deleted channel arrived first, and in those the
 runner-up inherits, so second-place frequencies are deletion experiments that
-have already been run. What they identify is $K$ modulo an explicit
-$(N{+}1)$-dimensional family, directions that, like a rate shift common to
+have already been run. They identify $K$ modulo an explicit
+$(N{+}1)$-dimensional family of directions that, like a rate shift common to
 every channel, move no branching ratio and so change nothing any observer
 could see. The rest is structure the sections below develop. One pair
 $(\lbar, K)$ serves every availability set, common fluctuations cancel exactly
@@ -205,11 +205,10 @@ Green--Kubo is used here in the sense of \citet{green1954} and
 \citet{kubo1957}, an integrated dynamical correlation standing in for a
 transport coefficient.
 
-What that scalar theory cannot see is the object this paper is about. A rate
-correction common to all channels cancels from a ratio, so it leaves the choice
-law untouched. The branching ratio is moved instead by the off-diagonal and
-generally non-symmetric entries $K_{ji}$, and those are what
-Theorem~\ref{thm:main} puts to work.
+The scalar theory does not see branching ratios. A rate correction common to
+all channels cancels from a ratio and leaves the choice law untouched, so the
+choice law is moved only by the off-diagonal and generally non-symmetric
+entries $K_{ji}$. Theorem~\ref{thm:main} is about those entries.
 
 \begin{theorem}[Homogenized choice law and its first correction]\label{thm:main}
 Let $\bar\Lambda_A = \sum_{j\in A}\lbar_j$ and suppose $\bar\Lambda_A > 0$.
@@ -226,8 +225,8 @@ In particular $p_i^A \to \lbar_i / \bar\Lambda_A$, the softmax law in the
 log mean intensities $\theta_i = \log\lbar_i$.
 \end{theorem}
 
-The limit is worth naming carefully, because the same law arrives in this
-literature by three different routes. It is Luce's choice model
+Three literatures arrive at this same limiting law by different routes, so its
+name needs care. It is Luce's choice model
 \citep{luce1959}, the conditional logit of \citet{mcfadden1974}, and the
 softmax output layer of \citet{bridle1990}. In the random-utility tradition it
 follows from Gumbel noise, and \citet{yellott1977} showed that representation
@@ -355,7 +354,7 @@ forced to equal the choice probabilities. They also record the explicit
 representation $\Pr[t(x) > t] = \exp(-u(x)\Psi(t))$, which yields
 $u(x)/\sum_y u(y)$ for an arbitrary increasing $\Psi$.
 
-What the present setting adds is only that the common factor may be a random
+The present setting adds only that the common factor may be a random
 functional of the hidden environment rather than a deterministic function of
 time, and the proof below is correspondingly short.
 
@@ -618,8 +617,8 @@ $\bar\Lambda_A$ shrinks with the subset. Exactly one subset has the correction
 slightly worse than softmax, a two-element near-tie where both errors are
 already two orders of magnitude below the maximum.
 
-The word Green--Kubo is doing work in \eqref{eq:K}, and experiment 40 tests
-whether it needs to. Replacing $K$ by the equal-time covariance
+Equation \eqref{eq:K} is a time integral, and experiment 40 tests whether the
+integral is necessary or whether equal-time correlation would do. Replacing $K$ by the equal-time covariance
 $\int \tilde\lambda_j \tilde\lambda_k \, d\pi$ scaled by a single
 timescale, with that timescale fitted to give the ablation its best case,
 leaves the measured order at $1.09$ rather than $1.96$, and the error at the
@@ -660,9 +659,8 @@ law is the well-mixed limit of \citet{berg1977}. The first window to fire wins. 
 $\kappa$ plays the role of $\varepsilon$, since a slow reaction rate means the
 particle mixes many times before firing.
 
-The correspondence with Section~\ref{sec:model} is worth spelling out, since
-the driver here is the physical system itself rather than an external
-environment. The hidden state $Y_t$ is the particle's position in the disk, and
+Here the driver is the physical system itself rather than an external
+environment, so the correspondence with Section~\ref{sec:model} needs stating. The hidden state $Y_t$ is the particle's position in the disk, and
 its generator is the reflecting Laplacian. The channels are the windows, and
 window $i$ fires at rate $\lambda_i(y) = \kappa\, g_i(y)$, where $g_i$ is the
 fraction of the neighbourhood of $y$ lying inside window $i$'s band, so
