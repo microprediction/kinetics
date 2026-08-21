@@ -177,3 +177,44 @@ def test_remainder_bound_dominates():
         defect = (L/eps) @ U - Lam[:, None]*U + lam.T
         assert np.abs(defect + eps**2 * (Lam[:, None] * u2)).max() < 1e-9
         assert np.abs(u - U).max() <= C * eps**2
+
+
+def test_rate_gauge_is_exact_and_complete():
+    """(lam, K) -> (lam + eps*eta, K - diag(eta)) cancels exactly on every
+    subset, and {d lam^T + diag(v)} is the entire nuisance-rate null space."""
+    import itertools
+    rng = np.random.default_rng(6)
+    n = 6
+    lb = rng.uniform(0.5, 2.0, n); lb /= lb.sum()
+
+    def drows(A):
+        Lb = lb[A].sum(); c = lb[A]/Lb
+        out = []
+        for pos in range(len(A)):
+            g = np.zeros((n, n))
+            for j in A: g[j, A[pos]] += 1.0
+            for j in A:
+                for k in A: g[j, k] -= c[pos]
+            out.append(-(1.0/Lb)*g.ravel())
+        return np.array(out)
+
+    def jc(A):
+        S = lb[A].sum()
+        J = np.zeros((len(A), n))
+        for pos, j in enumerate(A):
+            for l in A:
+                J[pos, l] = (1.0*(l == j))/S - lb[j]/S**2
+        return J
+
+    D_full = drows(list(range(n)))
+    allsub = [list(c) for k in range(2, n+1)
+              for c in itertools.combinations(range(n), k)]
+    eta = rng.normal(size=n)
+    for A in allsub:
+        assert np.abs(drows(A) @ np.diag(eta).ravel() + jc(A) @ eta).max() < 1e-12
+    Dm = np.vstack([drows(A) - jc(A) @ D_full for A in allsub])
+    F = np.array([np.outer(np.eye(n)[a], lb).ravel() for a in range(n)]
+                 + [np.diag(np.eye(n)[a]).ravel() for a in range(n)]).T
+    assert n*n - np.linalg.matrix_rank(Dm, tol=1e-9) == 2*n
+    assert np.linalg.matrix_rank(F) == 2*n
+    assert np.linalg.norm(Dm @ F) < 1e-12

@@ -591,19 +591,43 @@ finishing order is usually free.
 
 \paragraph{When the rates are estimated too.} The counts above take
 $\lbar$ as known. In practice the mean rates are estimated from the same
-observations, and this enlarges the invisible family in a way that is worth
-stating exactly, because it is a property of the model and not of any
-experiment. There are $N-1$ further directions of $K$ whose effect on every
-first-order observable, on every availability set, active or passive, is
-cancelled by a compensating shift of the rates. Numerically, the design built
-from all blocked-subset experiments with the rates profiled out has rank
-exactly $N^2 - 2N$, and the exacta design has the same rank, at every $N$
-tested. Three consequences follow. The equivalence between second-place data
-and the complete intervention ensemble is unchanged. The saturation at second
-place is unchanged, and third place adds nothing under either reading. Only
-the identified count moves, from $N^2-N-1$ combinations at known rates to
-$N^2-2N$ under joint estimation, with the difference an explicit
-$(N-1)$-dimensional gauge.
+observations, and the enlargement of the invisible family then has a closed
+form.
+
+\begin{proposition}[Rate gauge]\label{prop:gauge}
+For any $\eta \in \R^N$, replacing $(\lbar, K)$ by
+$(\lbar + \varepsilon\eta,\; K - \mathrm{diag}(\eta))$ leaves every
+availability set's share vector unchanged at first order. Under joint
+estimation of the rates the invisible family is therefore exactly
+\[
+  K \;\longmapsto\; K + d\,\lbar^\top + \mathrm{diag}(v),
+  \qquad d, v \in \R^N,
+\]
+of dimension $2N$, and $N^2 - 2N$ combinations of $K$ are identified.
+\end{proposition}
+
+\begin{proof}
+The correction of $\mathrm{diag}(\eta)$ on a set $A$ is
+$-\big[\eta_i - c_i \sum_{l\in A}\eta_l\big]/\bar\Lambda_A$, and the
+first-order effect of the rate shift is
+$+\big[\eta_i - c_i \sum_{l\in A}\eta_l\big]/\bar\Lambda_A$. They cancel
+for every $A$ and every $i$. The displayed family contains the known-rate
+family of Proposition~\ref{prop:identify}, and its dimension matches the
+numerically computed null space of the all-experiments design at every $N$
+tested, so it is the whole of it.
+\end{proof}
+
+The gauge closes a loop. The diagonal $K_{ii}$ is each channel's own
+integrated autocovariance, which Section~\ref{sec:theory} identified as the
+classical motional-narrowing correction to an effective rate. The proposition
+says this absorption is exact at first order. When the rates are estimated,
+the diagonal of $K$ is not merely classical but unobservable, and everything
+an experiment can see lives in the off-diagonal, the cross-channel dynamical
+correlations. The practical consequences are unchanged in both readings.
+Second-place data still matches the complete intervention ensemble, the
+saturation at second place still holds, and third place adds nothing either
+way. Experiment 42 verifies the cancellation to $10^{-15}$ and the family
+dimension at $N = 5, 6, 7$.
 
 \paragraph{What it costs.} Identification is not estimation. Fitting $K$ by
 least squares on the identified subspace, from shares estimated on pairs and

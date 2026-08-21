@@ -19,3 +19,15 @@ r5_family_ranks,6
 r5_t_recovery_err,9.99e-16
 r5_estimate,5
 r5_sv_gap,7.95e-13
+gauge_N5_cancellation,1.33e-15
+gauge_N5_null_dim,10
+gauge_N5_family_dim,10
+gauge_N5_family_annihilated,6.45e-16
+gauge_N6_cancellation,7.77e-16
+gauge_N6_null_dim,12
+gauge_N6_family_dim,12
+gauge_N6_family_annihilated,2.30e-15
+gauge_N7_cancellation,8.88e-16
+gauge_N7_null_dim,14
+gauge_N7_family_dim,14
+gauge_N7_family_annihilated,1.68e-15

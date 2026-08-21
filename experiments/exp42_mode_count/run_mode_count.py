@@ -19,6 +19,12 @@ Three facts, the first two of which explain the anomaly:
       lam_k M_j - lam_j M_k cancel d exactly and lie in col(K), so the span
       of all pairwise combinations has dimension exactly r, generically.
 
+Part B (rate gauge): verifies Proposition "Rate gauge": replacing
+(lam, K) by (lam + eps*eta, K - diag(eta)) cancels exactly in every subset's
+first-order share, and the nuisance-rate invisible family {d lam^T + diag(v)}
+has dimension exactly 2N, equal to the measured null space of the
+all-experiments design.
+
 Pipeline: one alternating fit at rank r+1 recovers t exactly (the diag
 direction is not in the fat set, so it must be fit away), then the pairwise
 combinations of the resulting M deliver r as a numerical rank with
@@ -115,6 +121,53 @@ def main() -> None:
         print(f"r={r}: family ranks {sorted(fam_ranks)}, "
               f"t err {abs(t_hat + t_true):.1e}, r_hat={r_hat}, "
               f"sv[r]/sv[r-1]={sv[r]/sv[r-1]:.1e}")
+
+    # ---- Part B: the rate gauge -------------------------------------------
+    import itertools
+
+    def design_rows_local(lb, n, A):
+        Lb = lb[A].sum()
+        c = lb[A] / Lb
+        rws = []
+        for pos in range(len(A)):
+            g = np.zeros((n, n))
+            for j in A:
+                g[j, A[pos]] += 1.0
+            for j in A:
+                for k in A:
+                    g[j, k] -= c[pos]
+            rws.append(-(1.0 / Lb) * g.ravel())
+        return np.array(rws)
+
+    def jac_c(lb, n, A):
+        S = lb[A].sum()
+        J = np.zeros((len(A), n))
+        for pos, j in enumerate(A):
+            for l in A:
+                J[pos, l] = (1.0 * (l == j)) / S - lb[j] / S**2
+        return J
+
+    for n in (5, 6, 7):
+        rg = np.random.default_rng(n)
+        lb = rg.uniform(0.5, 2.0, n)
+        lb /= lb.sum()
+        D_full = design_rows_local(lb, n, list(range(n)))
+        allsub = [list(c) for k in range(2, n + 1)
+                  for c in itertools.combinations(range(n), k)]
+        Dm = np.vstack([design_rows_local(lb, n, A) - jac_c(lb, n, A) @ D_full
+                        for A in allsub])
+        eta = rg.normal(size=n)
+        worst = max(np.abs(design_rows_local(lb, n, A) @ np.diag(eta).ravel()
+                           + jac_c(lb, n, A) @ eta).max() for A in allsub)
+        fam = ([np.outer(np.eye(n)[a], lb).ravel() for a in range(n)]
+               + [np.diag(np.eye(n)[a]).ravel() for a in range(n)])
+        F = np.array(fam).T
+        null_dim = n * n - np.linalg.matrix_rank(Dm, tol=1e-9)
+        rows += [(f"gauge_N{n}_cancellation", f"{worst:.2e}"),
+                 (f"gauge_N{n}_null_dim", str(null_dim)),
+                 (f"gauge_N{n}_family_dim", str(np.linalg.matrix_rank(F))),
+                 (f"gauge_N{n}_family_annihilated",
+                  f"{np.linalg.norm(Dm @ F)/np.linalg.norm(F):.2e}")]
 
     with open(HERE / "results.csv", "w") as fh:
         fh.write("quantity,value\n")
