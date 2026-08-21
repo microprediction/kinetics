@@ -75,38 +75,18 @@ scale.\footnote{Replication is essential. Correlated default in credit risk
 has the same formal structure but supplies a single realization, one economy
 along one macroeconomic path.}
 
-The passive observer's data is the order of arrivals, and the question is how
-far down that order the information reaches. Our main result is that it
-saturates at second place. Recording the first two arrivals, in the full system
-alone, recovers everything about the driver that arrival probabilities can ever
-reveal, matching what every possible channel-blocking experiment would yield,
-and watching for third place and beyond adds nothing at this order of the
-expansion. Recording only the winner recovers $N-1$ quantities where the full
-answer has $N^2-N-1$.
+The observer's data is the order of arrivals, and the question is how far down
+that order the information about the driver reaches. Our main result is that
+in this model, in the regime where the driver mixes fast relative to the
+firing rates, and to first order in that timescale ratio, the information
+saturates at second place. Recording the first two arrivals, from the full
+system alone, then recovers everything that arrival probabilities can reveal
+about the driver, matching what every possible channel-blocking experiment
+would yield, while the winner alone recovers $N-1$ quantities of the
+$N^2-N-1$ recoverable ones.
 
-The shared driver is the interesting part and the unobservable one. It makes
-the channels' rates fluctuate together, which is what breaks independence of
-irrelevant alternatives (IIA). Under IIA a removed stream's share is
-redistributed in proportion to the survivors', and where that has been measured
-it fails, in diversion ratios estimated from demand data
-\citep{conlon2021}, in choice experiments with shared features
-\citep{tversky1972}, and in the specification test built on exactly this
-restriction \citep{hausman1984}. The driver is also exactly what an
-experimenter cannot see. So the question is how much of it can be recovered from the arrivals
-themselves.
-
-Our main result is that the answer is a great deal, and from surprisingly
-little data. Recording who won and who came second, from the full set alone,
-recovers everything about the driver that the choice law can ever reveal. It
-matches what one would learn from running every possible experiment in which
-some channels are blocked and the process is rerun. Winner-only data, by contrast,
-recovers almost nothing, $N-1$ numbers where the full answer has $N^2-N-1$.
-Finishing orders are usually recorded already and interventions are usually
-impossible, so this is the difference between a feasible measurement and an
-infeasible one.
-
-Making that precise requires knowing how the driver enters the choice law, and
-that is a homogenization question. When the driver mixes faster than the
+Making that precise requires knowing how the driver enters the law of the
+first arrival, and that is a homogenization question. When the driver mixes faster than the
 channels fire, the winning probabilities converge to softmax in the stationary
 mean intensities. The first correction is governed by
 \begin{equation}\label{eq:Kintro}
@@ -118,25 +98,16 @@ quantity. Two channels whose rates move together at any instant contribute
 nothing unless that agreement persists over the time the driver takes to
 forget itself.
 
-$K$ is therefore the object to be identified, and it is identified only in
-part. Choice probabilities determine $K$ modulo an explicit family of dimension
-$N+1$, leaving $N^2-N-1$ combinations knowable and the rest permanently
-invisible. The invisible directions are not a defect of any experiment. They
-are the ones that, like a rate shift applied to every channel at once, move no
-branching ratio and so change nothing an observer of winners could ever see.
-
-The bridge from second place to $K$ is an identity that costs nothing. Deleting
-a channel changes the outcome only in those realizations the deleted stream arrived first, and
-in those the runner-up inherits, so
-$q^{(-i)}_j = p_j + p_i M_{ij}$ exactly, at every degree of timescale
-separation. Second-place frequencies are thus deletion experiments that have
-already been run.
-
-Three further properties make the correction usable. One pair $(\lbar, K)$
-serves every availability set, so the whole deletion ensemble follows from a
-single calculation. Fluctuations shared by all channels cancel exactly, which
-is the proportional-hazards normal form and is classical
-\citep{elandt1976,marley1992}. And a driver with $r$ modes gives $K$ of rank
+$K$ is the object to be identified, and the mechanism behind the sufficiency
+of second place is an identity. Deleting a channel changes the outcome only in
+those realizations the deleted channel arrived first, and in those the
+runner-up inherits, so second-place frequencies are deletion experiments that
+have already been run. What they identify is $K$ modulo an explicit
+$(N{+}1)$-dimensional family, directions that, like a rate shift common to
+every channel, move no branching ratio and so change nothing any observer
+could see. The rest is structure the sections below develop. One pair
+$(\lbar, K)$ serves every availability set, common fluctuations cancel exactly
+\citep{elandt1976,marley1992}, and a driver with $r$ modes gives $K$ of rank
 $r$.
 
 Section~\ref{sec:model} sets up the arrival process and its killed resolvent.
@@ -826,7 +797,18 @@ fast hidden kinetics, with a computable first correction.
 
 Two things come out of this. The expansion explains why softmax is a
 reasonable default in systems with fast shared dynamics and says how it fails,
-and the identification analysis says what an observer can hope to recover. The failure
+and the identification analysis says what an observer can hope to recover.
+
+The shape of the failure connects to an empirical literature. In this model the
+departure from proportional redistribution is a derived consequence of the
+shared driver, given in closed form by $K$. In choice data the same departure
+is an observed regularity, documented in diversion ratios estimated from
+demand data \citep{conlon2021}, in choice experiments with shared features
+\citep{tversky1972}, and in the specification test built on the proportional
+restriction \citep{hausman1984}. Those observations concern human choice, not
+arrival processes, and nothing here explains them. The model supplies one
+mechanism by which such departures arise and a measurement of what they reveal
+when it operates. The failure
 is governed by integrated dynamical correlations, not by static ones, and it is
 insensitive to any fluctuation shared across channels.
 
