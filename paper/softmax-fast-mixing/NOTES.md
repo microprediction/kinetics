@@ -156,10 +156,17 @@ inputs, so none of this is sampling noise:
    restore exactly the missing N-1 directions, so deeper places carry
    estimation value even though they carry no design value at known
    lam-bar; (c) mode counting from a lone board reopens with the enlarged
-   (N+1)+(N-1)-dim null space. NEXT: rank the trifecta-augmented design;
-   redo mode counting in the enlarged class; then finite-data race counts.
-   The paper edit should wait until the trifecta rank is computed, so the
-   corrected statement can be positive rather than only a caveat.
+   (N+1)+(N-1)-dim null space. RESOLVED (same night): the deficit is a UNIVERSAL GAUGE. Trifectas do
+   NOT restore the N-1 directions (deficit constant in depth), and the
+   full intervention ensemble under nuisance rates has the SAME rank
+   N^2-2N as the exacta board (verified N=5,6). So N-1 directions of K
+   trade exactly against a rate shift invisibly to every first-order
+   observable. Equivalence and saturation survive both readings; only the
+   identified count depends on whether rates are known. Gauge paragraph
+   added to Section 6. OPEN: closed form of the gauge directions (they are
+   not in the (N+1)-family; 4 extra directions at N=5 confirmed
+   numerically); mode counting in the enlarged 2N-dim class; the exact
+   finite-data pipeline and race counts.
 
 3a. SUPERSEDED original next test: generate synthetic data exactly from the linear model
    (q = c + D*(epsK), p = lam + D_full*(epsK), known lam), run the pipeline.
