@@ -183,3 +183,19 @@ inputs, so none of this is sampling noise:
 Finite-data footnote: at eps=0.05 the (still-wrong) pipeline fails at up to
 1e8 races; do not quote any race-count requirement until the infinite-data
 version is exact.
+
+## Onsager reciprocity and the irreversibility witness (2026-08-22, exp43)
+
+The missing connection Peter suspected. K is a transport-like matrix of
+integrated equilibrium correlations, so Onsager's question applies: detailed
+balance of the driver forces K = K^T (two-line proof via self-adjointness of
+the semigroup in ell^2(pi); verified 1e-17). The asymmetry is a signature of
+hidden nonequilibrium, and modulo the rate gauge it carries exactly
+(N-1)(N-2)/2 invariant functionals: zero at N=2 (two channels can never
+witness), one at N=3 (the cycle witness, monotone in an imposed cycle drive),
+all vanishing at 1e-18 under reversibility, class-invariant at 1e-16 hence
+estimable from arrival orders alone. Connects the paper to entropy-production
+inference (Skinner-Dunkel, Harunari et al.) with an observable at the extreme
+of coarseness: no clocks, no trajectories, only orders across replications.
+OPEN: quantitative link between the witness and entropy production rate;
+finite-data estimation of the witness (needs the exact pipeline).

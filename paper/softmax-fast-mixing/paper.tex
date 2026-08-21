@@ -204,6 +204,9 @@ exactly that correction. The name Green--Kubo comes from statistical physics, wh
 \citet{green1954} and \citet{kubo1957} express transport coefficients, a
 diffusion constant or a viscosity, as time integrals of correlation functions
 computed in equilibrium. $K$ has exactly that form, so we borrow the name.
+The oldest question about such matrices is Onsager's, whether they are
+symmetric \citep{onsager1931}, and Section~\ref{sec:identify} shows the
+answer here carries observable content.
 
 The scalar theory does not see branching ratios. A rate correction common to
 all channels cancels from a ratio and leaves the choice law untouched, so the
@@ -629,6 +632,42 @@ saturation at second place still holds, and third place adds nothing either
 way. Experiment 42 verifies the cancellation to $10^{-15}$ and the family
 dimension at $N = 5, 6, 7$.
 
+\paragraph{Reciprocity, and what asymmetry means.} $K$ is built from
+equilibrium time correlations, so Onsager's reciprocity question applies to
+it \citep{onsager1931}.
+
+\begin{proposition}[Reciprocity]\label{prop:onsager}
+If the driver satisfies detailed balance then $K = K^\top$.
+\end{proposition}
+
+\begin{proof}
+Detailed balance makes $L$ self-adjoint in $\ell^2(\pi)$, hence so is
+$e^{tL}$, and
+$\mathrm{Cov}_\pi(\lambda_j(Y_0), \lambda_k(Y_t)) =
+\langle \tilde\lambda_j, e^{tL}\tilde\lambda_k\rangle_\pi =
+\langle e^{tL}\tilde\lambda_j, \tilde\lambda_k\rangle_\pi$, which is the
+same covariance with $j$ and $k$ exchanged. Integrating over $t$ gives
+$K_{jk} = K_{kj}$.
+\end{proof}
+
+The asymmetry of $K$ is therefore a signature of a driver held out of
+equilibrium, and part of it is observable. Under the gauge of
+Proposition~\ref{prop:gauge} the antisymmetric part of $K$ shifts by
+$(d\lbar^\top - \lbar d^\top)/2$, a family of dimension $N-1$, so the
+asymmetry carries exactly $\binom{N-1}{2}$ gauge-invariant functionals. All
+of them vanish when the driver is reversible. For $N = 2$ there are none, so
+two channels can never witness hidden nonequilibrium, and three can, which is
+the arrival-order analogue of needing a cycle to carry a current. Experiment
+43 verifies the counts, the vanishing at $10^{-18}$, and class invariance at
+$10^{-16}$, and shows the single $N = 3$ witness growing monotonically with
+the strength of a cycle drive imposed on an otherwise reversible chain.
+
+For the inference literature that reconstructs hidden nonequilibrium from
+partial observations, this adds an observable at the opposite extreme of
+coarseness. No clocks, no trajectories, only orders of arrival across
+replications, and still enough to certify that the unseen environment breaks
+detailed balance.
+
 \paragraph{What it costs.} Identification is not estimation. Fitting $K$ by
 least squares on the identified subspace, from shares estimated on pairs and
 triples and then scored on held-out larger subsets, the estimator beats the
@@ -862,8 +901,9 @@ Every number in this paper comes from a committed script. Experiment 7 gives
 the chain verification, experiment 9 the narrow-escape study, experiment 39 the
 runner-up bridge, experiment 40 the replication, the equal-time ablation, the
 rank bounds, the index-order check, and the remainder-bound verification,
-experiment 41 the identifiability and estimation results, and experiment 42
-the mode-count estimator. All four run from a clean checkout
+experiment 41 the identifiability and estimation results, experiment 42
+the mode-count estimator and the rate-gauge verification, and experiment 43
+the reciprocity and irreversibility-witness results. All four run from a clean checkout
 of \url{https://github.com/microprediction/kinetics} with NumPy, SciPy, and
 Matplotlib, and each writes the \texttt{results.csv} the corresponding numbers
 are quoted from. Experiments 7, 39, and 40 take seconds. Experiment 9 takes
@@ -902,8 +942,10 @@ A separate literature identifies hidden structure from timed events.
 Markov-modulated Poisson processes and aggregated Markov chains are
 identifiable, up to explicit equivalence, from fully timestamped observation
 \citep{ryden1996,fredkin1986}, and stochastic thermodynamics infers hidden
-network properties from sequences of visible transitions
-\citep{skinner2021,harunari2022}. The observable here is poorer, order of
+network properties, entropy production especially, from sequences of visible
+transitions \citep{skinner2021,harunari2022}. The reciprocity witness of
+Section~\ref{sec:identify} is an observable of that kind at an extreme of
+coarseness, needing only arrival orders. The observable here is poorer, order of
 arrivals across replications with no clocks, and the marks-only question
 appears not to have been asked. In credit risk the direction of inference is
 the reverse of pricing. \citet{duffie2009} estimate a hidden frailty from
@@ -1137,6 +1179,9 @@ Econometrics}, Academic Press (1974) 105--142.
 \bibitem[McFadden and Train(2000)]{mcfadden2000} D.~McFadden, K.~Train. Mixed
 MNL models for discrete response. \emph{Journal of Applied Econometrics} 15
 (2000) 447--470.
+
+\bibitem[Onsager(1931)]{onsager1931} L.~Onsager. Reciprocal relations in
+irreversible processes I. \emph{Physical Review} 37 (1931) 405--426.
 
 \bibitem[Pavliotis and Stuart(2008)]{pavliotis2008} G.~A. Pavliotis, A.~M.
 Stuart. \emph{Multiscale Methods: Averaging and Homogenization}, Texts in

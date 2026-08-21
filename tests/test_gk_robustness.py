@@ -218,3 +218,35 @@ def test_rate_gauge_is_exact_and_complete():
     assert n*n - np.linalg.matrix_rank(Dm, tol=1e-9) == 2*n
     assert np.linalg.matrix_rank(F) == 2*n
     assert np.linalg.norm(Dm @ F) < 1e-12
+
+
+def test_onsager_reciprocity_and_witness():
+    """Reversible driver => K symmetric; the (N-1)(N-2)/2 gauge-invariant
+    asymmetry functionals vanish under reversibility, are class-invariant,
+    and the N=3 witness responds to driving."""
+    import importlib
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "experiments"
+                          / "exp43_onsager"))
+    on = importlib.import_module("run_onsager")
+    rng = np.random.default_rng(21)
+    m = 6
+    for N in (3, 4):
+        lam = rng.uniform(0.4, 2.0, (N, m))
+        L, pi = on.reversible_generator(np.random.default_rng(N), m)
+        lb, K = on.kubo(L, pi, lam)
+        assert np.abs(K - K.T).max() / np.abs(K).max() < 1e-12
+        vals, rank_g, n_inv = on.invariants(K, lb)
+        assert rank_g == N - 1
+        assert n_inv == (N - 1) * (N - 2) // 2
+        assert np.abs(vals).max() < 1e-14
+    N = 3
+    lam = rng.uniform(0.4, 2.0, (N, m))
+    L, pi = on.driven_generator(np.random.default_rng(55), m, 1.0)
+    lb, K = on.kubo(L, pi, lam)
+    v_driven, _, _ = on.invariants(K, lb)
+    assert np.abs(v_driven).max() > 1e-4
+    rng2 = np.random.default_rng(0)
+    for _ in range(5):
+        Kp = K + np.outer(rng2.normal(size=N), lb) + np.diag(rng2.normal(size=N))
+        v1, _, _ = on.invariants(Kp, lb)
+        assert np.abs(v1 - v_driven).max() < 1e-12
