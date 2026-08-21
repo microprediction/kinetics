@@ -144,7 +144,24 @@ inputs, so none of this is sampling noise:
    model of the experiment. The Jc sign (both signs tried) is not it.
    Scale convention verified: pipeline estimates eps*K/s with s the total
    mean rate (alpha = 1.12 at the /s convention).
-3. DECISIVE NEXT TEST: generate synthetic data exactly from the linear model
+3. RESOLVED BY THE DECISIVE TEST (2026-08-22, late): the missing term was
+   the c-shift Jacobian sign on the j-component (+1/(1-p_i), not -). With
+   the correct model the linear-model test exposes the REAL finding: design
+   rank drops to 24 = (N^2-N-1) - (N-1). With lam-bar as a nuisance
+   estimated from the same board, the exacta board identifies only
+   N^2-2N combinations of K; the rank-29 exacta-equals-interventions
+   equivalence (exp41 Part D, and Section 6 of the paper) holds at KNOWN
+   lam-bar. Consequences: (a) the paper's saturation claim needs the
+   known-lam-bar qualifier or a trifecta remark; (b) trifecta data should
+   restore exactly the missing N-1 directions, so deeper places carry
+   estimation value even though they carry no design value at known
+   lam-bar; (c) mode counting from a lone board reopens with the enlarged
+   (N+1)+(N-1)-dim null space. NEXT: rank the trifecta-augmented design;
+   redo mode counting in the enlarged class; then finite-data race counts.
+   The paper edit should wait until the trifecta rank is computed, so the
+   corrected statement can be positive rather than only a caveat.
+
+3a. SUPERSEDED original next test: generate synthetic data exactly from the linear model
    (q = c + D*(epsK), p = lam + D_full*(epsK), known lam), run the pipeline.
    If K is recovered exactly, the design algebra is right and the residual
    is real second-order structure in the resolvent that the deletion
