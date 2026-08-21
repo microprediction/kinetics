@@ -28,31 +28,38 @@ Web companion: \url{https://kinetics.microprediction.org}.}}
 \maketitle
 
 \begin{abstract}
-Consider $N$ channels that fire at random times, with rates driven by a hidden
-state they share, so that conditionally on that state each is Poisson and the
-whole is a doubly stochastic process with $N$ marks. Only the first arrival is
-recorded. When the driver mixes faster than the channels fire, the probability
-that channel $i$ arrives first converges to Luce's law in the stationary mean
-rates. We give the first correction. It is governed by the time-integrated
-covariance $K$ of the rates, a dynamical rather than a static quantity, and it
-is what breaks independence of irrelevant alternatives. One pair of objects
-then predicts every blocked-set counterfactual by restricting sums, a driver
-with $r$ modes gives $K$ of rank $r$, and fluctuations common to all channels
-cancel exactly. We then ask what observation reveals about $K$, and it is
-identified only in part, modulo an explicit $(N{+}1)$-dimensional family.
-Recording the second arrival as well as the first reaches every identified
-combination, matching what blocking channels and rerunning would give, while
-first-arrival data alone reaches $N-1$ of them.
+Watching which of $N$ competing channels fires first, and which fires second,
+is as informative about the hidden state driving them as blocking channels and
+rerunning the process. Passive observation of an exacta buys what intervention
+buys. Watching only the winner is far weaker, reaching $N-1$ of the $N^2-N-1$
+recoverable quantities against all of them. The setting is a doubly stochastic
+process with $N$ marks, in which the channels' rates are driven by a state they
+share, so that conditionally on that state each is Poisson. When the driver
+mixes faster than the channels fire, the probability that channel $i$ fires
+first converges to the law of Luce's Choice Axiom in the stationary mean rates.
+We give the first correction, governed by the time-integrated covariance $K$ of
+the rates. It is what breaks independence of irrelevant alternatives, it is
+identified only modulo an explicit $(N{+}1)$-dimensional family, and one pair of
+objects built from it predicts every blocked-set counterfactual.
 \end{abstract}
 
 \section{Introduction}
 
-Consider $N$ channels that fire at random times, whose rates are not constants
-but are driven by a hidden state all of them share. Conditional on the
-path of that state each process is Poisson, so this is a doubly stochastic, or
-Cox, process in the sense of \citet{cox1955}, with $N$ marks and a common
-driver. Only the first firing is recorded. Chemistry supplies the picture, in
-which a reaction escapes through one of several channels while the surrounding
+Watching a race and recording the winner tells you very little about why it was
+won. Recording the exacta, the first two finishers in order, tells you a great
+deal more, and this paper makes that precise in a setting where the comparison
+can be made exactly. For $N$ channels firing at random times under a shared
+hidden driver, the first two arrivals carry as much information about that
+driver as blocking channels and rerunning the process, which is the strongest
+experiment available. The winner alone carries almost none of it, $N-1$
+recoverable quantities against $N^2-N-1$.
+
+The setting is as follows. Consider $N$ channels that fire at random times,
+whose rates are not constants but are driven by a hidden state all of them
+share. Conditionally on the path of that state each channel is Poisson, so the
+whole is a doubly stochastic, or Cox, process in the sense of \citet{cox1955},
+with $N$ marks and a common driver. Chemistry supplies the picture, in which a
+reaction escapes through one of several channels while the surrounding
 configuration rearranges underneath, and the same structure appears whenever a
 kinetic Monte Carlo (KMC) step selects a move \citep{bkl1975,gillespie1977} or
 a diffusing particle finds one of several windows.
@@ -225,8 +232,8 @@ literature by three different routes. It is Luce's choice model
 \citep{luce1959}, the conditional logit of \citet{mcfadden1974}, and the
 softmax output layer of \citet{bridle1990}. In the random-utility tradition it
 follows from Gumbel noise, and \citet{yellott1977} showed that representation
-is the only one consistent with Luce's axiom under independent discriminal
-processes. Here it arrives from neither an axiom nor a noise family but from
+is the only one consistent with the Choice Axiom under independent
+discriminal processes. Here it arrives from neither an axiom nor a noise family but from
 fast mixing, and for constant rates it is already in \citet{cox1959}. A reader
 should take $\theta_i = \log\lbar_i$ as a relabelling rather than a derived
 exponential family.
@@ -327,14 +334,14 @@ Substituting into the bracket in \eqref{eq:main} gives
 $a_i \gamma \sum_{j\in A} a_j - (a_i/\sum_{j\in A}a_j)\gamma
 (\sum_{j\in A}a_j)^2 = 0$. The correction vanishes identically.
 
-\begin{proposition}[Proportional hazards give Luce exactly]\label{prop:common}
+\begin{proposition}[Proportional hazards satisfy the Choice Axiom exactly]\label{prop:common}
 Suppose $\lambda_i(y) = a_i c(y)$ with $a_i > 0$ and $c \ge 0$ not identically
 zero. Then for every $y$, every $\varepsilon$, and every $A$,
 \[
   u_i^A(y) = \frac{a_i}{\sum_{j \in A} a_j} ,
 \]
-so the win probability is Luce's law from any start, not merely from $\pi$ and
-not merely to the order computed above.
+so the arrival probability satisfies the Choice Axiom from any start, not
+merely from $\pi$ and not merely to the order computed above.
 \end{proposition}
 
 This is a known result in a new setting rather than a new one, and the prior
