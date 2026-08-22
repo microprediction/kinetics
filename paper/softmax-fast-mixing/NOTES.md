@@ -52,8 +52,10 @@ averaging, single rate, leading order only. Cited in Related work. Keep it.
   ranked this second in importance after citations.
 - Physics results are one geometry and one window arrangement; the chain
   results replicate over twenty environments but the continuum ones do not.
-- No estimator for K from data. This is what a choice-modelling or chemical
-  physics audience would want, and its absence rules out those venues.
+- RESOLVED (2026-08-23, exp44): estimator for K from choice data exists,
+  from the exacta board alone with rates unknown. Remaining estimation gap
+  is only the chemical-physics reading (K from trajectories/timestamps),
+  which is classical Green-Kubo estimation and arguably not ours to redo.
 - Venue undecided. The evidence base (exact linear algebra, measured orders,
   layered numerics, no data, no estimation) fits SIAM Multiscale Modeling and
   Simulation or Journal of Statistical Physics, and fails choice modelling and
@@ -127,7 +129,35 @@ asymptotics is needed. Candidate for a short "higher orders" remark in the
 paper alongside the earlier eps^2 verification (order-3 slope, mass
 conserved at every order, subset-uniformity persists at O(N^3) tensor cost).
 
-## Exacta-board estimation pipeline (status 2026-08-22, open)
+## Exacta-board estimation pipeline (RESOLVED 2026-08-23, experiment 44)
+
+The pipeline was never missing a term. It was missing two gauges in the
+COMPARISON, not the model:
+
+1. The old decisive test scored the fit against truth projected modulo the
+   N+1 family. With rates as nuisance the identified class is modulo the 2N
+   family {d lam^T + diag(v)} (Prop "Rate gauge"). In that projection the
+   linear-model recovery is exact to O(eps^2): cosine defect = 8.5*eps^2
+   across eps = 0.02/0.01/0.005; the eps-independent 0.85 cosine was the
+   unidentifiable diag(v) component sitting in the reference.
+2. The board carries no time unit. Shares are invariant under
+   (lam, K) -> (s*lam, s*K), so the estimator returns eps*K in units where
+   sum(lam_bar) = 1; the reference must be normalized identically (this was
+   the eps-independent 0.87 relative error on real-model boards; note item 2
+   below had already measured alpha = 1.12 at the /s convention and been
+   ignored).
+
+With both gauges respected (exp44): linear-model boards recover at O(eps^2);
+exact Markov-model boards recover the identified part of eps*K with relative
+error 1.5*eps (first order, the attainable order); common-mode boards return
+zero at 1e-14; sampled boards converge as 1/sqrt(races) onto the eps^-2 floor
+(at eps=0.02: rel err 1.2 at 1e6 races, 0.34 at 1e7). Design rank N^2-2N =
+saturation. Paper updated ("Estimation from the board alone", Section 6);
+three tests lock it in. Race counts are now quotable (infinite-data version
+is exact). The "no estimator for K from data" gap in "Not yet done" is
+closed for the choice-data reading.
+
+## Superseded history of the pipeline debugging (status 2026-08-22)
 
 The class-exact estimator (exp42) is exact. The FULL pipeline from sampled
 exacta boards is not yet correct. Findings, all with exact (infinite-data)

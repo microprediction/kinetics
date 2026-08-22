@@ -869,6 +869,29 @@ generator is known, the correction is cheap and accurate. Where only outcomes
 are observed, recovering it demands either very many observations or the richer
 observable of Section~\ref{sec:runnerup}.
 
+\paragraph{Estimation from the board alone.} Experiment 44 turns the
+saturation result into an estimator. The input is the exacta board of the full
+set, with the rates unknown. The bridge of Section~\ref{sec:runnerup} converts
+the board into every leave-one-out share without an intervention, the winner
+shares eliminate $\lbar$ by substitution, and least squares on the
+orthocomplement of the invisible family fits what remains. The design rank is
+$N^2 - 2N$, the saturation value, so the board determines every identified
+combination of $K$ in the fast-mixing regime. On exact boards from the chain
+model the identified part of $\varepsilon K$ is recovered with relative error
+$1.5\,\varepsilon$ across $\varepsilon \in [0.01, 0.04]$, first order,
+which is the order a first-order design can attain. Common-mode rates return
+zero at machine precision.
+
+The fit is made modulo one more invisible direction beyond the family of
+Proposition~\ref{prop:gauge}. The board carries no clock, so every share is
+invariant under the global rescaling $(\lbar, K) \to (s\lbar, sK)$, and the
+estimator returns $K$ in the time unit where the rates sum to one. In the
+clock reading of Section~\ref{sec:theory}, choice data cannot see the overall
+speed of time, only its allocation. Sampled boards obey the
+$\varepsilon^{-2}$ floor of the previous paragraph. At $\varepsilon = 0.02$
+the median relative error on the identified part is $1.2$ at $10^6$ recorded
+races and $0.34$ at $10^7$.
+
 \section{Verification on finite chains}\label{sec:chain}
 
 Everything above is structural. This section and the next test it numerically.
@@ -1090,8 +1113,9 @@ the chain verification, experiment 9 the narrow-escape study, experiment 39 the
 runner-up bridge, experiment 40 the replication, the equal-time ablation, the
 rank bounds, the index-order check, and the remainder-bound verification,
 experiment 41 the identifiability and estimation results, experiment 42
-the mode-count estimator and the rate-gauge verification, and experiment 43
-the reciprocity and irreversibility-witness results. All four run from a clean checkout
+the mode-count estimator and the rate-gauge verification, experiment 43
+the reciprocity and irreversibility-witness results, and experiment 44 the
+exacta-board estimator. All four run from a clean checkout
 of \url{https://github.com/microprediction/kinetics} with NumPy, SciPy, and
 Matplotlib, and each writes the \texttt{results.csv} the corresponding numbers
 are quoted from. Experiments 7, 39, and 40 take seconds. Experiment 9 takes
