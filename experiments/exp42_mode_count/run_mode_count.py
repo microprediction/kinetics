@@ -25,6 +25,14 @@ first-order share, and the nuisance-rate invisible family {d lam^T + diag(v)}
 has dimension exactly 2N, equal to the measured null space of the
 all-experiments design.
 
+Part C (mode counting in the 2N class): when the rates are estimated too,
+the class gains an arbitrary diagonal and the Part A read-off is
+contaminated. A submatrix whose row and column sets are disjoint contains no
+diagonal entry, and on such blocks the class shifts K by rank one at most.
+The largest diagonal-avoiding block of a generic member has rank
+min(r+1, floor(N/2)), so its rank minus one recovers r whenever N >= 2(r+1)
+and otherwise reports the detection floor floor(N/2) - 1.
+
 Pipeline: one alternating fit at rank r+1 recovers t exactly (the diag
 direction is not in the fat set, so it must be fit away), then the pairwise
 combinations of the resulting M deliver r as a numerical rank with
@@ -121,6 +129,25 @@ def main() -> None:
         print(f"r={r}: family ranks {sorted(fam_ranks)}, "
               f"t err {abs(t_hat + t_true):.1e}, r_hat={r_hat}, "
               f"sv[r]/sv[r-1]={sv[r]/sv[r-1]:.1e}")
+
+    # ---- Part C: mode counting in the 2N (nuisance-rates) class -----------
+    from itertools import combinations
+
+    m2, N2 = 12, 10
+    h = N2 // 2
+    for r in (1, 2, 3, 4, 5, 6):
+        rng_c = np.random.default_rng(100 + r)
+        L, pi, lam = environment(rng_c, m2, N2, r)
+        lam_bar, K = kubo(L, pi, lam)
+        M = (K + np.outer(rng_c.normal(size=N2), lam_bar)
+             + np.diag(rng_c.normal(size=N2)))
+        best = 0
+        for R in combinations(range(N2), h):
+            C = [c for c in range(N2) if c not in R]
+            sv = np.linalg.svd(M[np.ix_(R, C)], compute_uv=False)
+            best = max(best, int((sv > 1e-9 * sv.max()).sum()))
+        rows.append((f"C_r{r}_rhat_2Nclass", str(best - 1)))
+        print(f"Part C r={r}: r_hat = {best - 1} (cap {h - 1})")
 
     # ---- Part B: the rate gauge -------------------------------------------
     import itertools

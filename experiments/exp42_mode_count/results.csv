@@ -19,6 +19,12 @@ r5_family_ranks,6
 r5_t_recovery_err,9.99e-16
 r5_estimate,5
 r5_sv_gap,7.95e-13
+C_r1_rhat_2Nclass,1
+C_r2_rhat_2Nclass,2
+C_r3_rhat_2Nclass,3
+C_r4_rhat_2Nclass,4
+C_r5_rhat_2Nclass,4
+C_r6_rhat_2Nclass,4
 gauge_N5_cancellation,1.33e-15
 gauge_N5_null_dim,10
 gauge_N5_family_dim,10

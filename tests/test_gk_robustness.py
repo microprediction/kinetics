@@ -310,3 +310,30 @@ def test_shared_clock_is_one_null_direction():
                      - cA[pos] * sum(P[j, k] for j in A for k in A))
                 worst = max(worst, abs(B))
     assert worst < 1e-12
+
+
+def test_mode_count_in_the_2N_gauge_class():
+    """With rates estimated too, the class gains an arbitrary diagonal.
+    Diagonal-avoiding blocks still count the modes: the largest block with
+    disjoint rows and columns has rank min(r+1, floor(N/2)), so rank minus
+    one recovers r below the detection floor and reports the floor above."""
+    import itertools
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "experiments"
+                          / "exp42_mode_count"))
+    import run_mode_count as mc
+
+    m, N = 12, 10
+    h = N // 2
+    for r in (1, 3, 4, 6):
+        rng = np.random.default_rng(100 + r)
+        L, pi, lam = mc.environment(rng, m, N, r)
+        lam_bar, K = mc.kubo(L, pi, lam)
+        M = (K + np.outer(rng.normal(size=N), lam_bar)
+             + np.diag(rng.normal(size=N)))
+        best = 0
+        for R in itertools.combinations(range(N), h):
+            C = [c for c in range(N) if c not in R]
+            sv = np.linalg.svd(M[np.ix_(R, C)], compute_uv=False)
+            best = max(best, int((sv > 1e-9 * sv.max()).sum()))
+        assert best - 1 == min(r, h - 1)

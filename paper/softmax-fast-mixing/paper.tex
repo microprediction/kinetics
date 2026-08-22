@@ -582,7 +582,13 @@ Markov system can show, go back to \citet{fredkin1986}.
 The rank of the observable part of $K$ counts the driver's effective modes, so the dimensionality of the
 hidden environment is in principle measurable from arrival data, and
 experiment 42 develops that count into an exact estimator on the observable
-class. In mixed logit the same low-dimensional factor structure is imposed by
+class. The count survives the joint estimation of the rates. The invisible
+family of Section~\ref{sec:identify} then includes an arbitrary diagonal,
+but a submatrix whose row and column sets are disjoint contains no diagonal
+entry, and on such blocks the family shifts $K$ by rank one at most. The
+largest diagonal-avoiding block of any member of the family has rank
+$\min(r+1, \lfloor N/2 \rfloor)$, so its rank minus one recovers $r$
+whenever $N \ge 2(r+1)$, and otherwise reports that floor. In mixed logit the same low-dimensional factor structure is imposed by
 hand as a specification choice \citep{mcfadden2000}. Here it is inherited
 from the environment.
 

@@ -199,9 +199,12 @@ inputs, so none of this is sampling noise:
    {d lam^T + diag(v)}, dim 2N. Physical reading: the diagonal of K is
    the motional-narrowing rate renormalization, absorbed into the rate
    estimate; only OFF-DIAGONAL K is observable under joint estimation.
-   Verified 1e-15, N=5,6,7, exp42 Part B. STILL OPEN: mode counting in
-   the 2N class (off-diagonal read-off); exact finite-data pipeline and
-   race counts.
+   Verified 1e-15, N=5,6,7, exp42 Part B. Both follow-ups now closed:
+   mode counting in the 2N class RESOLVED 2026-08-23 (exp42 Part C:
+   diagonal-avoiding blocks; largest disjoint-row/column block has rank
+   min(r+1, floor(N/2)), so rank minus one recovers r when N >= 2(r+1),
+   verified exact r=1..4 and correctly floored r=5,6 at N=10); finite-data
+   pipeline and race counts RESOLVED (exp44, see section above).
 
 3a. SUPERSEDED original next test: generate synthetic data exactly from the linear model
    (q = c + D*(epsK), p = lam + D_full*(epsK), known lam), run the pipeline.
